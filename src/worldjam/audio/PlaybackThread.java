@@ -2,9 +2,7 @@ package worldjam.audio;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.Control;
-import javax.sound.sampled.Control.Type;
 import javax.sound.sampled.DataLine;
-import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.Line;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.Mixer;
@@ -66,7 +64,6 @@ public class PlaybackThread extends Thread implements AudioSubscriber{
 
 	//status flags
 	private boolean alive = true;
-	private boolean paused = false;
 
 	public void kill(){
 		alive = false;

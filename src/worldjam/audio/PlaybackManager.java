@@ -23,7 +23,7 @@ public class PlaybackManager implements AudioSubscriber{
 	Mixer mixer;
 	BeatClock clock;
 	AudioFormat format;
-	Map<Long, PlaybackThread> threads = new HashMap();
+	Map<Long, PlaybackThread> threads = new HashMap<Long, PlaybackThread>();
 	public void addThread(long senderID) throws LineUnavailableException{
 		
 		PlaybackThread thread = new PlaybackThread(mixer, format, clock);

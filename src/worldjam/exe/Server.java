@@ -21,6 +21,7 @@ import javax.xml.crypto.Data;
 import worldjam.audio.InputThread;
 import worldjam.audio.PlaybackManager;
 import worldjam.core.BeatClock;
+import worldjam.net.NetworkUtils;
 import worldjam.net.WJConstants;
 import worldjam.test.DefaultObjects;
 
@@ -32,12 +33,7 @@ public class Server {
 	public static void main(String arg[]) throws LineUnavailableException, IOException{
 		Scanner scanner = new Scanner(System.in);		
 
-		try {
-			InetAddress ipAddr = InetAddress.getLocalHost();
-			localIP = ipAddr.getHostAddress();
-		} catch (UnknownHostException ex) {
-			ex.printStackTrace();
-		}
+		localIP = NetworkUtils.getIP();
 
 		beatClock = configureClock(scanner);
 
@@ -48,18 +44,20 @@ public class Server {
 	}
 
 
+
+
 	private static void printServerConfiguration() {
 		System.out.println("Jam session started with the following configuration:");
-		System.out.println("BPM: " + 60000/beatClock.msPerBeat);
+		System.out.printf("BPM: %.2f  (%d ms per beat)\n", 60000./beatClock.msPerBeat, beatClock.msPerBeat);
 		System.out.println("Time Signature: " + beatClock.beatsPerMeasure + "/" + beatClock.beatDenominator);
 
-		System.out.println("Local IP:  " + localIP);
+		System.out.println("Server IP:  " + localIP);
 	}
 
 
 	static BeatClock configureClock(Scanner scanner){
-		System.out.println("How many beats per minute? (this will be rounded to an integer number of tens of milliseconds"
-				+ " per beat)");
+		System.out.println("How many beats per minute? (this will be converted to ms per beat, which will be "
+				+ "rounded to the nearest 10 ms)");
 		double bpm = Double.parseDouble(scanner.nextLine());
 		int msPerBeat = (int)(60000/bpm);
 		msPerBeat = (msPerBeat/10)*10;
@@ -121,7 +119,7 @@ public class Server {
 				while(true){
 					synchronized(dis){
 						byte code = dis.readByte();
-						System.out.println(code);
+						//System.out.println(code);
 						if(shouldThisBeBroadcasted(code)){
 							int len = dis.readInt();
 							byte bytes[] = new byte[len];
@@ -159,7 +157,7 @@ public class Server {
 				dos.writeInt(beatClock.beatsPerMeasure);
 				dos.writeInt(beatClock.beatDenominator);
 				dos.writeLong(beatClock.startTime);
-				System.out.println("sent time information");
+				//System.out.println("sent time information");
 			}
 			try {
 				Thread.sleep(1000);
@@ -179,6 +177,7 @@ public class Server {
 				displayName = dis.readUTF();
 				id = dis.readLong();
 				System.out.println("client '" + displayName + "' (" + id + ") just joined ");
+				
 			}
 		}
 
@@ -215,7 +214,7 @@ public class Server {
 				try {
 
 					Thread.sleep(1000);
-					System.out.println("broadcasting client list");
+					//System.out.println("broadcasting client list");
 					broadcastClientList();
 				} catch (IOException | InterruptedException e) {
 					// TODO Auto-generated catch block

@@ -2,7 +2,6 @@ package worldjam.audio;
 
 import javax.sound.sampled.AudioFormat;
 
-import worldjam.core.BeatClock;
 
 public class AudioUtils {
 	public static byte[] getByteArray(int ms, AudioFormat format){

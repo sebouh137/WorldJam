@@ -1,6 +1,5 @@
 package worldjam.test;
 
-import java.net.SocketImpl;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;

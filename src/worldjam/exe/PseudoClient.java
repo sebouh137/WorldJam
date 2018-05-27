@@ -1,7 +1,5 @@
 package worldjam.exe;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -12,9 +10,15 @@ import java.util.ArrayList;
 import worldjam.audio.AudioSubscriber;
 import worldjam.audio.SampleMessage;
 import worldjam.core.BeatClock;
+import worldjam.net.NetworkUtils;
 import worldjam.net.WJConstants;
 import worldjam.test.DefaultObjects;
 
+/**
+ * Base-class for programs that send data to/from the server
+ * @author spaul
+ *
+ */
 public abstract class PseudoClient implements AudioSubscriber{
 	protected DataOutputStream dos;
 
@@ -22,11 +26,18 @@ public abstract class PseudoClient implements AudioSubscriber{
 
 	protected String displayName;
 	protected int clientID;
+
+	private String serverIP;
+
+	private String clientIP;
 	public PseudoClient(String serverIP, String displayName) throws UnknownHostException, IOException {
+		this.serverIP = serverIP;
 		socket = new Socket(serverIP, DefaultObjects.defaultPort);
+		socket.setTcpNoDelay(true);
 		this.dos = new DataOutputStream(socket.getOutputStream());
 		this.dis = new DataInputStream(socket.getInputStream());
 		this.displayName = displayName;
+		this.clientIP = NetworkUtils.getIP();
 
 		this.receiverThread.start();
 		joinSession();
@@ -55,18 +66,18 @@ public abstract class PseudoClient implements AudioSubscriber{
 					synchronized(dis){
 						byte code;
 						code = dis.readByte();
-						System.out.println("received code " + (char)code);
+						//System.out.println("received code " + (char)code);
 						if(code == WJConstants.AUDIO_SAMPLE){
 							int datalength = dis.readInt()-2*Long.BYTES;
 							long sampleStartTime = dis.readLong();
 							long senderID = dis.readLong();
 							byte[] data = new byte[datalength];
-							dis.read(data);
+							dis.readFully(data);
 							SampleMessage sample = new SampleMessage();
 							sample.sampleData = data;
 							sample.senderID = senderID;
 							sample.sampleStartTime = sampleStartTime;
-							System.out.println("received sample (" + datalength + " bytes)");
+							//System.out.println("received sample (" + datalength + " bytes)");
 							if(subs != null)
 								subs.sampleReceived(sample);
 						} else if(code == WJConstants.LIST_CLIENTS){
@@ -88,6 +99,7 @@ public abstract class PseudoClient implements AudioSubscriber{
 							beatClock.startTime = startTime;
 							System.out.println("received time information");
 							setBeatClock(beatClock);
+							printClientConfiguration();
 						} else throw new Exception("unrecognized code");
 
 					}
@@ -105,6 +117,17 @@ public abstract class PseudoClient implements AudioSubscriber{
 
 
 	};
+	
+	protected void printClientConfiguration() {
+		System.out.println("Joined jam session with the following configuration:");
+		System.out.printf("  BPM: %.2f  (%d ms per beat)\n", 60000./beatClock.msPerBeat, beatClock.msPerBeat);
+		System.out.println("  Time Signature: " + beatClock.beatsPerMeasure + "/" + beatClock.beatDenominator);
+		System.out.println("  Server IP:  " + serverIP);
+		System.out.println("Client configuration:");
+		System.out.println("  client ID Number:  " + clientID);
+		System.out.println("  client IP Address:  " + clientIP);
+	}
+	
 	protected void setBeatClock(BeatClock beatClock) {
 		this.beatClock = beatClock;
 	}

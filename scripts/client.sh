@@ -1,1 +1,1 @@
-java -cp bin worldjam.exe.Client
+java -cp bin worldjam.exe.DefaultClient

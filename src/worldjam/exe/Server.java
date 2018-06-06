@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -129,7 +130,7 @@ public class Server {
 							for(int i = 0; i<100; i++)
 								System.out.println("    " + dis.readByte());
 							throw new Exception("unrecognized code: " + code);
-							
+
 						}
 					}
 
@@ -177,7 +178,7 @@ public class Server {
 				displayName = dis.readUTF();
 				id = dis.readLong();
 				System.out.println("client '" + displayName + "' (" + id + ") just joined ");
-				
+
 			}
 		}
 
@@ -196,15 +197,30 @@ public class Server {
 
 	}
 	static void broadcastClientList() throws IOException{
+		ArrayList<ClientHandler> brokenConnections = new ArrayList();
 		for(ClientHandler handler : handlers){
 			synchronized(handler){
-				handler.dos.writeByte(WJConstants.LIST_CLIENTS);
-				handler.dos.writeInt(handlers.size());
-				for(ClientHandler handler2 : handlers){
-					handler.dos.writeUTF(handler2.displayName);
-					handler.dos.writeLong(handler2.id);
+				try{
+					handler.dos.writeByte(WJConstants.LIST_CLIENTS);
+					handler.dos.writeInt(handlers.size());
+					for(ClientHandler handler2 : handlers){
+						handler.dos.writeUTF(handler2.displayName);
+						handler.dos.writeLong(handler2.id);
+					}
+				} catch(SocketException e){
+					brokenConnections.add(handler);
 				}
 			}
+		}
+		for(ClientHandler handler : brokenConnections){
+			removeClient(handler);
+		}
+	}
+
+	private static void removeClient(ClientHandler handler) {
+		synchronized(handlers){
+			System.out.println("client " + handler.displayName + " (id = " + handler.id + ") has disconnected");
+			handlers.remove(handler);
 		}
 	}
 

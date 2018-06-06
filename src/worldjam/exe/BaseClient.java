@@ -19,7 +19,7 @@ import worldjam.test.DefaultObjects;
  * @author spaul
  *
  */
-public abstract class PseudoClient implements AudioSubscriber{
+public abstract class BaseClient implements AudioSubscriber{
 	protected DataOutputStream dos;
 
 	protected DataInputStream dis;
@@ -30,7 +30,7 @@ public abstract class PseudoClient implements AudioSubscriber{
 	private String serverIP;
 
 	private String clientIP;
-	public PseudoClient(String serverIP, String displayName) throws UnknownHostException, IOException {
+	public BaseClient(String serverIP, String displayName) throws UnknownHostException, IOException {
 		this.serverIP = serverIP;
 		socket = new Socket(serverIP, DefaultObjects.defaultPort);
 		socket.setTcpNoDelay(true);

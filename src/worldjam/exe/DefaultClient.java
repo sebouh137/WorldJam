@@ -16,11 +16,12 @@ import worldjam.audio.InputThread;
 import worldjam.audio.PlaybackManager;
 import worldjam.audio.SampleMessage;
 import worldjam.core.BeatClock;
+import worldjam.gui.Conductor;
 import worldjam.net.WJConstants;
 import worldjam.test.DefaultObjects;
 import worldjam.test.generators.MetronomeThread;
 
-public class Client extends PseudoClient{
+public class DefaultClient extends BaseClient{
 
 	public static void main(String arg[]) throws LineUnavailableException, UnknownHostException, IOException{
 		Scanner scanner = new Scanner(System.in);
@@ -44,13 +45,13 @@ public class Client extends PseudoClient{
 		String serverIP = scanner.nextLine();
 		Mixer outputMixer = getMixer(scanner, SourceDataLine.class);
 		Mixer inputMixer = getMixer(scanner, TargetDataLine.class);
-		new Client(serverIP, displayName, inputMixer, outputMixer);
+		new DefaultClient(serverIP, displayName, inputMixer, outputMixer);
 
 	}
 
 	Mixer inputMixer, outputMixer;
 
-	public Client(String serverIP, String displayName, Mixer inputMixer, Mixer outputMixer) throws LineUnavailableException, UnknownHostException, IOException{
+	public DefaultClient(String serverIP, String displayName, Mixer inputMixer, Mixer outputMixer) throws LineUnavailableException, UnknownHostException, IOException{
 		super(serverIP, displayName);
 		this.inputMixer = inputMixer;
 		this.outputMixer = outputMixer;
@@ -148,9 +149,10 @@ public class Client extends PseudoClient{
 			e.printStackTrace();
 		}
 		metronome.start();
-		
+		if(visualize == true)
+			new Conductor(beatClock).showInFrame();
 	}
 
-
+	public boolean visualize = true;
 
 }

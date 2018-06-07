@@ -11,7 +11,6 @@ import javax.sound.sampled.SourceDataLine;
 import worldjam.core.BeatClock;
 
 public class PlaybackThread extends Thread implements AudioSubscriber{
-	private static final int N_BYTES_PER_LOOP = 1200;
 	private SourceDataLine sdl;
 	private BeatClock clock;
 	private AudioFormat format;
@@ -20,7 +19,7 @@ public class PlaybackThread extends Thread implements AudioSubscriber{
 		sdl = (SourceDataLine)mixer.getLine(info);
 		this.clock = clock;
 		this.format = format;
-
+		setReplayOffsetInMeasures(1);
 		//a buffer of 10 measures long is overkill
 		int nMeasuresInBuffer = 2;
 		int bufferSize = (int)(format.getFrameSize()*
@@ -29,36 +28,32 @@ public class PlaybackThread extends Thread implements AudioSubscriber{
 				clock.beatsPerMeasure*
 				nMeasuresInBuffer);
 		buffer = new byte[bufferSize];
-		replayOffsetInBytes = (int) (clock.beatsPerMeasure*clock.msPerBeat*format.getFrameSize()/1000.)*format.getFrameSize();
 		sdl.open();
 		sdl.start();
 	}
 	private byte[] buffer;
 	private int bufferPosition;
 
+	public void setReplayOffsetInMeasures(int nMeasures){
+		replayOffsetInBytes = (int) (nMeasures*clock.beatsPerMeasure*clock.msPerBeat*format.getFrameRate()/1000.)*format.getFrameSize();
+		
+	}
+	public void setReplayOffsetInBeats(int nBeats){
+		replayOffsetInBytes = (int) (nBeats*clock.msPerBeat*format.getFrameRate()/1000.)*format.getFrameSize();
+		
+	}
 	public void setReplayOffsetInBytes(int offset){
 		this.replayOffsetInBytes = offset;
 	}
 	private int replayOffsetInBytes;
 	public void sampleReceived(SampleMessage sample) {
-		int dt = (int) (sample.sampleStartTime-clock.startTime);
-		//System.out.println(dt);
+		int dt = (int) (sample.sampleStartTime-loopStartTime);
 		int destPos = (int) (dt*format.getFrameRate()/1000.)*format.getFrameSize();
-		destPos+= replayOffsetInBytes;
+		destPos += replayOffsetInBytes;
 		destPos %= buffer.length;
 		if(destPos < 0)
 			destPos += buffer.length;
 		AudioUtils.arrayCopyWrapped(sample.sampleData, 0, buffer, destPos, sample.sampleData.length);
-		/*if(destPos + sample.sampleData.length < buffer.length) {
-			//System.out.println(sample.sampleData.length + " " + destPos + " " + buffer.length);
-			System.arraycopy(sample.sampleData, 0, buffer, destPos, sample.sampleData.length);
-		}
-		else {
-			//System.out.println(sample.sampleData.length + " " + destPos + " " + buffer.length);
-			System.arraycopy(sample.sampleData, 0, buffer, destPos, buffer.length - destPos);
-			//System.out.println(sample.sampleData.length + " " + (buffer.length-destPos) + " " + buffer.length);
-			System.arraycopy(sample.sampleData, buffer.length - destPos, buffer, 0, sample.sampleData.length - (buffer.length - destPos));
-		}*/
 	}
 
 
@@ -69,30 +64,35 @@ public class PlaybackThread extends Thread implements AudioSubscriber{
 		alive = false;
 	}
 
+	long loopStartTime;
 	public void run(){
+
+		int N_BYTES_PLAYED_AT_ONCE = (int) (format.getFrameRate()*format.getFrameSize());
 		/*
 		 * Must start at the beginning of a measure
 		 */
 		try {
 			int msPerMeasure = clock.getMsPerMeasure();
-			int sleepTime = (int) (System.currentTimeMillis()-clock.startTime);
+			long prestart = System.currentTimeMillis();
+			int sleepTime = (int) (prestart-clock.startTime);
 			sleepTime %= msPerMeasure;
-			if(sleepTime<0) // weird feature of modding in jova
+			if(sleepTime<0) // account for a weird feature of modding negative numbers in jova
 				sleepTime += msPerMeasure;
 			Thread.sleep(sleepTime);
+			loopStartTime = prestart+sleepTime;
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		while(alive){
-			if(bufferPosition + N_BYTES_PER_LOOP < buffer.length){
-				sdl.write(buffer, bufferPosition, N_BYTES_PER_LOOP);
-				bufferPosition+= N_BYTES_PER_LOOP;
+			
+			if(bufferPosition + N_BYTES_PLAYED_AT_ONCE < buffer.length){
+				sdl.write(buffer, bufferPosition, N_BYTES_PLAYED_AT_ONCE);
+				bufferPosition+= N_BYTES_PLAYED_AT_ONCE;
 			}
 			else {
 				sdl.write(buffer, bufferPosition, buffer.length - bufferPosition);
-				sdl.write(buffer, 0, N_BYTES_PER_LOOP - (buffer.length - bufferPosition));
-				bufferPosition = N_BYTES_PER_LOOP - (buffer.length - bufferPosition);
+				sdl.write(buffer, 0, N_BYTES_PLAYED_AT_ONCE - (buffer.length - bufferPosition));
+				bufferPosition = N_BYTES_PLAYED_AT_ONCE - (buffer.length - bufferPosition);
 			}
 
 

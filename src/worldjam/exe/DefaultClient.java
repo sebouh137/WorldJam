@@ -26,7 +26,7 @@ public class DefaultClient extends BaseClient{
 	public static void main(String arg[]) throws LineUnavailableException, UnknownHostException, IOException{
 		Scanner scanner = new Scanner(System.in);
 		boolean isAdmin = false;
-		while(true){
+		/*while(true){
 			System.out.println("Type 'new' to start a new jam session or 'join' to join an existing jam session");
 			String input = scanner.nextLine();
 			if(input.equalsIgnoreCase("new")){
@@ -37,7 +37,7 @@ public class DefaultClient extends BaseClient{
 				isAdmin=false;
 				break;
 			} 
-		}
+		}*/
 		System.out.println("Enter your displayname:");
 		String displayName = scanner.nextLine();
 		System.out.println("Enter the IP address of the server:");
@@ -45,9 +45,26 @@ public class DefaultClient extends BaseClient{
 		String serverIP = scanner.nextLine();
 		Mixer outputMixer = getMixer(scanner, SourceDataLine.class);
 		Mixer inputMixer = getMixer(scanner, TargetDataLine.class);
+
+		getMetronomeOptions(scanner);
+		
 		new DefaultClient(serverIP, displayName, inputMixer, outputMixer);
 
 	}
+
+
+
+	private static void getMetronomeOptions(Scanner scanner) {
+		System.out.println("Use audio metronome? (0 = false, 1 = true)");
+		if(scanner.nextInt() == 0)
+			useAudioMetronome = false;
+		else 
+			useAudioMetronome = true;
+		System.out.println("Use visual metronome? (0 = false, 1 = true)");
+		
+	}
+
+
 
 	Mixer inputMixer, outputMixer;
 
@@ -83,7 +100,7 @@ public class DefaultClient extends BaseClient{
 			try {
 				dos.writeByte(WJConstants.AUDIO_SAMPLE);
 				int overhead = 2*Long.BYTES;
-				
+
 				dos.writeInt(sample.sampleData.length+overhead);
 				int start = dos.size();
 				dos.writeLong(sample.sampleStartTime);
@@ -107,7 +124,7 @@ public class DefaultClient extends BaseClient{
 		if(playback == null)
 			return;
 		for(long l : ids){
-			
+
 			if(!playback.getIDs().contains(l)){
 				try {
 					playback.addThread(l);
@@ -119,7 +136,7 @@ public class DefaultClient extends BaseClient{
 			}
 		}
 	}
-	
+
 	protected void printClientConfiguration(){
 		super.printClientConfiguration();
 		System.out.println("  Audio configurations:");
@@ -140,19 +157,25 @@ public class DefaultClient extends BaseClient{
 		input.setReceiver(this);
 		input.start();
 		this.subs = playback;
-		MetronomeThread metronome = new MetronomeThread(clock, DefaultObjects.defaultFormat, 440, .1);
-		metronome.setReceiver(playback);
-		try {
-			playback.addThread(metronome.getSenderID());
-		} catch (LineUnavailableException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		if(useAudioMetronome){
+			MetronomeThread metronome = new MetronomeThread(clock, DefaultObjects.defaultFormat, 440, .1);
+			metronome.setReceiver(playback);
+			try {
+				playback.addThread(metronome.getSenderID());
+			} catch (LineUnavailableException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			metronome.start();
 		}
-		metronome.start();
-		if(visualize == true)
-			new Conductor(beatClock).showInFrame();
+		if(visualMetronomeType != 0){
+			switch(visualMetronomeType){
+			case 1:
+				new Conductor(beatClock).showInFrame();
+			}
+		}
 	}
-
-	public boolean visualize = true;
+	static boolean useAudioMetronome = false;
+	static int visualMetronomeType = 1;
 
 }

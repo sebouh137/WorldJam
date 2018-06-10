@@ -24,7 +24,7 @@ public class InputThread extends Thread{
 		this.format = format;
 		Line.Info info = new DataLine.Info(TargetDataLine.class, format);
 		tdl = (TargetDataLine)mixer.getLine(info);
-		nMsPerLoop = 100;
+		nMsPerLoop = 1000;
 		nBytesPerLoop = format.getFrameSize()*(int)(format.getFrameRate()*nMsPerLoop/1000.);
 		buffer = new byte[nBytesPerLoop];
 	}
@@ -58,5 +58,8 @@ public class InputThread extends Thread{
 	}
 	public long getSenderID() {
 		return lineID;
+	}
+	public Line getLine(){
+		return tdl;
 	}
 }

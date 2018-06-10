@@ -132,4 +132,8 @@ public abstract class BaseClient implements AudioSubscriber{
 		this.beatClock = beatClock;
 	}
 	protected abstract void processClientList(ArrayList<String> names, ArrayList<Long> ids);
+	
+	public BeatClock getClock(){
+		return beatClock;
+	}
 }

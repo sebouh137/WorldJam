@@ -1,5 +1,6 @@
 package worldjam.audio;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -24,16 +25,40 @@ public class PlaybackManager implements AudioSubscriber{
 	BeatClock clock;
 	AudioFormat format;
 	Map<Long, PlaybackThread> threads = new HashMap<Long, PlaybackThread>();
-	public void addThread(long senderID) throws LineUnavailableException{
-		
+	private Map<Long, String> channelNames = new HashMap();
+	public void addThread(long senderID, String name) throws LineUnavailableException{
 		PlaybackThread thread = new PlaybackThread(mixer, format, clock);
 		threads.put(senderID, thread);
+		channelNames.put(senderID, name);
 		thread.start();
-		
+		channelsChanged();
 	}
-	void removeThread(){
-		// TODO add code
+	public void removeThread(long senderID){
+		threads.get(senderID).close();
+		threads.remove(senderID);
+		channelsChanged();
 	}
+	
+	public String getChannelName(long id){
+		return channelNames.get(id);
+	}
+	
+	private void channelsChanged(){
+		for(ChannelChangeListener channelChangeListener : channelChangeListeners){
+			channelChangeListener.channelsChanged();
+		}
+	}
+	
+	public void addChannelChangeListener(ChannelChangeListener l){
+		this.channelChangeListeners.add(l);
+	}
+	
+	public static interface ChannelChangeListener{
+		public void channelsChanged();
+	}
+	
+	private ArrayList<ChannelChangeListener> channelChangeListeners = new ArrayList();
+	
 	@Override
 	public void sampleReceived(SampleMessage sample) {
 		long senderID = sample.senderID;
@@ -43,8 +68,8 @@ public class PlaybackManager implements AudioSubscriber{
 			System.out.println(threads.keySet() + " does not contain " + senderID);
 	}
 	
-	public Control[] getLineControls(long lineID){
-		return threads.get(lineID).getLineControls();
+	public Line getLine(long lineID){
+		return threads.get(lineID).getLine();
 	}
 	
 	public void printControls(){
@@ -63,4 +88,5 @@ public class PlaybackManager implements AudioSubscriber{
 	public Set<Long> getIDs(){
 		return threads.keySet();
 	}
+	
 }

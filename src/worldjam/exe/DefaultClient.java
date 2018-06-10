@@ -7,6 +7,7 @@ import java.util.Scanner;
 
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
+import javax.sound.sampled.Line;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.Mixer;
 import javax.sound.sampled.SourceDataLine;
@@ -17,6 +18,7 @@ import worldjam.audio.PlaybackManager;
 import worldjam.audio.SampleMessage;
 import worldjam.core.BeatClock;
 import worldjam.gui.Conductor;
+import worldjam.gui.DefaultClientGUI;
 import worldjam.net.WJConstants;
 import worldjam.test.DefaultObjects;
 import worldjam.test.generators.MetronomeThread;
@@ -26,18 +28,7 @@ public class DefaultClient extends BaseClient{
 	public static void main(String arg[]) throws LineUnavailableException, UnknownHostException, IOException{
 		Scanner scanner = new Scanner(System.in);
 		boolean isAdmin = false;
-		/*while(true){
-			System.out.println("Type 'new' to start a new jam session or 'join' to join an existing jam session");
-			String input = scanner.nextLine();
-			if(input.equalsIgnoreCase("new")){
-				isAdmin=true;
-				break;
-			}
-			else if(input.equalsIgnoreCase("join")){
-				isAdmin=false;
-				break;
-			} 
-		}*/
+		
 		System.out.println("Enter your displayname:");
 		String displayName = scanner.nextLine();
 		System.out.println("Enter the IP address of the server:");
@@ -123,11 +114,12 @@ public class DefaultClient extends BaseClient{
 	protected void processClientList(ArrayList<String> names, ArrayList<Long> ids) {
 		if(playback == null)
 			return;
-		for(long l : ids){
+		
+		for(int i = 0; i< names.size(); i++){
 
-			if(!playback.getIDs().contains(l)){
+			if(!playback.getIDs().contains(ids.get(i))){
 				try {
-					playback.addThread(l);
+					playback.addThread(ids.get(i), names.get(i));
 					System.out.println("added playback thread");
 				} catch (LineUnavailableException e) {
 					// TODO Auto-generated catch block
@@ -161,21 +153,31 @@ public class DefaultClient extends BaseClient{
 			MetronomeThread metronome = new MetronomeThread(clock, DefaultObjects.defaultFormat, 440, .1);
 			metronome.setReceiver(playback);
 			try {
-				playback.addThread(metronome.getSenderID());
+				playback.addThread(metronome.getSenderID(), "metronome");
 			} catch (LineUnavailableException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			metronome.start();
 		}
-		if(visualMetronomeType != 0){
+		if(visualMetronomeType != 0 && !showGUI){
 			switch(visualMetronomeType){
 			case 1:
 				new Conductor(beatClock).showInFrame();
 			}
 		}
+		if(showGUI){
+			new DefaultClientGUI(this).setVisible(true);
+		}
 	}
+	static boolean showGUI = true;
 	static boolean useAudioMetronome = false;
 	static int visualMetronomeType = 1;
-
+	public PlaybackManager getPlaybackManager(){
+		return playback;
+	}
+	public InputThread getInput(){
+		return input;
+	}
+	
 }

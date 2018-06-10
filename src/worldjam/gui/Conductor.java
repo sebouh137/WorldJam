@@ -77,9 +77,6 @@ public class Conductor extends VisualMetronome{
 
 	}
 
-
-
-
 	private double interpolate(double d, double e, double a) {
 		// TODO Auto-generated method stub
 		return d+(e-d)*a;

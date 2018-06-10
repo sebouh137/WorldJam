@@ -12,6 +12,11 @@ import worldjam.core.BeatClock;
 
 public class PlaybackThread extends Thread implements AudioSubscriber{
 	private SourceDataLine sdl;
+	/**
+	 * The PlaybackThread uses the clock information in order to wait until the beginning of a measure to start,
+	 * and so that the delay time can be set as an integer number of beats or measures in the 
+	 * {@link #setReplayOffsetInBeats} and {@link #setReplayOffsetInMeasures} methods
+	 */
 	private BeatClock clock;
 	private AudioFormat format;
 	public PlaybackThread(Mixer mixer, AudioFormat format, BeatClock clock) throws LineUnavailableException{
@@ -21,7 +26,7 @@ public class PlaybackThread extends Thread implements AudioSubscriber{
 		this.format = format;
 		setReplayOffsetInMeasures(1);
 		//a buffer of 10 measures long is overkill
-		int nMeasuresInBuffer = 2;
+		int nMeasuresInBuffer = 5;
 		int bufferSize = (int)(format.getFrameSize()*
 				format.getFrameRate()*
 				clock.msPerBeat/1000.*
@@ -60,16 +65,18 @@ public class PlaybackThread extends Thread implements AudioSubscriber{
 	//status flags
 	private boolean alive = true;
 
-	public void kill(){
+	public void close(){
 		alive = false;
+		sdl.stop();
+		sdl.close();
 	}
 
-	long loopStartTime;
+	private long loopStartTime;
 	public void run(){
 
 		int N_BYTES_PLAYED_AT_ONCE = (int) (format.getFrameRate()*format.getFrameSize());
 		/*
-		 * Must start at the beginning of a measure
+		 * For convenience, start at the beginning of a measure
 		 */
 		try {
 			int msPerMeasure = clock.getMsPerMeasure();
@@ -99,7 +106,7 @@ public class PlaybackThread extends Thread implements AudioSubscriber{
 		}
 	}
 
-	public Control[] getLineControls(){
-		return sdl.getControls();
+	public Line getLine(){
+		return sdl;
 	}
 }

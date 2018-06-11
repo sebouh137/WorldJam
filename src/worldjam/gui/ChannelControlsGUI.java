@@ -29,18 +29,30 @@ import worldjam.test.DefaultObjects;
 import java.awt.BorderLayout;
 import java.awt.Color;
 
-public class ChannelControlsGUI extends JPanel {
+public class ChannelControlsGUI extends JFrame {
 	public static void main(String arg[]) throws LineUnavailableException{
-		new ChannelControlsGUI().showInFrame("default channel for debugging GUI").setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);;
+		try {
+			DefaultObjects.outputMixer.open();
+			SourceDataLine defaultLine =(SourceDataLine) DefaultObjects.outputMixer.getLine(new SourceDataLine.Info(SourceDataLine.class, DefaultObjects.defaultFormat));
+			defaultLine.open();
+			defaultLine.start();
+			new ChannelControlsGUI(defaultLine, "default channel for debugging GUI").setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);;
+			
+		} catch (LineUnavailableException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 	}
 	
+	JPanel lineControls;
 	/**
 	 * Create the panel.
 	 */
-	public ChannelControlsGUI(Line line) {
+	public ChannelControlsGUI(Line line, String title) {
+		lineControls = new JPanel();
 		if(line.getControls().length == 0){
-			this.add(new JLabel("No controls to show"), BorderLayout.CENTER);
+			lineControls.add(new JLabel("No controls to show"), BorderLayout.CENTER);
 			return;
 		}
 		
@@ -64,7 +76,13 @@ public class ChannelControlsGUI extends JPanel {
 			gridBagLayout.rowHeights[i] = 35;
 		}
 		
-		setLayout(gridBagLayout);
+		lineControls.setLayout(gridBagLayout);
+		this.add(lineControls,BorderLayout.CENTER);
+		
+		setTitle(title);
+		setSize(400, 300);
+		//getContentPane().add(this);
+		setVisible(true);
 		
 		int row = 0;
 		for(Control c : line.getControls()){
@@ -91,14 +109,14 @@ public class ChannelControlsGUI extends JPanel {
 		gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
 		gbc_lblNewLabel.gridx = 0;
 		gbc_lblNewLabel.gridy = row;
-		add(lblNewLabel, gbc_lblNewLabel);
+		lineControls.add(lblNewLabel, gbc_lblNewLabel);
 		
 		JCheckBox chckbxNewCheckBox = new JCheckBox(control.getStateLabel(control.getValue()));
 		chckbxNewCheckBox.setSelected(control.getValue());
 		GridBagConstraints gbc_chckbxNewCheckBox = new GridBagConstraints();
 		gbc_chckbxNewCheckBox.gridx = 1;
 		gbc_chckbxNewCheckBox.gridy = row;
-		add(chckbxNewCheckBox, gbc_chckbxNewCheckBox);
+		lineControls.add(chckbxNewCheckBox, gbc_chckbxNewCheckBox);
 		chckbxNewCheckBox.addActionListener(new ActionListener(){
 
 			@Override
@@ -127,7 +145,7 @@ public class ChannelControlsGUI extends JPanel {
 		gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
 		gbc_lblNewLabel.gridx = 0;
 		gbc_lblNewLabel.gridy = row;
-		add(lblNewLabel, gbc_lblNewLabel);
+		lineControls.add(lblNewLabel, gbc_lblNewLabel);
 		JSlider slider = new JSlider(0, nPositions, currentPosition);
 		slider.setMinorTickSpacing(1);
 		slider.setMajorTickSpacing(10);
@@ -146,14 +164,14 @@ public class ChannelControlsGUI extends JPanel {
 		gbc_slider.insets = new Insets(0, 0, 5, 5);
 		gbc_slider.gridx = 1;
 		gbc_slider.gridy = row;
-		add(slider, gbc_slider);
+		lineControls.add(slider, gbc_slider);
 		
 		GridBagConstraints gbc_textField = new GridBagConstraints();
 		gbc_textField.fill = GridBagConstraints.BOTH;
 		gbc_textField.insets = new Insets(0, 0, 5, 5);
 		gbc_textField.gridx = 3;
 		gbc_textField.gridy = row;
-		add(textField, gbc_textField);
+		lineControls.add(textField, gbc_textField);
 		textField.setText(Float.toString(control.getValue()));
 		textField.setColumns(6);
 		textField.addActionListener(new ActionListener(){
@@ -179,7 +197,7 @@ public class ChannelControlsGUI extends JPanel {
 		gbc_lblUnits.fill = GridBagConstraints.BOTH;
 		gbc_lblUnits.gridx = 4;
 		gbc_lblUnits.gridy = row;
-		add(lblUnits, gbc_lblUnits);
+		lineControls.add(lblUnits, gbc_lblUnits);
 		
 		JLabel lblMin = new JLabel(control.getMinLabel());
 		GridBagConstraints gbc_lblMin = new GridBagConstraints();
@@ -187,7 +205,7 @@ public class ChannelControlsGUI extends JPanel {
 		gbc_lblMin.insets = new Insets(0, 0, 0, 5);
 		gbc_lblMin.gridx = 1;
 		gbc_lblMin.gridy = 1+row;
-		add(lblMin, gbc_lblMin);
+		lineControls.add(lblMin, gbc_lblMin);
 		
 		JLabel lblMax = new JLabel(control.getMaxLabel());
 		GridBagConstraints gbc_lblMax = new GridBagConstraints();
@@ -195,25 +213,11 @@ public class ChannelControlsGUI extends JPanel {
 		gbc_lblMax.insets = new Insets(0, 0, 0, 5);
 		gbc_lblMax.gridx = 2;
 		gbc_lblMax.gridy = 1+row;
-		add(lblMax, gbc_lblMax);
+		lineControls.add(lblMax, gbc_lblMax);
 	}
 
-	static SourceDataLine defaultLine;
-	static {
-		try {
-			DefaultObjects.outputMixer.open();
-			defaultLine =(SourceDataLine) DefaultObjects.outputMixer.getLine(new SourceDataLine.Info(SourceDataLine.class, DefaultObjects.defaultFormat));
-			defaultLine.open();
-			defaultLine.start();
-		} catch (LineUnavailableException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	public ChannelControlsGUI() throws LineUnavailableException{
-		
-		this(defaultLine);
-	}
+	
+	
 
 	public JFrame showInFrame(String title) {
 		JFrame frame = new JFrame();

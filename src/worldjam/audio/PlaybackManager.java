@@ -89,4 +89,7 @@ public class PlaybackManager implements AudioSubscriber{
 		return threads.keySet();
 	}
 	
+	public void setFilter(int id, AudioFilter filter){
+		threads.get(id).setFilter(filter);
+	}
 }

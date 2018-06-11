@@ -1,5 +1,6 @@
 package worldjam.gui;
 
+import javax.sound.sampled.DataLine;
 import javax.sound.sampled.Line;
 import javax.swing.Action;
 import javax.swing.JFrame;
@@ -47,7 +48,20 @@ public class DefaultClientGUI extends JFrame implements PlaybackManager.ChannelC
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				System.out.println(client.getInput().getLine().getControls().length);
-				new ChannelControlsGUI(client.getInput().getLine()).showInFrame("Input settings");
+				new ChannelControlsGUI(client.getInput().getLine(),"Input settings");
+				
+			}
+			
+		});
+		
+		mntmChannelSettings = new JMenuItem("Mixer Settings");
+		mnInput.add(mntmChannelSettings);
+		mntmChannelSettings.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				System.out.println(client.getInput().getLine().getControls().length);
+				new ChannelControlsGUI(client.getInput().getMixer(),"Input mixer settings");
 				
 			}
 			
@@ -80,7 +94,7 @@ public class DefaultClientGUI extends JFrame implements PlaybackManager.ChannelC
 
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					new ChannelControlsGUI(line).showInFrame("Settings for channel: " + channelName);
+					new ChannelControlsGUI(line, "Settings for channel: " + channelName);
 				}
 				
 			});

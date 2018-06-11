@@ -58,6 +58,9 @@ public class PlaybackThread extends Thread implements AudioSubscriber{
 		destPos %= buffer.length;
 		if(destPos < 0)
 			destPos += buffer.length;
+		if(filter != null){
+			sample.sampleData = filter.process(sample.sampleData, format);
+		}
 		AudioUtils.arrayCopyWrapped(sample.sampleData, 0, buffer, destPos, sample.sampleData.length);
 	}
 
@@ -109,4 +112,10 @@ public class PlaybackThread extends Thread implements AudioSubscriber{
 	public Line getLine(){
 		return sdl;
 	}
+	
+	public void setFilter(AudioFilter filter){
+		this.filter = filter;
+	}
+	
+	private AudioFilter filter;
 }

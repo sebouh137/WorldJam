@@ -22,6 +22,7 @@ public class InputThread extends Thread{
 	private AudioFormat format;
 	public InputThread(Mixer mixer, AudioFormat format, BeatClock clock) throws LineUnavailableException{
 		this.format = format;
+		this.mixer = mixer;
 		Line.Info info = new DataLine.Info(TargetDataLine.class, format);
 		tdl = (TargetDataLine)mixer.getLine(info);
 		nMsPerLoop = 1000;
@@ -31,6 +32,7 @@ public class InputThread extends Thread{
 	double nMsPerLoop;
 	//status flags
 	boolean alive = true, paused = false;
+	private Mixer mixer;
 	public void run(){
 		try {
 			tdl.open();
@@ -59,7 +61,10 @@ public class InputThread extends Thread{
 	public long getSenderID() {
 		return lineID;
 	}
-	public Line getLine(){
+	public TargetDataLine getLine(){
 		return tdl;
+	}
+	public Mixer getMixer() {
+		return mixer;
 	}
 }

@@ -92,4 +92,7 @@ public class PlaybackManager implements AudioSubscriber{
 	public void setFilter(int id, AudioFilter filter){
 		threads.get(id).setFilter(filter);
 	}
+	public PlaybackThread getChannel(Long id) {
+		return threads.get(id);
+	}
 }

@@ -24,7 +24,6 @@ public class BeatClock {
 	}
 	
 	public int getMsPerMeasure() {
-		// TODO Auto-generated method stub
 		return msPerBeat*beatsPerMeasure;
 	}
 	

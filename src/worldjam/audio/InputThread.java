@@ -25,7 +25,7 @@ public class InputThread extends Thread{
 		this.mixer = mixer;
 		Line.Info info = new DataLine.Info(TargetDataLine.class, format);
 		tdl = (TargetDataLine)mixer.getLine(info);
-		nMsPerLoop = 1000;
+		nMsPerLoop = 100;
 		nBytesPerLoop = format.getFrameSize()*(int)(format.getFrameRate()*nMsPerLoop/1000.);
 		buffer = new byte[nBytesPerLoop];
 	}
@@ -42,7 +42,7 @@ public class InputThread extends Thread{
 		}
 		tdl.start();
 		long time = System.currentTimeMillis();
-		time = (time*format.getFrameSize())/format.getFrameSize();
+		//time = (time*format.getFrameSize())/format.getFrameSize();
 		while(alive){
 			tdl.read(buffer, 0, buffer.length);
 			SampleMessage message = new SampleMessage();

@@ -20,8 +20,10 @@ public class PlaybackThread extends Thread implements AudioSubscriber{
 	private BeatClock clock;
 	private AudioFormat format;
 	public PlaybackThread(Mixer mixer, AudioFormat format, BeatClock clock) throws LineUnavailableException{
-		Line.Info info = new DataLine.Info(SourceDataLine.class, format);
+		DataLine.Info info = new DataLine.Info(SourceDataLine.class, format);
+		
 		sdl = (SourceDataLine)mixer.getLine(info);
+		
 		this.clock = clock;
 		this.format = format;
 		setReplayOffsetInMeasures(1);
@@ -76,7 +78,6 @@ public class PlaybackThread extends Thread implements AudioSubscriber{
 
 	private long loopStartTime;
 	public void run(){
-
 		int N_BYTES_PLAYED_AT_ONCE = (int) (format.getFrameRate()*format.getFrameSize());
 		/*
 		 * For convenience, start at the beginning of a measure
@@ -118,4 +119,7 @@ public class PlaybackThread extends Thread implements AudioSubscriber{
 	}
 	
 	private AudioFilter filter;
+	public AudioFormat getFormat() {
+		return format;
+	}
 }

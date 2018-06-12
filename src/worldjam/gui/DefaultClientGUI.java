@@ -38,7 +38,7 @@ public class DefaultClientGUI extends JFrame implements PlaybackManager.ChannelC
 		mnChannels = new JMenu("Channel Controls");
 		mnPlayback.add(mnChannels);
 		
-		JMenu mnInput = new JMenu("Input");
+		/*JMenu mnInput = new JMenu("Input");
 		menuBar.add(mnInput);
 		
 		JMenuItem mntmChannelSettings = new JMenuItem("Channel Settings");
@@ -65,7 +65,7 @@ public class DefaultClientGUI extends JFrame implements PlaybackManager.ChannelC
 				
 			}
 			
-		});
+		});*/
 		
 		
 		getContentPane().add(new Conductor(client.getClock()), BorderLayout.CENTER);
@@ -94,7 +94,7 @@ public class DefaultClientGUI extends JFrame implements PlaybackManager.ChannelC
 
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					new ChannelControlsGUI(line, "Settings for channel: " + channelName);
+					new PlaybackChannelControlGUI(client.getPlaybackManager().getChannel(id), "Settings for channel: " + channelName);
 				}
 				
 			});

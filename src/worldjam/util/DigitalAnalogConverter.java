@@ -21,8 +21,9 @@ public class DigitalAnalogConverter {
 		case 24:
 			if (!format.isBigEndian())
 				return ((bytes[3*i+2] << 16) | ((bytes[3*i+1]& 0xff) << 8) | (bytes[3*i] & 0xff))/8388608.;
-			else
+			else{
 				return ((bytes[3*i] << 16) | ((bytes[3*i+1]& 0xff) << 8) | (bytes[3*i+2] & 0xff))/8388608.;
+			}
 		}
 		return 0;
 	}
@@ -31,6 +32,7 @@ public class DigitalAnalogConverter {
 		switch(format.getSampleSizeInBits()){
 		case 8:
 			bytes[i] = (byte)(sample*128);
+			break;
 		case 16:
 			if(!format.isBigEndian()){
 
@@ -43,6 +45,7 @@ public class DigitalAnalogConverter {
 				bytes[2*i] = (byte)(0x00FF&(intvalue>>8));
 				bytes[2*i+1] = (byte)(0x000000FF & intvalue);
 			}
+			break;
 		case 24:
 			if(!format.isBigEndian()) {
 				int intvalue = (int)(sample*8388608);
@@ -52,7 +55,6 @@ public class DigitalAnalogConverter {
 			}
 			else {
 				int intvalue = (int)(sample*8388608);
-
 				bytes[3*i] = (byte)(0x00FF & (intvalue>>16));
 				bytes[3*i+1] = (byte)(0x00FF & (intvalue>>8));
 				bytes[3*i+2] = (byte)(0x000000FF & intvalue);

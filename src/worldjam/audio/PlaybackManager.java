@@ -95,4 +95,10 @@ public class PlaybackManager implements AudioSubscriber{
 	public PlaybackThread getChannel(Long id) {
 		return threads.get(id);
 	}
+	public void setClock(BeatClock beatClock) {
+		this.clock = beatClock;
+		for(PlaybackThread thread : threads.values()){
+			thread.setClock(clock);
+		}
+	}
 }

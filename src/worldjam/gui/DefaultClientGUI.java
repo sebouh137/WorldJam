@@ -13,6 +13,7 @@ import worldjam.audio.*;
 import worldjam.core.BeatClock;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Set;
@@ -25,6 +26,7 @@ import javax.swing.SwingConstants;
 public class DefaultClientGUI extends JFrame implements PlaybackManager.ChannelChangeListener {
 	private DefaultClient client;
 	private JMenu mnChannels;
+	private Conductor conductor;
 	public DefaultClientGUI(DefaultClient client) {
 		setTitle("World Jam");
 		this.client = client;
@@ -36,39 +38,10 @@ public class DefaultClientGUI extends JFrame implements PlaybackManager.ChannelC
 		JMenu mnPlayback = new JMenu("Playback");
 		menuBar.add(mnPlayback);
 		mnChannels = new JMenu("Channel Controls");
-		mnPlayback.add(mnChannels);
+		mnPlayback.add(mnChannels);		
 		
-		/*JMenu mnInput = new JMenu("Input");
-		menuBar.add(mnInput);
-		
-		JMenuItem mntmChannelSettings = new JMenuItem("Channel Settings");
-		mnInput.add(mntmChannelSettings);
-		mntmChannelSettings.addActionListener(new ActionListener(){
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				System.out.println(client.getInput().getLine().getControls().length);
-				new ChannelControlsGUI(client.getInput().getLine(),"Input settings");
-				
-			}
-			
-		});
-		
-		mntmChannelSettings = new JMenuItem("Mixer Settings");
-		mnInput.add(mntmChannelSettings);
-		mntmChannelSettings.addActionListener(new ActionListener(){
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				System.out.println(client.getInput().getLine().getControls().length);
-				new ChannelControlsGUI(client.getInput().getMixer(),"Input mixer settings");
-				
-			}
-			
-		});*/
-		
-		
-		getContentPane().add(new Conductor(client.getClock()), BorderLayout.CENTER);
+		this.conductor = new Conductor(client.getClock());
+		getContentPane().add(conductor, BorderLayout.CENTER);
 		
 		JLabel lblInfo = new JLabel();
 		lblInfo.setHorizontalAlignment(SwingConstants.CENTER);
@@ -100,5 +73,8 @@ public class DefaultClientGUI extends JFrame implements PlaybackManager.ChannelC
 			});
 			
 		}
+	}
+	public void setClock(BeatClock clock){
+		this.conductor.setClock(clock);
 	}
 }

@@ -28,10 +28,11 @@ public abstract class BaseClient implements AudioSubscriber{
 	protected int clientID;
 
 	private String serverIP;
-
+	private String sessionName;
 	private String clientIP;
-	public BaseClient(String serverIP, String displayName) throws UnknownHostException, IOException {
+	public BaseClient(String serverIP, String sessionName, String displayName) throws UnknownHostException, IOException {
 		this.serverIP = serverIP;
+		this.sessionName = sessionName;
 		socket = new Socket(serverIP, DefaultObjects.defaultPort);
 		socket.setTcpNoDelay(true);
 		this.dos = new DataOutputStream(socket.getOutputStream());
@@ -40,20 +41,41 @@ public abstract class BaseClient implements AudioSubscriber{
 		this.clientIP = NetworkUtils.getIP();
 
 		this.receiverThread.start();
-		joinSession();
+		//joinSession();
 
 	}
 	Socket socket;
 
-	private void joinSession() throws IOException{
-		synchronized (this){
+	protected void joinSession() throws IOException{
+		synchronized (dos){
 			dos.writeByte(WJConstants.COMMAND_JOIN);
+			dos.writeUTF(this.sessionName);
 			dos.writeUTF(this.displayName);
 			clientID = displayName.hashCode();
 			dos.writeLong(clientID);
 		}
+		System.out.println("sent join request to session");
 
 	}
+	
+	protected void startNewSession(BeatClock clock) throws IOException{
+		this.beatClock = clock;
+		synchronized (dos){
+			dos.writeByte(WJConstants.COMMAND_CREATE_NEW_SESSION);
+			dos.writeUTF(this.sessionName);
+			
+			dos.writeInt(beatClock.msPerBeat);
+			dos.writeInt(beatClock.beatsPerMeasure);
+			dos.writeInt(beatClock.beatDenominator);
+			dos.writeLong(beatClock.startTime);
+			
+			dos.writeUTF(this.displayName);
+			clientID = displayName.hashCode();
+			dos.writeLong(clientID);
+		}
+		
+	}
+	
 	protected BeatClock beatClock;
 
 	protected AudioSubscriber subs;
@@ -91,12 +113,14 @@ public abstract class BaseClient implements AudioSubscriber{
 							processClientList(names, ids);
 						} else if(code == WJConstants.TIME_CHANGED){
 							dis.readInt();
+							
 							int msPerBeat = dis.readInt();
 							int beatsPerMeasure = dis.readInt();
 							int denom = dis.readInt();
 							long startTime = dis.readLong();
 							BeatClock beatClock = new BeatClock(msPerBeat, beatsPerMeasure, denom);
 							beatClock.startTime = startTime;
+							
 							System.out.println("received time information");
 							setBeatClock(beatClock);
 							printClientConfiguration();

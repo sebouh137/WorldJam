@@ -26,7 +26,7 @@ public class PlaybackThread extends Thread implements AudioSubscriber{
 		
 		this.clock = clock;
 		this.format = format;
-		setReplayOffsetInMeasures(1);
+		setReplayOffset(1, 0, 0);
 		//a buffer of 10 measures long is overkill
 		int nMeasuresInBuffer = 5;
 		int bufferSize = (int)(format.getFrameSize()*
@@ -41,17 +41,27 @@ public class PlaybackThread extends Thread implements AudioSubscriber{
 	private byte[] buffer;
 	private int bufferPosition;
 
-	public void setReplayOffsetInMeasures(int nMeasures){
+
+	private int offsetMeasures; private int offsetBeats; private int offset_ms;
+	
+	public void setReplayOffset(int nMeasures, int nBeats, int n_ms){
+		this.offsetMeasures = nMeasures;
+		this.offsetBeats = nBeats;
+		this.offset_ms = n_ms;
+		replayOffsetInBytes = (int) (
+				((nMeasures*clock.beatsPerMeasure+nBeats)*clock.msPerBeat+n_ms)
+				*format.getFrameRate()/1000.)*format.getFrameSize();
+	}
+	
+	/*public void setReplayOffsetInMeasures(int nMeasures){
 		replayOffsetInBytes = (int) (nMeasures*clock.beatsPerMeasure*clock.msPerBeat*format.getFrameRate()/1000.)*format.getFrameSize();
-		
 	}
 	public void setReplayOffsetInBeats(int nBeats){
 		replayOffsetInBytes = (int) (nBeats*clock.msPerBeat*format.getFrameRate()/1000.)*format.getFrameSize();
-		
 	}
 	public void setReplayOffsetInBytes(int offset){
 		this.replayOffsetInBytes = offset;
-	}
+	}*/
 	private int replayOffsetInBytes;
 	public void sampleReceived(SampleMessage sample) {
 		int dt = (int) (sample.sampleStartTime-loopStartTime);
@@ -121,5 +131,11 @@ public class PlaybackThread extends Thread implements AudioSubscriber{
 	private AudioFilter filter;
 	public AudioFormat getFormat() {
 		return format;
+	}
+	
+	
+	public void setClock(BeatClock clock) {
+		this.clock = clock;
+		this.setReplayOffset(offsetMeasures, offsetBeats, offset_ms);
 	}
 }

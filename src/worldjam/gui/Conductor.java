@@ -102,4 +102,8 @@ public class Conductor extends VisualMetronome{
 		int i = (int)(t-a);
 		return (int)(getHeight()*(.9-.8*interpolate(y[i],y[(i+1)%y.length], Math.pow(a, 3))));
 	}
+
+	public void setClock(BeatClock clock) {
+		this.clock = clock;
+	}
 }

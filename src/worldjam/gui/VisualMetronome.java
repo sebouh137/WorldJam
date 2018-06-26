@@ -7,10 +7,14 @@ import javax.swing.JFrame;
 import worldjam.core.BeatClock;
 
 public class VisualMetronome extends Canvas {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -9058766362349172334L;
 	protected BeatClock clock;
 
 	public VisualMetronome(BeatClock clock){
-		this.clock = clock;
+		setClock(clock);
 		Thread th = new Thread(){
 			public void run(){
 				while(true){
@@ -32,5 +36,8 @@ public class VisualMetronome extends Canvas {
 		frame.setSize(200, 200);
 		frame.setVisible(true);
 		return frame;
+	}
+	void setClock(BeatClock clock){
+		this.clock = clock;
 	}
 }

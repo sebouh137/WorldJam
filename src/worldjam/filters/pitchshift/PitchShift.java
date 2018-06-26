@@ -1,6 +1,5 @@
 package worldjam.filters.pitchshift;
 
-import java.text.Format;
 
 import javax.sound.sampled.AudioFormat;
 
@@ -9,8 +8,10 @@ import worldjam.util.ShortTimeFourierTransformer;
 
 public class PitchShift extends FourierFilter{
 	static int N_OCTAVES = 10;
-	static int N_DIVISIONS_PER_SEMITONE = 5;
+	static int N_DIVISIONS_PER_SEMITONE = 10;
+	static int a = 30;
 	private int shiftInSemitones;
+	
 	
 	private static double nyquistFreq(AudioFormat format){
 		return format.getFrameRate()/2;
@@ -19,7 +20,7 @@ public class PitchShift extends FourierFilter{
 	
 	
 	public PitchShift(AudioFormat format, int shiftInSemitones){
-		super(format, new ShortTimeFourierTransformer(10, 
+		super(format, new ShortTimeFourierTransformer(a, 
 				1/format.getFrameRate(), 
 				nyquistFreq(format)/Math.pow(2, N_OCTAVES), 
 				nyquistFreq(format), 
@@ -41,7 +42,7 @@ public class PitchShift extends FourierFilter{
 			double dw = stft.w[i]*(Math.pow(2,shiftInSemitones/12.)-1);
 			gr[i] = Math.cos(stft.dt*dw);
 			gi[i] = Math.sin(stft.dt*dw);
-			System.out.println(stft.w[i] + " " + gr[i] + " " + gi[i] );
+			//System.out.println(stft.w[i] + " " + gr[i] + " " + gi[i] );
 		}
 	}
 	double fr[];
@@ -51,6 +52,7 @@ public class PitchShift extends FourierFilter{
 	double gi[];
 	@Override
 	protected void remap(ShortTimeFourierTransformer originalSpectrum, ShortTimeFourierTransformer newSpectrum) {
+		System.out.println("pitchshift in semitones = " + shiftInSemitones);
 		/*if(shiftInSemitones == 0){
 			super.remap(originalSpectrum, newSpectrum);
 			return;
@@ -60,16 +62,10 @@ public class PitchShift extends FourierFilter{
 			
 			double frnew = fr[i]*gr[i]-fi[i]*gi[i];
 			double finew = fr[i]*gi[i]+fi[i]*gr[i]; 
+			newSpectrum.Br[i] = frnew*originalSpectrum.Br[i] - finew*originalSpectrum.Bi[i];
+			newSpectrum.Bi[i] = frnew*originalSpectrum.Bi[i] + finew*originalSpectrum.Br[i];
 			fr[i] = frnew;
 			fi[i] = finew;
-			/*if(ip >= 0 && ip < originalSpectrum.Br.length)
-				newSpectrum.Br[i] = originalSpectrum.Br[ip];
-			else 
-				newSpectrum.Br[i] = 0;*/
-			newSpectrum.Br[i] = fr[i]*originalSpectrum.Br[i] - fi[i]*originalSpectrum.Bi[i];
-			newSpectrum.Bi[i] = fr[i]*originalSpectrum.Bi[i] + fi[i]*originalSpectrum.Br[i];
-			/*if(i == 30)
-				System.out.println(stft.w[i] + " " + originalSpectrum.Br[i] + " " + newSpectrum.Br[i]);*/
 		}
 	}
 	

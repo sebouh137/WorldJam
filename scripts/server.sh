@@ -1,1 +1,2 @@
-java -cp bin worldjam.exe.Server
+java -cp bin worldjam.exe.MultiSessionServer
+

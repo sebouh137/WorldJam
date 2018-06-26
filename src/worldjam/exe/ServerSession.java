@@ -24,7 +24,7 @@ import worldjam.audio.PlaybackManager;
 import worldjam.core.BeatClock;
 import worldjam.net.NetworkUtils;
 import worldjam.net.WJConstants;
-import worldjam.test.DefaultObjects;
+import worldjam.util.DefaultObjects;
 
 public class ServerSession {
 	private  BeatClock beatClock;

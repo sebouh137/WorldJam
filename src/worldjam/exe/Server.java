@@ -12,7 +12,7 @@ import java.util.Scanner;
 import worldjam.core.BeatClock;
 import worldjam.net.NetworkUtils;
 import worldjam.net.WJConstants;
-import worldjam.test.DefaultObjects;
+import worldjam.util.DefaultObjects;
 
 public class Server {
 	private static BeatClock beatClock;

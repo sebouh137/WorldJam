@@ -28,6 +28,25 @@ public class DigitalAnalogConverter {
 		return 0;
 	}
 
+	public float getConvertedSample32Bit(byte[] bytes, int i){
+		switch(format.getSampleSizeInBits()){
+		case 8:
+			return bytes[i]/128.f;
+		case 16:
+			if (!format.isBigEndian())
+				return ((bytes[2*i+1] << 8) | (bytes[2*i] & 0xff))/(32768.f);
+			else
+				return ((bytes[2*i] << 8) | (bytes[2*i+1] & 0xff))/(32768.f);
+		case 24:
+			if (!format.isBigEndian())
+				return ((bytes[3*i+2] << 16) | ((bytes[3*i+1]& 0xff) << 8) | (bytes[3*i] & 0xff))/8388608.f;
+			else{
+				return ((bytes[3*i] << 16) | ((bytes[3*i+1]& 0xff) << 8) | (bytes[3*i+2] & 0xff))/8388608.f;
+			}
+		}
+		return 0;
+	}
+	
 	public void setConvertedSample(byte[] bytes, int i, double sample){
 		switch(format.getSampleSizeInBits()){
 		case 8:

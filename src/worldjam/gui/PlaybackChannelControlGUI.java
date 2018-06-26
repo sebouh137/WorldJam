@@ -24,9 +24,10 @@ import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import be.tarsos.dsp.PitchShifter;
 import worldjam.audio.PlaybackThread;
 import worldjam.filters.pitchshift.PitchShift;
-import worldjam.test.DefaultObjects;
+import worldjam.util.DefaultObjects;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -101,7 +102,8 @@ public class PlaybackChannelControlGUI extends JFrame {
 				if(chckbxPitchShift.isSelected()){
 					int value = (Integer)spinner.getValue();
 					System.out.println("changing pitch shift to " + value);
-					thread.setFilter(new PitchShift(thread.getFormat(), value));
+					//thread.setFilter(filter);
+					thread.setFilter(new PitchShift(thread.getInputFormat(), value));
 				}
 				else {
 					System.out.println("deactivating pitch shift");

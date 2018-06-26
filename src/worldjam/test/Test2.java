@@ -8,6 +8,7 @@ import worldjam.audio.PlaybackThread;
 import worldjam.test.generators.DroneThread;
 import worldjam.test.generators.LoopThread;
 import worldjam.test.generators.MetronomeThread;
+import worldjam.util.DefaultObjects;
 
 public class Test2 {
 	public static void main(String arg[]) throws LineUnavailableException{
@@ -26,7 +27,7 @@ public class Test2 {
 				DefaultObjects.inputMixer, 
 				DefaultObjects.defaultFormat, 
 				DefaultObjects.bc0);
-		playback.addThread(input.getSenderID());
+		playback.addThread(input.getSenderID(), "noname");
 		
 		//metronome.setReceiver(playback);
 		input.setReceiver(playback);

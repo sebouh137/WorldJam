@@ -12,7 +12,7 @@ import worldjam.audio.SampleMessage;
 import worldjam.core.BeatClock;
 import worldjam.net.NetworkUtils;
 import worldjam.net.WJConstants;
-import worldjam.test.DefaultObjects;
+import worldjam.util.DefaultObjects;
 
 /**
  * Base-class for programs that send data to/from the server
@@ -46,7 +46,7 @@ public abstract class BaseClient implements AudioSubscriber{
 	}
 	Socket socket;
 
-	protected void joinSession() throws IOException{
+	public void joinSession() throws IOException{
 		synchronized (dos){
 			dos.writeByte(WJConstants.COMMAND_JOIN);
 			dos.writeUTF(this.sessionName);
@@ -58,7 +58,7 @@ public abstract class BaseClient implements AudioSubscriber{
 
 	}
 	
-	protected void startNewSession(BeatClock clock) throws IOException{
+	public void startNewSession(BeatClock clock) throws IOException{
 		this.beatClock = clock;
 		synchronized (dos){
 			dos.writeByte(WJConstants.COMMAND_CREATE_NEW_SESSION);

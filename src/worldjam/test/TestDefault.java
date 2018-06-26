@@ -8,6 +8,7 @@ import worldjam.audio.PlaybackThread;
 import worldjam.test.generators.DroneThread;
 import worldjam.test.generators.LoopThread;
 import worldjam.test.generators.MetronomeThread;
+import worldjam.util.DefaultObjects;
 
 public class TestDefault {
 	public static void main(String arg[]) throws LineUnavailableException{
@@ -24,8 +25,8 @@ public class TestDefault {
 		LoopThread drone = new DroneThread(DefaultObjects.bc0, DefaultObjects.defaultFormat, 440*2/3, .2);
 		LoopThread metronome = new MetronomeThread(DefaultObjects.bc0, DefaultObjects.defaultFormat, 440, .1);
 		
-		playback.addThread(drone.getSenderID());
-		playback.addThread(metronome.getSenderID());
+		playback.addThread(drone.getSenderID(), "drone");
+		playback.addThread(metronome.getSenderID(), "metronome");
 		
 		metronome.setReceiver(playback);
 		drone.setReceiver(playback);

@@ -4,6 +4,8 @@ public class ShortTimeFourierTransformer implements Cloneable {
 	public double Bi[];
 	public double Br[];
 	public double w[];
+	private double dw[];
+	private int nFreq;
 	public double dt; 
 	private double cr[]; // = real(exp((-a*dt + i*w)*dt))
 	private double ci[]; // = imag(exp((-a*dt + i*w)*dt))
@@ -27,12 +29,23 @@ public class ShortTimeFourierTransformer implements Cloneable {
 	}
 	
 	void setupMatrix(){
-		cr = new double[w.length];
-		ci = new double[w.length];
-		for(int i = 0; i<w.length; i++){
+		nFreq = w.length;
+		cr = new double[nFreq];
+		ci = new double[nFreq];
+		dw = new double[nFreq];
+		for(int i = 0; i<nFreq; i++){
 			cr[i] = Math.exp(-a*dt)*Math.cos(dt*w[i]);
 			ci[i] = Math.exp(-a*dt)*Math.sin(dt*w[i]);
+			if(i == 0)
+				dw[i] = (w[1]-w[0])/2;
+			else if(i == nFreq -1)
+				dw[i] = (w[nFreq-1]-w[nFreq-2])/2;
+			else{
+				dw[i] = (w[i]+w[i+1])/2 - (w[i]+w[i-1])/2;
+			}
 		}
+		
+		
 	}
 	
 	public ShortTimeFourierTransformer(double a, double dt, double fmin, double fmax, int n, boolean isLog){
@@ -47,8 +60,8 @@ public class ShortTimeFourierTransformer implements Cloneable {
 			this.w = rangeLinear(wmin, wmax, n);
 		
 		setupMatrix();
-		this.Br = new double[w.length];
-		this.Bi = new double[w.length];
+		this.Br = new double[nFreq];
+		this.Bi = new double[nFreq];
 	}
 	
 	public ShortTimeFourierTransformer(double a, double dt, double [] w){
@@ -57,21 +70,22 @@ public class ShortTimeFourierTransformer implements Cloneable {
 		this.dt = dt;
 		
 		setupMatrix();
-		this.Br = new double[w.length];
-		this.Bi = new double[w.length];
+		this.Br = new double[nFreq];
+		this.Bi = new double[nFreq];
 	}
 	public void nextSample(double x){
 		
 		double axdt = a*x*dt;
+		double brnew, binew;
 		for(int i = 0; i< w.length; i++){
-			double brnew = axdt+cr[i]*Br[i]-ci[i]*Bi[i];
-			double binew = ci[i]*Br[i]+cr[i]*Bi[i]; 
+			brnew = axdt+cr[i]*Br[i]-ci[i]*Bi[i];
+			binew = ci[i]*Br[i]+cr[i]*Bi[i]; 
 			Br[i] = brnew; 
 			Bi[i] = binew;
 		}
 	}
 	
-	public double reverseTransform(double dt){
+	/*public double reverseTransform(double dt){
 		double x = 0;
 		double c = 1;
 		double s = 0;
@@ -86,32 +100,27 @@ public class ShortTimeFourierTransformer implements Cloneable {
 				dw = (w[1]-w[0])/2;
 			else if(i == w.length-1)
 				dw = (w[w.length-1]-w[w.length-2])/2;
-			if(/*i == 0*/ true){
+			
 				c = Math.cos(w[i]*dt);
 				s = Math.sin(w[i]*dt);
-			} else {
-				double cp = c-s*(w[i]-w[i-1])+c*(w[i]-w[i-1])*(w[i]-w[i-1])/2;
-				s += c*(w[i]-w[i-1])+s*(w[i]-w[i-1])*(w[i]-w[i-1])/2;
-				c = cp;
-				
-			}
+			
 			
 			x+= 2*(c*br-s*bi)*dw;
 		}
 		return x*Math.exp(a*dt)/(2*Math.PI);
-	}
+	}*/
 	
 	public double reverseTransform(){
 		double x = 0;
-		for(int i = 0; i < w.length-1; i++){
-			x += Br[i]*(w[i+1]-w[i]);
+		for(int i = 0; i < w.length; i++){
+			x += Br[i]*dw[i];
 		}
 		return x/(Math.PI*a);
 	}
 	
 	public double reverseTransform(double Brp[]){
 		double x = 0;
-		for(int i = 0; i < w.length-1; i++){
+		for(int i = 0; i < w.length; i++){
 			x += Brp[i]*(w[i+1]-w[i]);
 		}
 		return x/(Math.PI*a);
@@ -139,15 +148,15 @@ public class ShortTimeFourierTransformer implements Cloneable {
 		ShortTimeFourierTransformer transf = new ShortTimeFourierTransformer(10, dt, 22050/1024., 22050, 1200, true);
 		
 		double f = 440;
-		int N = 441000;
+		int N = 4410000;
 		double x[] = new double[N];
 		for(int i = 0; i<N; i++){
 			double t = i*dt;
 			 
 			
 			x[i] = Math.sin(2*Math.PI*t*f);
-			if(t>5)
-				x[i] = 0;
+			//if(t>50)
+				//x[i] = 0;
 		}
 		long t0 = System.currentTimeMillis();
 		

@@ -17,12 +17,18 @@ import worldjam.audio.PlaybackManager;
 import worldjam.audio.SampleMessage;
 import worldjam.core.BeatClock;
 import worldjam.gui.DefaultClientGUI;
+import worldjam.gui.DefaultClientSetupGUI;
 import worldjam.net.WJConstants;
-import worldjam.test.DefaultObjects;
+import worldjam.util.DefaultObjects;
 
 public class DefaultClient extends BaseClient{
 
 	public static void main(String arg[]) throws LineUnavailableException, UnknownHostException, IOException{
+		
+		if(arg.length >= 1 && arg[0].equals("-g")){
+			DefaultClientSetupGUI.main(arg);
+			return;
+		}
 		Scanner scanner = new Scanner(System.in);
 		boolean isAdmin = false;
 

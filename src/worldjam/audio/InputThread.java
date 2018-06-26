@@ -26,7 +26,7 @@ public class InputThread extends Thread{
 		this.clock = clock;
 		Line.Info info = new DataLine.Info(TargetDataLine.class, format);
 		tdl = (TargetDataLine)mixer.getLine(info);
-		nMsPerLoop = 1000;
+		nMsPerLoop = 500;
 		nBytesPerLoop = format.getFrameSize()*(int)(format.getFrameRate()*nMsPerLoop/1000.);
 		buffer = new byte[nBytesPerLoop];
 	}

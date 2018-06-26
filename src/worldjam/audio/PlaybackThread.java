@@ -138,4 +138,14 @@ public class PlaybackThread extends Thread implements AudioSubscriber{
 		this.clock = clock;
 		this.setReplayOffset(offsetMeasures, offsetBeats, offset_ms);
 	}
+	
+	/*public double getRMS(double windowInMS){
+	long t = System.currentTimeMillis()-loopStartTime;
+	int offset = ((int) (t*format.getFrameRate()/1000.))%buffer.length;
+	
+	int nSamples = 
+	for(int i = ; i<)
+	return offset;
+	
+}*/
 }

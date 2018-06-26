@@ -40,7 +40,7 @@ public class DefaultClientGUI extends JFrame implements PlaybackManager.ChannelC
 		mnChannels = new JMenu("Channel Controls");
 		mnPlayback.add(mnChannels);		
 		
-		this.conductor = new Conductor(client.getClock());
+		this.conductor = new DefaultConductor(client.getClock());
 		getContentPane().add(conductor, BorderLayout.CENTER);
 		
 		JLabel lblInfo = new JLabel();

@@ -1,4 +1,4 @@
-package worldjam.test;
+package worldjam.util;
 
 
 import javax.sound.sampled.AudioFormat;
@@ -12,7 +12,8 @@ public class DefaultObjects {
 	public static BeatClock bc0 = new BeatClock(500, 4, 4);
 	public static Mixer inputMixer = AudioSystem.getMixer(AudioSystem.getMixerInfo()[1]);
 	public static Mixer outputMixer = AudioSystem.getMixer(AudioSystem.getMixerInfo()[2]);
-	public static AudioFormat defaultFormat = new AudioFormat(44100, 16, 2, true, true);
+	public static AudioFormat defaultFormat = new AudioFormat(44100, 16, 1, true, true);
+	public static AudioFormat playbackFormat = new AudioFormat(44100, 16, 2, true, true);
 	public static int defaultPort = 2901;
 	static {
 		try {
@@ -23,4 +24,5 @@ public class DefaultObjects {
 			e.printStackTrace();
 		}
 	}
+	
 }

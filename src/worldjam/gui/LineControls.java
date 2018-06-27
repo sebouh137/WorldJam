@@ -66,18 +66,18 @@ public class LineControls extends JPanel {
 	}
 	
 	private void addBooleanControl(BooleanControl control, int row) {
-		JLabel lblNewLabel = new JLabel(control.getType().toString());
+		/*JLabel lblNewLabel = new JLabel(control.getType().toString());
 		GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
 		gbc_lblNewLabel.fill = GridBagConstraints.BOTH;
 		gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
 		gbc_lblNewLabel.gridx = 0;
 		gbc_lblNewLabel.gridy = row;
-		add(lblNewLabel, gbc_lblNewLabel);
+		add(lblNewLabel, gbc_lblNewLabel);*/
 		
-		JCheckBox chckbxNewCheckBox = new JCheckBox(control.getStateLabel(control.getValue()));
+		JCheckBox chckbxNewCheckBox = new JCheckBox(control.getType().toString());
 		chckbxNewCheckBox.setSelected(control.getValue());
 		GridBagConstraints gbc_chckbxNewCheckBox = new GridBagConstraints();
-		gbc_chckbxNewCheckBox.gridx = 1;
+		gbc_chckbxNewCheckBox.gridx = 0;
 		gbc_chckbxNewCheckBox.gridy = row;
 		add(chckbxNewCheckBox, gbc_chckbxNewCheckBox);
 		chckbxNewCheckBox.addActionListener(new ActionListener(){
@@ -85,7 +85,6 @@ public class LineControls extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				control.setValue(chckbxNewCheckBox.isSelected());
-				chckbxNewCheckBox.setText(control.getStateLabel(control.getValue()));
 			}
 			
 		});

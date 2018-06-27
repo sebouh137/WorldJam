@@ -1,6 +1,8 @@
 package worldjam.gui;
 
+import java.awt.BasicStroke;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 
 import worldjam.core.BeatClock;
 /**
@@ -31,6 +33,8 @@ public abstract class Conductor extends VisualMetronome{
 		double x1 =  x(t);//interpolate(x[i],x[(i+1)%x.length], Math.pow(a, 1.5));
 		double y1 =  y(t);//1-interpolate(y[i],y[(i+1)%y.length], Math.pow(a, 3));
 
+		Graphics2D g2 = (Graphics2D)g;
+		g2.setStroke(new BasicStroke(3));
 		g.drawLine(
 				(int)(getWidth()*(.1+.8*x1)), 
 				(int)(getHeight()*(.1+.8*y1)), 

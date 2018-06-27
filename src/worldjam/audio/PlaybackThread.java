@@ -1,7 +1,6 @@
 package worldjam.audio;
 
 import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.Control;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.Line;
 import javax.sound.sampled.LineUnavailableException;
@@ -9,8 +8,9 @@ import javax.sound.sampled.Mixer;
 import javax.sound.sampled.SourceDataLine;
 
 import worldjam.core.BeatClock;
+import worldjam.util.DigitalAnalogConverter;
 
-public class PlaybackThread extends Thread implements AudioSubscriber{
+public class PlaybackThread extends Thread implements AudioSubscriber, RMS{
 	private SourceDataLine sdl;
 	/**
 	 * The PlaybackThread uses the clock information in order to wait until the beginning of a measure to start,
@@ -19,11 +19,12 @@ public class PlaybackThread extends Thread implements AudioSubscriber{
 	 */
 	private BeatClock clock;
 	private AudioFormat format;
+	private Mixer mixer;
 	public PlaybackThread(Mixer mixer, AudioFormat format, BeatClock clock) throws LineUnavailableException{
 		DataLine.Info info = new DataLine.Info(SourceDataLine.class, format);
-		
+		this.mixer = mixer;
 		sdl = (SourceDataLine)mixer.getLine(info);
-		
+
 		this.clock = clock;
 		this.format = format;
 		setReplayOffset(1, 0, 0);
@@ -42,17 +43,17 @@ public class PlaybackThread extends Thread implements AudioSubscriber{
 	private int bufferPosition;
 
 
-	private int offsetMeasures; private int offsetBeats; private int offset_ms;
-	
+	private int offsetMeasures; private int offsetBeats; private int offset_ms, total_offset_ms;
+
 	public void setReplayOffset(int nMeasures, int nBeats, int n_ms){
 		this.offsetMeasures = nMeasures;
 		this.offsetBeats = nBeats;
 		this.offset_ms = n_ms;
+		this.total_offset_ms = (nMeasures*clock.beatsPerMeasure+nBeats)*clock.msPerBeat+n_ms;
 		replayOffsetInBytes = (int) (
-				((nMeasures*clock.beatsPerMeasure+nBeats)*clock.msPerBeat+n_ms)
-				*format.getFrameRate()/1000.)*format.getFrameSize();
+				total_offset_ms*format.getFrameRate()/1000.)*format.getFrameSize();
 	}
-	
+
 	/*public void setReplayOffsetInMeasures(int nMeasures){
 		replayOffsetInBytes = (int) (nMeasures*clock.beatsPerMeasure*clock.msPerBeat*format.getFrameRate()/1000.)*format.getFrameSize();
 	}
@@ -105,7 +106,7 @@ public class PlaybackThread extends Thread implements AudioSubscriber{
 			e.printStackTrace();
 		}
 		while(alive){
-			
+
 			if(bufferPosition + N_BYTES_PLAYED_AT_ONCE < buffer.length){
 				sdl.write(buffer, bufferPosition, N_BYTES_PLAYED_AT_ONCE);
 				bufferPosition+= N_BYTES_PLAYED_AT_ONCE;
@@ -123,29 +124,65 @@ public class PlaybackThread extends Thread implements AudioSubscriber{
 	public Line getLine(){
 		return sdl;
 	}
-	
+
 	public void setFilter(AudioFilter filter){
 		this.filter = filter;
 	}
-	
+
 	private AudioFilter filter;
 	public AudioFormat getFormat() {
 		return format;
 	}
-	
-	
+
+
 	public void setClock(BeatClock clock) {
 		this.clock = clock;
 		this.setReplayOffset(offsetMeasures, offsetBeats, offset_ms);
 	}
+
+	public double getRMS(double windowInMS){
+		long t = System.currentTimeMillis()-loopStartTime;
+		int offsetInBytes = (((int) (t*format.getFrameRate()/1000.))*format.getFrameSize())%buffer.length;
+
+		int nSamples = (int)(windowInMS/1000.*format.getSampleRate());
+		double sumSqr = 0;
+		DigitalAnalogConverter dac = new DigitalAnalogConverter(format);
+		for(int i = 0; i<nSamples; i++){
+			int index = offsetInBytes/(format.getSampleSizeInBits()/8)-i;
+			if(index <0)
+				index+= buffer.length/(format.getSampleSizeInBits()/8);
+			double x = dac.getConvertedSample(buffer, index);
+			double sqr = Math.pow(x, 2);
+			sumSqr += sqr;
+		}
+		return Math.sqrt(sumSqr)/nSamples;
+
+	}
+
+	public int getAddDelayMeasures(){
+		return offsetMeasures;
+	}
 	
-	/*public double getRMS(double windowInMS){
-	long t = System.currentTimeMillis()-loopStartTime;
-	int offset = ((int) (t*format.getFrameRate()/1000.))%buffer.length;
+	public int getAddDelayBeats(){
+		return offsetBeats;
+	}
 	
-	int nSamples = 
-	for(int i = ; i<)
-	return offset;
+	public int getAddDelayMS(){
+		return offset_ms;
+	}
 	
-}*/
+	public int getDelayInMS() {
+		return total_offset_ms;
+	}
+
+	public BeatClock getClock() {
+		// TODO Auto-generated method stub
+		return clock;
+	}
+
+	public Mixer getMixer() {
+		return mixer;
+	}
+
+	
 }

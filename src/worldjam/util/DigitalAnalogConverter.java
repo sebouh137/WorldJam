@@ -25,7 +25,7 @@ public class DigitalAnalogConverter {
 				return ((bytes[3*i] << 16) | ((bytes[3*i+1]& 0xff) << 8) | (bytes[3*i+2] & 0xff))/8388608.;
 			}
 		}
-		return 0;
+		return Double.NaN;
 	}
 
 	public float getConvertedSample32Bit(byte[] bytes, int i){

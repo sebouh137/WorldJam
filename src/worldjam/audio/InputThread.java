@@ -10,8 +10,9 @@ import javax.sound.sampled.Mixer;
 import javax.sound.sampled.TargetDataLine;
 
 import worldjam.core.BeatClock;
+import worldjam.util.DigitalAnalogConverter;
 
-public class InputThread extends Thread{
+public class InputThread extends Thread implements RMS{
 	static Random random = new Random();
 	private final long lineID = random.nextLong();
 	private TargetDataLine tdl;
@@ -29,12 +30,15 @@ public class InputThread extends Thread{
 		nMsPerLoop = 500;
 		nBytesPerLoop = format.getFrameSize()*(int)(format.getFrameRate()*nMsPerLoop/1000.);
 		buffer = new byte[nBytesPerLoop];
+		buffer2 = new byte[nBytesPerLoop];
 	}
 	double nMsPerLoop;
 	//status flags
-	boolean alive = true, paused = false;
+	private boolean alive = true, paused = false;
 	private Mixer mixer;
 	private BeatClock clock;
+	
+	private long timestamp;
 	public void run(){
 		try {
 			tdl.open();
@@ -43,20 +47,22 @@ public class InputThread extends Thread{
 			e.printStackTrace();
 		}
 		tdl.start();
-		long time = System.currentTimeMillis();
+		timestamp = System.currentTimeMillis();
 		//time = (time*format.getFrameSize())/format.getFrameSize();
 		while(alive){
 			tdl.read(buffer, 0, buffer.length);
 			SampleMessage message = new SampleMessage();
 			message.sampleData = buffer.clone();
 			message.senderID = this.lineID;
-			message.sampleStartTime = time;
-			time+= nMsPerLoop;
+			message.sampleStartTime = timestamp;
+			timestamp+= nMsPerLoop;
+			System.arraycopy(buffer, 0, buffer2, 0, buffer.length);
 			if(receiver!= null)
 				receiver.sampleReceived(message);
 			
 		}
 	}
+	byte buffer2[];
 	public void setReceiver(AudioSubscriber rec){
 		this.receiver = rec;
 	}
@@ -71,5 +77,32 @@ public class InputThread extends Thread{
 	}
 	public void setClock(BeatClock beatClock) {
 		this.clock = beatClock;
+	}
+	public double getRMS(double windowInMS){
+		long t = System.currentTimeMillis()-(int)(windowInMS/10)-timestamp;
+		int offsetInBytes = (((int) (t*format.getFrameRate()/1000.))*format.getFrameSize())%buffer.length;
+
+		int nSamples = (int)(windowInMS/1000.*format.getSampleRate());
+		double sumSqr = 0;
+		double max = 0;
+		int posOfMax = 0;
+		DigitalAnalogConverter dac = new DigitalAnalogConverter(format);
+		for(int i = 3; i<nSamples; i++){
+			int index = offsetInBytes/(format.getSampleSizeInBits()/8)-i;
+			if(index <0)
+				index+= buffer2.length/(format.getSampleSizeInBits()/8);
+			double x = dac.getConvertedSample(buffer2, index);
+			double sqr = Math.pow(x, 2);
+			sumSqr += sqr;
+			
+			if(Math.abs(x)>max){
+				max = Math.abs(x);
+				posOfMax = i;
+			}
+			
+		}
+		//System.out.println(max + " " + posOfMax);
+		return Math.sqrt(sumSqr)/nSamples;
+
 	}
 }

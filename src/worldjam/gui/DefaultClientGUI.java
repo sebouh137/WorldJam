@@ -37,8 +37,22 @@ public class DefaultClientGUI extends JFrame implements PlaybackManager.ChannelC
 		
 		JMenu mnPlayback = new JMenu("Playback");
 		menuBar.add(mnPlayback);
-		mnChannels = new JMenu("Channel Controls");
+		mnChannels = new JMenu("Channels");
 		mnPlayback.add(mnChannels);		
+		
+		JMenu mnInput = new JMenu("Input");
+		menuBar.add(mnInput);
+		
+		JMenuItem mntmInputMonitor = new JMenuItem("Input Monitor...");
+		mnInput.add(mntmInputMonitor);
+		mntmInputMonitor.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				new InputMonitor(client.getInput(), "Input").setVisible(true);;
+			}
+			
+		});
 		
 		this.conductor = new DefaultConductor(client.getClock());
 		getContentPane().add(conductor, BorderLayout.CENTER);

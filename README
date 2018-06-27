@@ -1,0 +1,13 @@
+To compile, type:
+mvn -o clean package appbundle:bundle
+
+To run start the server locally:
+java -jar target/WorldJam-x.x.x-SNAPSHOT.jar worldjam.exe.MultiSessionServer
+where x.x.x-SNAPSHOT is replaced with the latest release or snapshot.
+
+To run client as an application:
+MacOS only:
+click on the icon for target/WorldJam-x.x.x-SNAPSHOT/WorldJam.app
+Linux, MacOS, or Windows:
+java -jar target/WorldJam-x.x.x-SNAPSHOT.jar worldjam.exe.DefaultClient
+

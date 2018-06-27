@@ -1,7 +1,10 @@
 package worldjam.gui;
 
 import javax.swing.JDialog;
+import javax.swing.JFrame;
+
 import java.awt.GridBagLayout;
+
 import javax.swing.JLabel;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
@@ -10,12 +13,10 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import javax.swing.JCheckBox;
 import javax.swing.JRadioButton;
 import javax.swing.JButton;
 import javax.swing.JTextField;
 import javax.swing.SpinnerListModel;
-import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -37,7 +38,11 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.SwingConstants;
 import javax.swing.JComboBox;;
 
-public class DefaultClientSetupGUI extends JDialog{
+public class DefaultClientSetupGUI extends JFrame{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 2630697418874820157L;
 	private JTextField txtUser;
 	private JTextField txtIP;
 	private JTextField txtSession;
@@ -60,6 +65,14 @@ public class DefaultClientSetupGUI extends JDialog{
 	public DefaultClientSetupGUI() {
 		this.setSize(769, 304);
 		setTitle("Client Setup");
+		/*Image image;
+		try {
+			image = ImageIO.read(new File("img/icons/wj_logo.png"));
+			this.setIconImage(image);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}*/
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{53, 76, 0, 56, 56, 91, 157, 0};
 		gridBagLayout.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -335,6 +348,8 @@ public class DefaultClientSetupGUI extends JDialog{
 	public static void main(String arg[]){
 		DefaultClientSetupGUI gui = new DefaultClientSetupGUI();
 		gui.setVisible(true);
+
+		gui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		gui.btnStart.addActionListener(new ActionListener(){
 		
 		@Override
@@ -348,6 +363,8 @@ public class DefaultClientSetupGUI extends JDialog{
 			boolean join = gui.rdbtnJoinExistingSession.isSelected();
 			Mixer inputMixer =  AudioSystem.getMixer((Mixer.Info)gui.comboBox.getModel().getSelectedItem());
 			Mixer outputMixer = AudioSystem.getMixer((Mixer.Info)gui.comboBox_1.getModel().getSelectedItem());
+
+			gui.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			gui.dispose();
 			DefaultClient client;
 			try {

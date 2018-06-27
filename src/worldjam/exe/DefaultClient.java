@@ -25,9 +25,9 @@ public class DefaultClient extends BaseClient{
 
 	public static void main(String arg[]) throws LineUnavailableException, UnknownHostException, IOException{
 		
-		if(arg.length >= 1 && arg[0].equals("-g")){
+		//if(arg.length >= 1 && arg[0].equals("-g")){
 			DefaultClientSetupGUI.main(arg);
-			return;
+		/*	return;
 		}
 		Scanner scanner = new Scanner(System.in);
 		boolean isAdmin = false;
@@ -57,7 +57,7 @@ public class DefaultClient extends BaseClient{
 			clock.beatDenominator = scanner.nextInt();
 			clock.msPerBeat = scanner.nextInt();
 			client.startNewSession(clock);
-		}
+		}*/
 	}
 
 

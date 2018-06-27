@@ -1,37 +1,46 @@
 package worldjam.gui;
 
-import javax.sound.sampled.DataLine;
 import javax.sound.sampled.Line;
-import javax.swing.Action;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JSplitPane;
 
 import worldjam.exe.DefaultClient;
 import worldjam.audio.*;
 import worldjam.core.BeatClock;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Set;
 
 import javax.swing.JMenu;
 import javax.swing.JLabel;
 import java.awt.Font;
+
 import javax.swing.SwingConstants;
 
 public class DefaultClientGUI extends JFrame implements PlaybackManager.ChannelChangeListener {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -6893387160409587544L;
 	private DefaultClient client;
 	private JMenu mnChannels;
 	private Conductor conductor;
 	public DefaultClientGUI(DefaultClient client) {
 		setTitle("World Jam");
+		
 		this.client = client;
 		this.setSize(400, 400);
 		
+		/*try {
+			Image image = ImageIO.read(new File("img/icons/wj_logo.png"));
+			this.setIconImage(image);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}*/
+				
 		JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
 		
@@ -73,7 +82,7 @@ public class DefaultClientGUI extends JFrame implements PlaybackManager.ChannelC
 	}
 	public void channelsChanged(){
 		for(Long id : client.getPlaybackManager().getIDs()){
-			Line line = client.getPlaybackManager().getLine(id);
+			//Line line = client.getPlaybackManager().getLine(id);
 			String channelName = client.getPlaybackManager().getChannelName(id);
 			JMenuItem mnChannel = new JMenuItem(channelName);
 			mnChannels.add(mnChannel);

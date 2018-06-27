@@ -12,7 +12,9 @@ import javax.sound.sampled.Control;
 import javax.sound.sampled.EnumControl;
 import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.Line;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
@@ -21,6 +23,11 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 public class LineControls extends JPanel {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 7727938369362814289L;
+
 	public LineControls(Line line){
 		if(line.getControls().length == 0){
 			add(new JLabel("No controls to show"), BorderLayout.CENTER);
@@ -55,7 +62,7 @@ public class LineControls extends JPanel {
 				//gridBagLayout.rowHeights[row+1] = 29;
 			}
 			if(c instanceof EnumControl){
-				addEnumControl((EnumControl)c);
+				addEnumControl((EnumControl)c, row);
 				row +=1;
 			}
 			if(c instanceof BooleanControl){
@@ -92,8 +99,32 @@ public class LineControls extends JPanel {
 		
 	}
 
-	private void addEnumControl(EnumControl c) {
-		// TODO Auto-generated method stub
+	private void addEnumControl(EnumControl control, int row) {
+		JLabel lblNewLabel = new JLabel(control.getType().toString());
+		GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
+		gbc_lblNewLabel.fill = GridBagConstraints.BOTH;
+		gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
+		gbc_lblNewLabel.gridx = 0;
+		gbc_lblNewLabel.gridy = row;
+		add(lblNewLabel, gbc_lblNewLabel);
+		
+		JComboBox jcb = new JComboBox();
+		jcb.setModel(new DefaultComboBoxModel(control.getValues()));
+		
+		jcb.getModel().setSelectedItem(control.getValue());
+		jcb.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				control.setValue(jcb.getSelectedItem());
+			}
+		});
+		
+		GridBagConstraints gbc_jcb = new GridBagConstraints();
+		gbc_jcb.fill = GridBagConstraints.BOTH;
+		gbc_jcb.insets = new Insets(0, 0, 5, 5);
+		gbc_jcb.gridx = 1;
+		gbc_jcb.gridy = row;
+		add(jcb, gbc_jcb);
 		
 	}
 

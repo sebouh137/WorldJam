@@ -7,7 +7,9 @@ import worldjam.util.DigitalAnalogConverter;
 public abstract class AudioFilter{
 	protected AudioFilter(AudioFormat format){
 		dac = new DigitalAnalogConverter(format);
+		this.format = format;
 	}
+	protected AudioFormat format;
 	protected DigitalAnalogConverter dac;
 	/**
 	 * By default, this converts the sample from digital to analog and then back.  However,

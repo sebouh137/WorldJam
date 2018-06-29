@@ -80,4 +80,51 @@ public class DigitalAnalogConverter {
 			}
 		}
 	}
+	
+	public void setConvertedSample(byte[] bytes, int i, float sample){
+		switch(format.getSampleSizeInBits()){
+		case 8:
+			bytes[i] = (byte)(sample*128);
+			break;
+		case 16:
+			if(!format.isBigEndian()){
+
+				int intvalue = (int)(sample*32768);
+				bytes[2*i + 1] = (byte)(0x00FF&(intvalue>>8));
+				bytes[2*i] = (byte)(0x000000FF & intvalue);
+			}
+			else {
+				int intvalue = (int)(sample*32768);
+				bytes[2*i] = (byte)(0x00FF&(intvalue>>8));
+				bytes[2*i+1] = (byte)(0x000000FF & intvalue);
+			}
+			break;
+		case 24:
+			if(!format.isBigEndian()) {
+				int intvalue = (int)(sample*8388608);
+				bytes[3*i + 2] = (byte)(0x00FF & (intvalue>>16));
+				bytes[3*i + 1] = (byte)(0x00FF & (intvalue>>8));
+				bytes[3*i] = (byte)(0x000000FF & intvalue);
+			}
+			else {
+				int intvalue = (int)(sample*8388608);
+				bytes[3*i] = (byte)(0x00FF & (intvalue>>16));
+				bytes[3*i+1] = (byte)(0x00FF & (intvalue>>8));
+				bytes[3*i+2] = (byte)(0x000000FF & intvalue);
+			}
+		}
+	}
+
+	public void convert(float[] floatBuffer, byte[] sampleData) {
+		for(int i = 0; i < floatBuffer.length; i++){
+			 setConvertedSample(sampleData, i, floatBuffer[i]);
+		}
+		
+	}
+
+	public void convert(byte[] sampleData, float[] floatBuffer) {
+		for(int i = 0; i < floatBuffer.length; i++){
+			floatBuffer[i] = getConvertedSample32Bit(sampleData, i);
+		}
+	}
 }

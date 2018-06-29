@@ -1,1 +1,1 @@
-java -cp bin worldjam.exe.DefaultClient -g
+java -jar target/WorldJam-0.0.1-SNAPSHOT.jar

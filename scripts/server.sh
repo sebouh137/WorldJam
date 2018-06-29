@@ -1,2 +1,2 @@
-java -cp bin worldjam.exe.MultiSessionServer
+java -cp target/WorldJam-0.0.1-SNAPSHOT.jar worldjam.exe.MultiSessionServer
 

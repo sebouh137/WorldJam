@@ -10,7 +10,7 @@ import javax.sound.sampled.SourceDataLine;
 import worldjam.core.BeatClock;
 import worldjam.util.DigitalAnalogConverter;
 
-public class PlaybackThread extends Thread implements AudioSubscriber, RMS{
+public class PlaybackThread extends Thread implements PlaybackChannel{
 	private SourceDataLine sdl;
 	/**
 	 * The PlaybackThread uses the clock information in order to wait until the beginning of a measure to start,
@@ -36,8 +36,7 @@ public class PlaybackThread extends Thread implements AudioSubscriber, RMS{
 				clock.beatsPerMeasure*
 				nMeasuresInBuffer);
 		buffer = new byte[bufferSize];
-		sdl.open();
-		sdl.start();
+		this.start();
 	}
 	private byte[] buffer;
 	private int bufferPosition;
@@ -90,10 +89,12 @@ public class PlaybackThread extends Thread implements AudioSubscriber, RMS{
 	private long loopStartTime;
 	public void run(){
 		int N_BYTES_PLAYED_AT_ONCE = (int) (format.getFrameRate()*format.getFrameSize());
+		
 		/*
 		 * For convenience, start at the beginning of a measure
 		 */
 		try {
+			sdl.open();
 			int msPerMeasure = clock.getMsPerMeasure();
 			long prestart = System.currentTimeMillis();
 			int sleepTime = (int) (prestart-clock.startTime);
@@ -102,7 +103,12 @@ public class PlaybackThread extends Thread implements AudioSubscriber, RMS{
 				sleepTime += msPerMeasure;
 			Thread.sleep(sleepTime);
 			loopStartTime = prestart+sleepTime;
+			
+			sdl.start();
 		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (LineUnavailableException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		while(alive){

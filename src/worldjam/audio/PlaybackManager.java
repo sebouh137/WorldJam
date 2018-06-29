@@ -24,18 +24,18 @@ public class PlaybackManager implements AudioSubscriber{
 	Mixer mixer;
 	BeatClock clock;
 	AudioFormat format;
-	Map<Long, PlaybackThread> threads = new HashMap<Long, PlaybackThread>();
+	Map<Long, PlaybackChannel> channels = new HashMap<Long, PlaybackChannel>();
 	private Map<Long, String> channelNames = new HashMap();
-	public void addThread(long senderID, String name) throws LineUnavailableException{
-		PlaybackThread thread = new PlaybackThread(mixer, format, clock);
-		threads.put(senderID, thread);
+	public void addChannel(long senderID, String name) throws LineUnavailableException{
+		PlaybackChannel channel = new PlaybackThread(mixer, format, clock);
+		
+		channels.put(senderID, channel);
 		channelNames.put(senderID, name);
-		thread.start();
 		channelsChanged();
 	}
-	public void removeThread(long senderID){
-		threads.get(senderID).close();
-		threads.remove(senderID);
+	public void removeChannel(long senderID){
+		channels.get(senderID).close();
+		channels.remove(senderID);
 		channelsChanged();
 	}
 	
@@ -62,14 +62,14 @@ public class PlaybackManager implements AudioSubscriber{
 	@Override
 	public void sampleReceived(SampleMessage sample) {
 		long senderID = sample.senderID;
-		if(threads.containsKey(senderID))
-			threads.get(senderID).sampleReceived(sample);
+		if(channels.containsKey(senderID))
+			channels.get(senderID).sampleReceived(sample);
 		else
-			System.out.println(threads.keySet() + " does not contain " + senderID);
+			System.out.println(channels.keySet() + " does not contain " + senderID);
 	}
 	
 	public Line getLine(long lineID){
-		return threads.get(lineID).getLine();
+		return channels.get(lineID).getLine();
 	}
 	
 	public void printControls(){
@@ -86,19 +86,19 @@ public class PlaybackManager implements AudioSubscriber{
 		}
 	}
 	public Set<Long> getIDs(){
-		return threads.keySet();
+		return channels.keySet();
 	}
 	
 	public void setFilter(int id, AudioFilter filter){
-		threads.get(id).setFilter(filter);
+		channels.get(id).setFilter(filter);
 	}
-	public PlaybackThread getChannel(Long id) {
-		return threads.get(id);
+	public PlaybackChannel getChannel(Long id) {
+		return channels.get(id);
 	}
 	public void setClock(BeatClock beatClock) {
 		this.clock = beatClock;
-		for(PlaybackThread thread : threads.values()){
-			thread.setClock(clock);
+		for(PlaybackChannel channel : channels.values()){
+			channel.setClock(clock);
 		}
 	}
 }

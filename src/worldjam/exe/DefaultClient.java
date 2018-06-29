@@ -136,7 +136,7 @@ public class DefaultClient extends BaseClient{
 
 			if(!playback.getIDs().contains(ids.get(i))){
 				try {
-					playback.addThread(ids.get(i), names.get(i));
+					playback.addChannel(ids.get(i), names.get(i));
 					System.out.println("added playback thread");
 				} catch (LineUnavailableException e) {
 					// TODO Auto-generated catch block

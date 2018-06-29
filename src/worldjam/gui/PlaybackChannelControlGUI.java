@@ -14,8 +14,9 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import worldjam.audio.PlaybackThread;
+import worldjam.audio.PlaybackChannel;
 import worldjam.filters.pitchshift.PitchShift;
+import worldjam.filters.pitchshift.StretchPitchShift;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -26,7 +27,9 @@ import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JRadioButton;
 
 public class PlaybackChannelControlGUI extends JFrame {
 	/*public static void main(String arg[]) throws LineUnavailableException{
@@ -51,7 +54,7 @@ public class PlaybackChannelControlGUI extends JFrame {
 	LineControls lineControls;
 	private SoundLevelBar slb;
 	
-	public PlaybackChannelControlGUI(PlaybackThread thread, String title) {
+	public PlaybackChannelControlGUI(PlaybackChannel playbackClip, String title) {
 		
 		
 		setTitle(title);
@@ -61,24 +64,24 @@ public class PlaybackChannelControlGUI extends JFrame {
 		
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		getContentPane().add(tabbedPane, BorderLayout.CENTER);
-		lineControls = new LineControls(thread.getLine());
+		lineControls = new LineControls(playbackClip.getLine());
 		tabbedPane.addTab("Line", null, lineControls, null);
-		tabbedPane.addTab("Filters", null, createFilterControls(thread), null);
-		tabbedPane.addTab("Delay", null, createDelayControls(thread), null);
-		tabbedPane.addTab("Info", null, createInfoPanel(thread), null);
+		tabbedPane.addTab("Filters", null, createFilterControls(playbackClip), null);
+		tabbedPane.addTab("Delay", null, createDelayControls(playbackClip), null);
+		tabbedPane.addTab("Info", null, createInfoPanel(playbackClip), null);
 		
-		slb = new SoundLevelBar(thread, SoundLevelBar.VERTICAL);
+		slb = new SoundLevelBar(playbackClip, SoundLevelBar.VERTICAL);
 		
-		if(thread != null)
+		if(playbackClip != null)
 			getContentPane().add(slb, BorderLayout.WEST); 
 	}
 		
 		
-	private Component createInfoPanel(PlaybackThread thread) {
+	private Component createInfoPanel(PlaybackChannel channel) {
 
 		JTextArea textArea = new JTextArea();
 		textArea.setEditable(false);
-		String text = thread.getMixer().getMixerInfo().toString();
+		String text = channel.getMixer().getMixerInfo().toString();
 		
 		textArea.setText(text);
 		textArea.setLineWrap(true);
@@ -88,7 +91,7 @@ public class PlaybackChannelControlGUI extends JFrame {
 	}
 
 
-	private JPanel createDelayControls(PlaybackThread thread) {
+	private JPanel createDelayControls(PlaybackChannel channel) {
 		JPanel delayPanel = new JPanel();
 		GridBagLayout gbl_delayPanel = new GridBagLayout();
 		gbl_delayPanel.columnWidths = new int[]{49, 72, 0, 0, 0};
@@ -123,7 +126,7 @@ public class PlaybackChannelControlGUI extends JFrame {
 		delayPanel.add(label_1, gbc_label_1);
 		
 		JSpinner spinner_1 = new JSpinner();
-		spinner_1.setModel(new SpinnerNumberModel(thread.getAddDelayBeats(), 0, 100, 1));
+		spinner_1.setModel(new SpinnerNumberModel(channel.getAddDelayBeats(), 0, 100, 1));
 		GridBagConstraints gbc_spinner_1 = new GridBagConstraints();
 		gbc_spinner_1.fill = GridBagConstraints.HORIZONTAL;
 		gbc_spinner_1.insets = new Insets(0, 0, 5, 5);
@@ -151,7 +154,7 @@ public class PlaybackChannelControlGUI extends JFrame {
 		JSpinner spinner_2 = new JSpinner();
 		GridBagConstraints gbc_spinner_2 = new GridBagConstraints();
 		gbc_spinner_2.fill = GridBagConstraints.HORIZONTAL;
-		spinner_2.setModel(new SpinnerNumberModel(thread.getAddDelayMS(), -1000, 1000, 10));
+		spinner_2.setModel(new SpinnerNumberModel(channel.getAddDelayMS(), -1000, 1000, 10));
 		gbc_spinner_2.insets = new Insets(0, 0, 5, 5);
 		gbc_spinner_2.gridx = 1;
 		gbc_spinner_2.gridy = 2;
@@ -181,7 +184,7 @@ public class PlaybackChannelControlGUI extends JFrame {
 		gbc_lblTotal.gridy = 4;
 		delayPanel.add(lblTotal, gbc_lblTotal);
 		
-		JLabel lblSum = new JLabel(Integer.toString(thread.getDelayInMS()));
+		JLabel lblSum = new JLabel(Integer.toString(channel.getDelayInMS()));
 		GridBagConstraints gbc_lblSum = new GridBagConstraints();
 		gbc_lblSum.anchor = GridBagConstraints.EAST;
 		gbc_lblSum.insets = new Insets(0, 0, 5, 5);
@@ -202,8 +205,8 @@ public class PlaybackChannelControlGUI extends JFrame {
 
 			@Override
 			public void stateChanged(ChangeEvent e) {
-				int val = ((int)spinner.getValue()*thread.getClock().beatsPerMeasure
-						+(int)spinner_1.getValue())*thread.getClock().msPerBeat
+				int val = ((int)spinner.getValue()*channel.getClock().beatsPerMeasure
+						+(int)spinner_1.getValue())*channel.getClock().msPerBeat
 						+ (int)spinner_2.getValue();
 				lblSum.setText(Integer.toString(val));
 			}
@@ -223,7 +226,7 @@ public class PlaybackChannelControlGUI extends JFrame {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				thread.setReplayOffset((Integer)spinner.getModel().getValue(),
+				channel.setReplayOffset((Integer)spinner.getModel().getValue(),
 						(Integer)spinner_1.getModel().getValue(), 
 						(Integer)spinner_2.getModel().getValue());
 			}
@@ -233,12 +236,12 @@ public class PlaybackChannelControlGUI extends JFrame {
 	}
 
 
-	private JPanel createFilterControls(PlaybackThread thread){
+	private JPanel createFilterControls(PlaybackChannel channel){
 		JPanel filterControls = new JPanel();
 		GridBagLayout gbl_filterControls = new GridBagLayout();
-		gbl_filterControls.columnWidths = new int[]{0, 60, 49, 0};
+		gbl_filterControls.columnWidths = new int[]{0, 60, 104, 0, 0, 0};
 		gbl_filterControls.rowHeights = new int[]{26, 0};
-		gbl_filterControls.columnWeights = new double[]{0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_filterControls.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		gbl_filterControls.rowWeights = new double[]{0.0, Double.MIN_VALUE};
 		filterControls.setLayout(gbl_filterControls);
 		
@@ -253,11 +256,21 @@ public class PlaybackChannelControlGUI extends JFrame {
 		JSpinner spinner = new JSpinner();
 		spinner.setMinimumSize(new Dimension(12, 30));
 		GridBagConstraints gbc_spinner = new GridBagConstraints();
+		gbc_spinner.insets = new Insets(0, 0, 0, 5);
 		gbc_spinner.fill = GridBagConstraints.HORIZONTAL;
 		gbc_spinner.anchor = GridBagConstraints.NORTH;
 		gbc_spinner.gridx = 2;
 		gbc_spinner.gridy = 0;
 		filterControls.add(spinner, gbc_spinner);
+		
+		JLabel lblCents = new JLabel("cents");
+		GridBagConstraints gbc_lblCents = new GridBagConstraints();
+		gbc_lblCents.insets = new Insets(0, 0, 0, 5);
+		gbc_lblCents.gridx = 3;
+		gbc_lblCents.gridy = 0;
+		filterControls.add(lblCents, gbc_lblCents);
+		
+		
 		ChangeListener pitchShiftListener = new ChangeListener(){
 
 			@Override
@@ -265,12 +278,12 @@ public class PlaybackChannelControlGUI extends JFrame {
 				if(chckbxPitchShift.isSelected()){
 					int value = (Integer)spinner.getValue();
 					System.out.println("changing pitch shift to " + value);
-					//thread.setFilter(filter);
-					thread.setFilter(new PitchShift(thread.getFormat(), value));
+					//channel.setFilter(filter);
+					channel.setFilter(new StretchPitchShift(channel.getFormat(), value));
 				}
 				else {
 					System.out.println("deactivating pitch shift");
-					thread.setFilter(null);
+					channel.setFilter(null);
 				}
 			}
 			

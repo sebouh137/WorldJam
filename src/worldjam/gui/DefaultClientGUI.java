@@ -81,6 +81,7 @@ public class DefaultClientGUI extends JFrame implements PlaybackManager.ChannelC
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 	public void channelsChanged(){
+		mnChannels.removeAll();
 		for(Long id : client.getPlaybackManager().getIDs()){
 			//Line line = client.getPlaybackManager().getLine(id);
 			String channelName = client.getPlaybackManager().getChannelName(id);

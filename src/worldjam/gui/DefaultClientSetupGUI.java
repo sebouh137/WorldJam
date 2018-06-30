@@ -6,11 +6,14 @@ import javax.swing.JFrame;
 import java.awt.GridBagLayout;
 
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 import javax.swing.JRadioButton;
@@ -320,7 +323,7 @@ public class DefaultClientSetupGUI extends JFrame{
 		btnStart = new JButton("Start");
 		GridBagConstraints gbc_btnStart = new GridBagConstraints();
 		gbc_btnStart.insets = new Insets(0, 0, 0, 5);
-		gbc_btnStart.gridwidth = 5;
+		gbc_btnStart.gridwidth = 7;
 		gbc_btnStart.gridx = 0;
 		gbc_btnStart.gridy = 9;
 		getContentPane().add(btnStart, gbc_btnStart);
@@ -378,10 +381,11 @@ public class DefaultClientSetupGUI extends JFrame{
 					clock.msPerBeat = msPerBeat;
 					client.startNewSession(clock);
 				}
-			} catch (LineUnavailableException | IOException e1) {
-				// TODO Auto-generated catch block
+			} catch (Exception e1) {
+				JOptionPane.showMessageDialog(null, e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 				e1.printStackTrace();
-			}
+				System.exit(0);
+			} 
 			
 		}
 		});

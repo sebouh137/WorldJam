@@ -32,7 +32,7 @@ public class StretchPitchShift extends AudioFilter{
 		this.factor = factor;
 	}
 
-	private void setShiftInCents(int shiftInCents) {
+	public void setShiftInCents(int shiftInCents) {
 		this.setStretchFactor(Math.pow(2,  -shiftInCents/1200.));
 	}
 
@@ -45,7 +45,8 @@ public class StretchPitchShift extends AudioFilter{
 	
 	
 	protected byte[] process(byte[] sampleData, AudioFormat format){
-		
+		double factor = this.factor;
+		//System.out.println(factor);
 		if(floatBuffer == null || floatBuffer.length != sampleData.length/Float.BYTES){
 			floatBuffer = new float[sampleData.length/(format.getSampleSizeInBits()/8)];
 		}
@@ -65,8 +66,8 @@ public class StretchPitchShift extends AudioFilter{
 			activeBuffer = stretchedFloatBufferB;
 			prevBuffer = stretchedFloatBufferA;
 		}
-		stretch(floatBuffer, activeBuffer);
-		merge(activeBuffer, prevBuffer, floatBuffer);
+		stretch(floatBuffer, activeBuffer, factor);
+		merge(activeBuffer, prevBuffer, floatBuffer, factor);
 		
 		dac.convert(floatBuffer,sampleData);
 		return sampleData.clone();
@@ -78,7 +79,7 @@ public class StretchPitchShift extends AudioFilter{
 	int samplePhase;
 	
 
-	private void stretch(float[] in, float[] out) {
+	private void stretch(float[] in, float[] out, double factor) {
 		for(int i = 0; i< out.length; i++){
 			double x = i/factor;
 			if(x+1>=in.length){
@@ -92,20 +93,23 @@ public class StretchPitchShift extends AudioFilter{
 		}
 	}
 
-	private void merge(float[] in, float[] inPrev, float[] out) {
+	private void merge(float[] in, float[] inPrev, float[] out, double factor) {
 		int inSegmentLength = (int)(format.getSampleRate()*msPerSegment/1000.);
 		int outSegmentLength = (int)(format.getSampleRate()*msPerSegment/1000./factor);
 		//int segmentLength = (int)(format.getSampleRate()*msPerSegment/1000.);
 		for(int i = 0; i < out.length; i++){
 			int ip = out.length-i-1;
 			int index = in.length - 1 - ((ip/outSegmentLength)*inSegmentLength + ip%outSegmentLength);
-			if(i%100 == 0)
-			System.out.println(i + " " + index + " " + in.length + " " + out.length + " " + inSegmentLength + " " + outSegmentLength);
+			//if(i%100 == 0) System.out.println(i + " " + index + " " + in.length + " " + out.length + " " + inSegmentLength + " " + outSegmentLength);
 			if(index >= 0)
 				out[i] = (float)in[index];
 			else
 				out[i] = (float)inPrev[index+inPrev.length];
 		}
+	}
+
+	public double getShiftInCents() {
+		return -Math.log(factor)*1200/Math.log(2);
 	}
 	
 }

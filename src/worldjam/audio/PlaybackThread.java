@@ -190,5 +190,10 @@ public class PlaybackThread extends Thread implements PlaybackChannel{
 		return mixer;
 	}
 
+	@Override
+	public AudioFilter getFilter() {
+		return filter;
+	}
+
 	
 }

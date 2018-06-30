@@ -343,7 +343,7 @@ public class DefaultClientSetupGUI extends JFrame{
 					new DataLine.Info(class1, DefaultObjects.defaultFormat)))
 				availableMixers.add(info);
 		}
-		System.out.println(availableMixers.size());
+		//System.out.println(availableMixers.size());
 		return availableMixers.toArray();
 	}
 

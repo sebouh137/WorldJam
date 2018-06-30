@@ -137,7 +137,7 @@ public class DefaultClient extends BaseClient{
 			if(!playback.getIDs().contains(ids.get(i))){
 				try {
 					playback.addChannel(ids.get(i), names.get(i));
-					System.out.println("added playback thread");
+					//System.out.println("added playback thread");
 				} catch (LineUnavailableException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -158,7 +158,7 @@ public class DefaultClient extends BaseClient{
 		super.setBeatClock(clock);
 		if(playback == null){
 			playback = new PlaybackManager(outputMixer, beatClock, DefaultObjects.defaultFormat);
-			System.out.println("playback initialized");
+			//System.out.println("playback initialized");
 		}
 		else{
 			playback.setClock(beatClock);

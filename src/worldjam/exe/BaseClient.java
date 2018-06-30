@@ -54,7 +54,7 @@ public abstract class BaseClient implements AudioSubscriber{
 			clientID = displayName.hashCode();
 			dos.writeLong(clientID);
 		}
-		System.out.println("sent join request to session");
+		//System.out.println("sent join request to session");
 
 	}
 	
@@ -121,7 +121,7 @@ public abstract class BaseClient implements AudioSubscriber{
 							BeatClock beatClock = new BeatClock(msPerBeat, beatsPerMeasure, denom);
 							beatClock.startTime = startTime;
 							
-							System.out.println("received time information");
+							//System.out.println("received time information");
 							setBeatClock(beatClock);
 							printClientConfiguration();
 						} else throw new Exception("unrecognized code");

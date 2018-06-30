@@ -255,6 +255,11 @@ public class PlaybackChannelControlGUI extends JFrame {
 		
 		JSpinner spinner = new JSpinner();
 		spinner.setMinimumSize(new Dimension(12, 30));
+		
+		if(channel.getFilter() != null && channel.getFilter() instanceof StretchPitchShift){
+			spinner.setValue((int)((StretchPitchShift)channel.getFilter()).getShiftInCents());
+			chckbxPitchShift.setSelected(true);
+		}
 		GridBagConstraints gbc_spinner = new GridBagConstraints();
 		gbc_spinner.insets = new Insets(0, 0, 0, 5);
 		gbc_spinner.fill = GridBagConstraints.HORIZONTAL;
@@ -277,12 +282,15 @@ public class PlaybackChannelControlGUI extends JFrame {
 			public void stateChanged(ChangeEvent e) {
 				if(chckbxPitchShift.isSelected()){
 					int value = (Integer)spinner.getValue();
-					System.out.println("changing pitch shift to " + value);
+					//System.out.println("changing pitch shift to " + value);
 					//channel.setFilter(filter);
-					channel.setFilter(new StretchPitchShift(channel.getFormat(), value));
+					/*if(channel.getFilter() != null && channel.getFilter() instanceof StretchPitchShift)
+						((StretchPitchShift)channel.getFilter()).setShiftInCents(value);
+					else*/
+						channel.setFilter(new StretchPitchShift(channel.getFormat(), value));
+					
 				}
 				else {
-					System.out.println("deactivating pitch shift");
 					channel.setFilter(null);
 				}
 			}

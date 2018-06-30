@@ -1,28 +1,15 @@
 package worldjam.exe;
 
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
+
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Scanner;
-
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.DataLine;
 import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.Mixer;
-import javax.sound.sampled.SourceDataLine;
-import javax.sound.sampled.TargetDataLine;
-import javax.xml.crypto.Data;
 
-import worldjam.audio.InputThread;
-import worldjam.audio.PlaybackManager;
 import worldjam.core.BeatClock;
 import worldjam.net.NetworkUtils;
 import worldjam.net.WJConstants;
@@ -45,7 +32,9 @@ public class MultiSessionServer {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
+		synchronized(System.out){
+			System.out.println(new Date() + ":  started server on " + localIP);
+		}
 		new CleanupThread().start();
 		while(true){
 			try{
@@ -74,7 +63,6 @@ public class MultiSessionServer {
 				}
 
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -85,7 +73,6 @@ public class MultiSessionServer {
 				try {
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				synchronized(sessions){

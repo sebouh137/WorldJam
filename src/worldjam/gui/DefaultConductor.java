@@ -39,7 +39,6 @@ public class DefaultConductor extends Conductor{
 			try {
 				Thread.sleep(new java.util.Random().nextInt(300));
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			JFrame frame2 = new JFrame();
@@ -52,7 +51,6 @@ public class DefaultConductor extends Conductor{
 	
 
 	private double interpolate(double d, double e, double a) {
-		// TODO Auto-generated method stub
 		return d+(e-d)*a;
 	}
 	

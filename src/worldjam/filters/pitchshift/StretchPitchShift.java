@@ -36,9 +36,9 @@ public class StretchPitchShift extends AudioFilter{
 		this.setStretchFactor(Math.pow(2,  -shiftInCents/1200.));
 	}
 
-	float floatBuffer[];
-	float stretchedFloatBufferA[];
-	float stretchedFloatBufferB[];
+	private float floatBuffer[];
+	private float stretchedFloatBufferA[];
+	private float stretchedFloatBufferB[];
 	private float[] activeBuffer;
 	private float[] prevBuffer;
 	
@@ -76,9 +76,14 @@ public class StretchPitchShift extends AudioFilter{
 	}
 
 	private double msPerSegment = 50;//1000./44100*10;
+	private double overlapMS = 10;
 	
-	
-	
+	public void setMsPerSegment(double msPerSegment){
+		this.msPerSegment = msPerSegment;
+	}
+	public void setMsPerOverlap(double overlapMS){
+		this.overlapMS = overlapMS;
+	}
 
 	private void stretch(float[] in, float[] out, double factor) {
 		////factor = (in.length-1.)/(out.length-1.);
@@ -91,23 +96,49 @@ public class StretchPitchShift extends AudioFilter{
 				float y2 = in[(int)x+1];
 				out[i] = (float)(y1*(1-x%1.)+y2*(x%1.));
 			}
-			if(factor != 1) System.out.println(i + " "+ (int)x + " " + in.length + " " + out.length + " " + out[i]);
+			//if(factor != 1) System.out.println(i + " "+ (int)x + " " + in.length + " " + out.length + " " + out[i]);
 		}
 	}
 
 	private void merge(float[] in, float[] inPrev, float[] out, double factor) {
 		int inSegmentLength = (int)(format.getSampleRate()*msPerSegment/1000.);
 		int outSegmentLength = (int)(format.getSampleRate()*msPerSegment/1000./factor);
+		int overlapLength = (int)(format.getSampleRate()*overlapMS);
 		//int segmentLength = (int)(format.getSampleRate()*msPerSegment/1000.);
 		for(int i = 0; i < out.length; i++){
 			int ip = out.length-i-1;
 			int index = in.length - 1 - ((ip/outSegmentLength)*inSegmentLength + (ip%outSegmentLength));
 			
 			if(index >= 0)
-				out[i] = (float)in[index];
+				out[i] = in[index];
 			else
-				out[i] = (float)inPrev[index+inPrev.length];
-			//if(i%100 == 0) System.out.println(i + " " + index + " " + out[i]);
+				out[i] = inPrev[index+inPrev.length];
+			if(overlapLength == 0)
+				continue;
+			int b = ip%outSegmentLength;
+			int a = outSegmentLength - b;
+			if(a < overlapLength && factor > 1){
+				int index2 = index - (inSegmentLength-outSegmentLength);
+				
+				double y1 = out[i];
+				double y2;
+				if(index2 >= 0)
+					y2 = in[index2];
+				else
+					y2 = inPrev[index2+inPrev.length];
+				out[i] = (float) ((y1*a + y2*(overlapLength-a))/overlapLength);
+				
+			} else if(factor < 1 && b < overlapLength){
+				int index2 = index + (inSegmentLength-outSegmentLength);
+				
+				double y1 = out[i];
+				double y2;
+				if(index2 >= 0)
+					y2 = in[index2];
+				else
+					y2 = inPrev[index2+inPrev.length];
+				out[i] = (float) ((y1*b + y2*(overlapLength-b))/overlapLength);
+			}
 		}
 	}
 

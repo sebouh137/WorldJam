@@ -66,7 +66,7 @@ public class PlaybackChannelControlGUI extends JFrame {
 		getContentPane().add(tabbedPane, BorderLayout.CENTER);
 		lineControls = new LineControls(playbackClip.getLine());
 		tabbedPane.addTab("Line", null, lineControls, null);
-		tabbedPane.addTab("Filters", null, createFilterControls(playbackClip), null);
+		tabbedPane.addTab("Transpose", null, createFilterControls(playbackClip), null);
 		tabbedPane.addTab("Delay", null, createDelayControls(playbackClip), null);
 		tabbedPane.addTab("Info", null, createInfoPanel(playbackClip), null);
 		
@@ -237,18 +237,26 @@ public class PlaybackChannelControlGUI extends JFrame {
 
 
 	private JPanel createFilterControls(PlaybackChannel channel){
+		
+		
+		StretchPitchShift filter;
+		if(channel.getFilter() == null || !(channel.getFilter() instanceof StretchPitchShift))
+			filter = new StretchPitchShift(channel.getInputFormat(), 0);
+		else
+			filter = (StretchPitchShift)channel.getFilter();
+			
 		JPanel filterControls = new JPanel();
 		GridBagLayout gbl_filterControls = new GridBagLayout();
 		gbl_filterControls.columnWidths = new int[]{0, 60, 104, 0, 0, 0};
-		gbl_filterControls.rowHeights = new int[]{26, 0};
+		gbl_filterControls.rowHeights = new int[]{26, 0, 0, 0, 0, 0};
 		gbl_filterControls.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
-		gbl_filterControls.rowWeights = new double[]{0.0, Double.MIN_VALUE};
+		gbl_filterControls.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		filterControls.setLayout(gbl_filterControls);
 		
 		
 		JCheckBox chckbxPitchShift = new JCheckBox("Pitch Shift");
 		GridBagConstraints gbc_chckbxPitchShift = new GridBagConstraints();
-		gbc_chckbxPitchShift.insets = new Insets(0, 0, 0, 5);
+		gbc_chckbxPitchShift.insets = new Insets(0, 0, 5, 5);
 		gbc_chckbxPitchShift.gridx = 1;
 		gbc_chckbxPitchShift.gridy = 0;
 		filterControls.add(chckbxPitchShift, gbc_chckbxPitchShift);
@@ -256,12 +264,13 @@ public class PlaybackChannelControlGUI extends JFrame {
 		JSpinner spinner = new JSpinner();
 		spinner.setMinimumSize(new Dimension(12, 30));
 		
-		if(channel.getFilter() != null && channel.getFilter() instanceof StretchPitchShift){
-			spinner.setValue((int)((StretchPitchShift)channel.getFilter()).getShiftInCents());
+		
+		spinner.setValue((int)filter.getShiftInCents());
+		if(channel.getFilter() == filter){
 			chckbxPitchShift.setSelected(true);
 		}
 		GridBagConstraints gbc_spinner = new GridBagConstraints();
-		gbc_spinner.insets = new Insets(0, 0, 0, 5);
+		gbc_spinner.insets = new Insets(0, 0, 5, 5);
 		gbc_spinner.fill = GridBagConstraints.HORIZONTAL;
 		gbc_spinner.anchor = GridBagConstraints.NORTH;
 		gbc_spinner.gridx = 2;
@@ -270,34 +279,96 @@ public class PlaybackChannelControlGUI extends JFrame {
 		
 		JLabel lblCents = new JLabel("cents");
 		GridBagConstraints gbc_lblCents = new GridBagConstraints();
-		gbc_lblCents.insets = new Insets(0, 0, 0, 5);
+		gbc_lblCents.insets = new Insets(0, 0, 5, 5);
 		gbc_lblCents.gridx = 3;
 		gbc_lblCents.gridy = 0;
 		filterControls.add(lblCents, gbc_lblCents);
 		
+		JSeparator separator = new JSeparator();
+		GridBagConstraints gbc_separator = new GridBagConstraints();
+		gbc_separator.gridwidth = 5;
+		gbc_separator.insets = new Insets(0, 0, 5, 0);
+		gbc_separator.gridx = 0;
+		gbc_separator.gridy = 1;
+		filterControls.add(separator, gbc_separator);
 		
-		ChangeListener pitchShiftListener = new ChangeListener(){
+		JLabel lblAdvancedSettings = new JLabel("Advanced settings");
+		GridBagConstraints gbc_lblAdvancedSettings = new GridBagConstraints();
+		gbc_lblAdvancedSettings.gridwidth = 3;
+		gbc_lblAdvancedSettings.insets = new Insets(0, 0, 5, 5);
+		gbc_lblAdvancedSettings.gridx = 1;
+		gbc_lblAdvancedSettings.gridy = 2;
+		filterControls.add(lblAdvancedSettings, gbc_lblAdvancedSettings);
+		
+		JLabel lblSegmentSize = new JLabel("segment size");
+		GridBagConstraints gbc_lblSegmentSize = new GridBagConstraints();
+		gbc_lblSegmentSize.insets = new Insets(0, 0, 5, 5);
+		gbc_lblSegmentSize.gridx = 1;
+		gbc_lblSegmentSize.gridy = 3;
+		filterControls.add(lblSegmentSize, gbc_lblSegmentSize);
+		
+		JSpinner spinner_1 = new JSpinner();
+		GridBagConstraints gbc_spinner_1 = new GridBagConstraints();
+		gbc_spinner_1.fill = GridBagConstraints.HORIZONTAL;
+		gbc_spinner_1.insets = new Insets(0, 0, 5, 5);
+		gbc_spinner_1.gridx = 2;
+		gbc_spinner_1.gridy = 3;
+		spinner_1.setValue((int)filter.getMsPerSegment());
+		filterControls.add(spinner_1, gbc_spinner_1);
+		
+		JLabel lblMs_3 = new JLabel("ms");
+		GridBagConstraints gbc_lblMs_3 = new GridBagConstraints();
+		gbc_lblMs_3.insets = new Insets(0, 0, 5, 5);
+		gbc_lblMs_3.gridx = 3;
+		gbc_lblMs_3.gridy = 3;
+		filterControls.add(lblMs_3, gbc_lblMs_3);
+		
+		JLabel lblOverlap = new JLabel("overlap size");
+		GridBagConstraints gbc_lblOverlap = new GridBagConstraints();
+		gbc_lblOverlap.insets = new Insets(0, 0, 0, 5);
+		gbc_lblOverlap.gridx = 1;
+		gbc_lblOverlap.gridy = 4;
+		filterControls.add(lblOverlap, gbc_lblOverlap);
+		
+		JSpinner spinner_2 = new JSpinner();
+		GridBagConstraints gbc_spinner_2 = new GridBagConstraints();
+		gbc_spinner_2.fill = GridBagConstraints.HORIZONTAL;
+		gbc_spinner_2.insets = new Insets(0, 0, 0, 5);
+		gbc_spinner_2.gridx = 2;
+		gbc_spinner_2.gridy = 4;
+		spinner_2.setValue((int)filter.getMsPerOverlap());
+		filterControls.add(spinner_2, gbc_spinner_2);
+
+		
+		JLabel lblMs_2 = new JLabel("ms");
+		GridBagConstraints gbc_lblMs_2 = new GridBagConstraints();
+		gbc_lblMs_2.insets = new Insets(0, 0, 0, 5);
+		gbc_lblMs_2.gridx = 3;
+		gbc_lblMs_2.gridy = 4;
+		filterControls.add(lblMs_2, gbc_lblMs_2);
+		
+		
+		ChangeListener changeListener = new ChangeListener(){
 
 			@Override
 			public void stateChanged(ChangeEvent e) {
 				if(chckbxPitchShift.isSelected()){
-					int value = (Integer)spinner.getValue();
-					if(channel.getFilter() != null && channel.getFilter() instanceof StretchPitchShift)
-						((StretchPitchShift)channel.getFilter()).setShiftInCents(value);
-					else
-						//use the input format, since the mono-to-stereo conversion takes place
-						//after applying any filters
-						channel.setFilter(new StretchPitchShift(channel.getInputFormat(), value));
-					
+					int cents = (Integer)spinner.getValue();
+					filter.setShiftInCents(cents);
+					filter.setMsPerSegment((Integer)spinner_1.getValue());
+					filter.setMsPerOverlap((Integer)spinner_2.getValue());
+					channel.setFilter(filter);
 				}
 				else {
-					channel.setFilter(null);
+					channel.setFilter(filter);
 				}
 			}
 			
 		};
-		spinner.addChangeListener(pitchShiftListener);
-		chckbxPitchShift.addChangeListener(pitchShiftListener);
+		spinner.addChangeListener(changeListener);
+		spinner_1.addChangeListener(changeListener);
+		spinner_2.addChangeListener(changeListener);
+		chckbxPitchShift.addChangeListener(changeListener);
 		return filterControls;
 	}
 

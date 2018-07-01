@@ -19,13 +19,11 @@ public class StretchPitchShift extends AudioFilter{
 	public StretchPitchShift(AudioFormat format, int shiftInCents){
 		super(format);
 		setShiftInCents(shiftInCents);
-		
 	}
 	
 	public StretchPitchShift(AudioFormat format, double factor){
 		super(format);
-		setStretchFactor(factor);
-		
+		setStretchFactor(factor);	
 	}
 	
 	private void setStretchFactor(double factor) {
@@ -46,6 +44,8 @@ public class StretchPitchShift extends AudioFilter{
 	
 	protected byte[] process(byte[] sampleData, AudioFormat format){
 		double factor = this._factor;
+		double msPerSegment = this._msPerSegment;
+		double overlapMS = this._overlapMS;
 		//System.out.println(factor);
 		if(floatBuffer == null || floatBuffer.length != sampleData.length/Float.BYTES){
 			floatBuffer = new float[sampleData.length/(format.getSampleSizeInBits()/8)];
@@ -69,20 +69,32 @@ public class StretchPitchShift extends AudioFilter{
 			prevBuffer = stretchedFloatBufferA;
 		}
 		stretch(floatBuffer, activeBuffer, factor);
-		merge(activeBuffer, prevBuffer, floatBuffer, factor);
+		
+		int inSegmentLength = (int)(format.getSampleRate()*msPerSegment/1000.);
+		int outSegmentLength = (int)(format.getSampleRate()*msPerSegment/1000./factor);
+		int overlapLength = (int)(format.getSampleRate()*overlapMS);
+		merge(activeBuffer, prevBuffer, floatBuffer, factor, inSegmentLength, outSegmentLength, overlapLength);
 		
 		dac.convert(floatBuffer,sampleData);
 		return sampleData.clone();
 	}
 
-	private double msPerSegment = 50;//1000./44100*10;
-	private double overlapMS = 10;
+	private double _msPerSegment = 50;
+	private double _overlapMS = 10;
 	
 	public void setMsPerSegment(double msPerSegment){
-		this.msPerSegment = msPerSegment;
+		this._msPerSegment = msPerSegment;
 	}
 	public void setMsPerOverlap(double overlapMS){
-		this.overlapMS = overlapMS;
+		this._overlapMS = overlapMS;
+	}
+	
+	public double getMsPerOverlap(){
+		return this._overlapMS;
+	}
+	
+	public double getMsPerSegment(){
+		return this._msPerSegment;
 	}
 
 	private void stretch(float[] in, float[] out, double factor) {
@@ -100,10 +112,8 @@ public class StretchPitchShift extends AudioFilter{
 		}
 	}
 
-	private void merge(float[] in, float[] inPrev, float[] out, double factor) {
-		int inSegmentLength = (int)(format.getSampleRate()*msPerSegment/1000.);
-		int outSegmentLength = (int)(format.getSampleRate()*msPerSegment/1000./factor);
-		int overlapLength = (int)(format.getSampleRate()*overlapMS);
+	private void merge(float[] in, float[] inPrev, float[] out, double factor, int inSegmentLength, int outSegmentLength, int overlapLength) {
+		
 		//int segmentLength = (int)(format.getSampleRate()*msPerSegment/1000.);
 		for(int i = 0; i < out.length; i++){
 			int ip = out.length-i-1;

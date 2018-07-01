@@ -11,6 +11,7 @@ import worldjam.core.BeatClock;
 import worldjam.util.DigitalAnalogConverter;
 
 public class PlaybackThread extends Thread implements PlaybackChannel{
+	private boolean convertToStereo = true;
 	private SourceDataLine sdl;
 	/**
 	 * The PlaybackThread uses the clock information in order to wait until the beginning of a measure to start,
@@ -18,20 +19,35 @@ public class PlaybackThread extends Thread implements PlaybackChannel{
 	 * {@link #setReplayOffsetInBeats} and {@link #setReplayOffsetInMeasures} methods
 	 */
 	private BeatClock clock;
-	private AudioFormat format;
+	private AudioFormat playbackFormat;
+	private AudioFormat inputFormat;
 	private Mixer mixer;
-	public PlaybackThread(Mixer mixer, AudioFormat format, BeatClock clock) throws LineUnavailableException{
-		DataLine.Info info = new DataLine.Info(SourceDataLine.class, format);
+	public PlaybackThread(Mixer mixer, AudioFormat inputFormat, BeatClock clock) throws LineUnavailableException{
+		this.inputFormat = inputFormat;
+		System.out.println("input format: " + inputFormat);
+		if(convertToStereo){
+			playbackFormat = new AudioFormat(inputFormat.getEncoding()
+					, inputFormat.getSampleRate(), 
+					inputFormat.getSampleSizeInBits(),
+					2, 
+					inputFormat.getFrameSize()*2, 
+					inputFormat.getFrameRate(), 
+					inputFormat.isBigEndian());
+		} else
+			playbackFormat = inputFormat;
+		
+
+		System.out.println("playback format: " + playbackFormat);
+		DataLine.Info info = new DataLine.Info(SourceDataLine.class, playbackFormat);
 		this.mixer = mixer;
 		sdl = (SourceDataLine)mixer.getLine(info);
 
 		this.clock = clock;
-		this.format = format;
 		setReplayOffset(1, 0, 0);
 		//a buffer of 10 measures long is overkill
 		int nMeasuresInBuffer = 5;
-		int bufferSize = (int)(format.getFrameSize()*
-				format.getFrameRate()*
+		int bufferSize = (int)(playbackFormat.getFrameSize()*
+				playbackFormat.getFrameRate()*
 				clock.msPerBeat/1000.*
 				clock.beatsPerMeasure*
 				nMeasuresInBuffer);
@@ -50,7 +66,7 @@ public class PlaybackThread extends Thread implements PlaybackChannel{
 		this.offset_ms = n_ms;
 		this.total_offset_ms = (nMeasures*clock.beatsPerMeasure+nBeats)*clock.msPerBeat+n_ms;
 		replayOffsetInBytes = (int) (
-				total_offset_ms*format.getFrameRate()/1000.)*format.getFrameSize();
+				total_offset_ms*playbackFormat.getFrameRate()/1000.)*playbackFormat.getFrameSize();
 	}
 
 	/*public void setReplayOffsetInMeasures(int nMeasures){
@@ -65,18 +81,31 @@ public class PlaybackThread extends Thread implements PlaybackChannel{
 	private int replayOffsetInBytes;
 	public void sampleReceived(SampleMessage sample) {
 		int dt = (int) (sample.sampleStartTime-loopStartTime);
-		int destPos = (int) (dt*format.getFrameRate()/1000.)*format.getFrameSize();
+		int destPos = (int) (dt*playbackFormat.getFrameRate()/1000.)*playbackFormat.getFrameSize();
 		destPos += replayOffsetInBytes;
 		destPos %= buffer.length;
 		if(destPos < 0)
 			destPos += buffer.length;
 		if(filter != null){
-			sample.sampleData = filter.process(sample.sampleData, format);
+			sample.sampleData = filter.process(sample.sampleData, inputFormat);
+		}
+		if(convertToStereo){
+			sample.sampleData = stereoConvert(sample.sampleData);
 		}
 		AudioUtils.arrayCopyWrapped(sample.sampleData, 0, buffer, destPos, sample.sampleData.length);
 	}
 
 
+	private byte[] stereoConvert(byte[] mono) {
+		byte[] stereo = new byte[mono.length*2];
+		int ifs = inputFormat.getFrameSize();
+		for(int i = 0; i<mono.length/ifs; i++){
+			System.arraycopy(mono, ifs*i, stereo, ifs*2*i, ifs);
+			System.arraycopy(mono, ifs*i, stereo, ifs*(2*i+1), ifs);
+		}
+		return stereo;
+	}
+	
 	//status flags
 	private boolean alive = true;
 
@@ -88,7 +117,7 @@ public class PlaybackThread extends Thread implements PlaybackChannel{
 
 	private long loopStartTime;
 	public void run(){
-		int N_BYTES_PLAYED_AT_ONCE = (int) (format.getFrameRate()*format.getFrameSize());
+		int N_BYTES_PLAYED_AT_ONCE = (int) (playbackFormat.getFrameRate()*playbackFormat.getFrameSize());
 		
 		/*
 		 * For convenience, start at the beginning of a measure
@@ -136,10 +165,12 @@ public class PlaybackThread extends Thread implements PlaybackChannel{
 	}
 
 	private AudioFilter filter;
-	public AudioFormat getFormat() {
-		return format;
+	public AudioFormat getPlaybackFormat() {
+		return playbackFormat;
 	}
-
+	public AudioFormat getInputFormat(){
+		return inputFormat;
+	}
 
 	public void setClock(BeatClock clock) {
 		this.clock = clock;
@@ -148,15 +179,15 @@ public class PlaybackThread extends Thread implements PlaybackChannel{
 
 	public double getRMS(double windowInMS){
 		long t = System.currentTimeMillis()-loopStartTime;
-		int offsetInBytes = (((int) (t*format.getFrameRate()/1000.))*format.getFrameSize())%buffer.length;
+		int offsetInBytes = (((int) (t*playbackFormat.getFrameRate()/1000.))*playbackFormat.getFrameSize())%buffer.length;
 
-		int nSamples = (int)(windowInMS/1000.*format.getSampleRate());
+		int nSamples = (int)(windowInMS/1000.*playbackFormat.getSampleRate());
 		double sumSqr = 0;
-		DigitalAnalogConverter dac = new DigitalAnalogConverter(format);
+		DigitalAnalogConverter dac = new DigitalAnalogConverter(playbackFormat);
 		for(int i = 0; i<nSamples; i++){
-			int index = offsetInBytes/(format.getSampleSizeInBits()/8)-i;
+			int index = offsetInBytes/(playbackFormat.getSampleSizeInBits()/8)-i;
 			if(index <0)
-				index+= buffer.length/(format.getSampleSizeInBits()/8);
+				index+= buffer.length/(playbackFormat.getSampleSizeInBits()/8);
 			double x = dac.getConvertedSample(buffer, index);
 			double sqr = Math.pow(x, 2);
 			sumSqr += sqr;

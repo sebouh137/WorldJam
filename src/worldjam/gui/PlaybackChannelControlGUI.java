@@ -58,7 +58,7 @@ public class PlaybackChannelControlGUI extends JFrame {
 		
 		
 		setTitle(title);
-		setSize(413, 270);
+		setSize(413, 300);
 		setVisible(true);
 		
 		
@@ -282,12 +282,12 @@ public class PlaybackChannelControlGUI extends JFrame {
 			public void stateChanged(ChangeEvent e) {
 				if(chckbxPitchShift.isSelected()){
 					int value = (Integer)spinner.getValue();
-					//System.out.println("changing pitch shift to " + value);
-					//channel.setFilter(filter);
-					/*if(channel.getFilter() != null && channel.getFilter() instanceof StretchPitchShift)
+					if(channel.getFilter() != null && channel.getFilter() instanceof StretchPitchShift)
 						((StretchPitchShift)channel.getFilter()).setShiftInCents(value);
-					else*/
-						channel.setFilter(new StretchPitchShift(channel.getFormat(), value));
+					else
+						//use the input format, since the mono-to-stereo conversion takes place
+						//after applying any filters
+						channel.setFilter(new StretchPitchShift(channel.getInputFormat(), value));
 					
 				}
 				else {

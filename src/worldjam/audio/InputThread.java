@@ -18,7 +18,7 @@ public class InputThread extends Thread implements RMS{
 	private TargetDataLine tdl;
 	
 	private int nBytesPerLoop;
-	byte[] buffer;
+	private byte[] buffer;
 	private AudioSubscriber receiver;
 	private AudioFormat format;
 	public InputThread(Mixer mixer, AudioFormat format, BeatClock clock) throws LineUnavailableException{
@@ -32,7 +32,7 @@ public class InputThread extends Thread implements RMS{
 		buffer = new byte[nBytesPerLoop];
 		buffer2 = new byte[nBytesPerLoop];
 	}
-	double nMsPerLoop;
+	private double nMsPerLoop;
 	//status flags
 	private boolean alive = true, paused = false;
 	private Mixer mixer;
@@ -62,7 +62,7 @@ public class InputThread extends Thread implements RMS{
 			
 		}
 	}
-	byte buffer2[];
+	private byte buffer2[];
 	public void setReceiver(AudioSubscriber rec){
 		this.receiver = rec;
 	}

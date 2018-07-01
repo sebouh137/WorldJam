@@ -14,7 +14,7 @@ import worldjam.audio.AudioFilter;
  */
 public class StretchPitchShift extends AudioFilter{
 	
-	private double factor;
+	private double _factor;
 
 	public StretchPitchShift(AudioFormat format, int shiftInCents){
 		super(format);
@@ -29,7 +29,7 @@ public class StretchPitchShift extends AudioFilter{
 	}
 	
 	private void setStretchFactor(double factor) {
-		this.factor = factor;
+		this._factor = factor;
 	}
 
 	public void setShiftInCents(int shiftInCents) {
@@ -45,7 +45,7 @@ public class StretchPitchShift extends AudioFilter{
 	
 	
 	protected byte[] process(byte[] sampleData, AudioFormat format){
-		double factor = this.factor;
+		double factor = this._factor;
 		//System.out.println(factor);
 		if(floatBuffer == null || floatBuffer.length != sampleData.length/Float.BYTES){
 			floatBuffer = new float[sampleData.length/(format.getSampleSizeInBits()/8)];
@@ -54,15 +54,17 @@ public class StretchPitchShift extends AudioFilter{
 		
 		if(stretchedFloatBufferA == null || stretchedFloatBufferA.length != (int)(floatBuffer.length*factor)){
 			stretchedFloatBufferA = new float[(int)(floatBuffer.length*factor)];
+			System.out.println("changing buffer A length ");
 		}
 		if(stretchedFloatBufferB == null || stretchedFloatBufferB.length != (int)(floatBuffer.length*factor)){
 			stretchedFloatBufferB = new float[(int)(floatBuffer.length*factor)];
+			System.out.println("changing buffer A length ");
 		}
 		if(activeBuffer == null || activeBuffer == stretchedFloatBufferB){
 			activeBuffer = stretchedFloatBufferA;
 			prevBuffer = stretchedFloatBufferB;
 		}
-		else if(activeBuffer == stretchedFloatBufferA){
+		else {
 			activeBuffer = stretchedFloatBufferB;
 			prevBuffer = stretchedFloatBufferA;
 		}
@@ -73,23 +75,23 @@ public class StretchPitchShift extends AudioFilter{
 		return sampleData.clone();
 	}
 
-	double msPerSegment = 100;//1000./44100*10;
+	private double msPerSegment = 50;//1000./44100*10;
 	
 	
-	int samplePhase;
 	
 
 	private void stretch(float[] in, float[] out, double factor) {
+		////factor = (in.length-1.)/(out.length-1.);
 		for(int i = 0; i< out.length; i++){
 			double x = i/factor;
 			if(x+1>=in.length){
-				out[i] = in[in.length-1];
-				continue;
+				out[i] = in[(int)x];
+			} else{
+				float y1 = in[(int)x];
+				float y2 = in[(int)x+1];
+				out[i] = (float)(y1*(1-x%1.)+y2*(x%1.));
 			}
-			
-			float y1 = in[(int)x];
-			float y2 = in[(int)x+1];
-			out[i] = (float)(y1*(1-x%1.)+y2*(x%1.));
+			if(factor != 1) System.out.println(i + " "+ (int)x + " " + in.length + " " + out.length + " " + out[i]);
 		}
 	}
 
@@ -99,17 +101,18 @@ public class StretchPitchShift extends AudioFilter{
 		//int segmentLength = (int)(format.getSampleRate()*msPerSegment/1000.);
 		for(int i = 0; i < out.length; i++){
 			int ip = out.length-i-1;
-			int index = in.length - 1 - ((ip/outSegmentLength)*inSegmentLength + ip%outSegmentLength);
-			//if(i%100 == 0) System.out.println(i + " " + index + " " + in.length + " " + out.length + " " + inSegmentLength + " " + outSegmentLength);
+			int index = in.length - 1 - ((ip/outSegmentLength)*inSegmentLength + (ip%outSegmentLength));
+			
 			if(index >= 0)
 				out[i] = (float)in[index];
 			else
 				out[i] = (float)inPrev[index+inPrev.length];
+			//if(i%100 == 0) System.out.println(i + " " + index + " " + out[i]);
 		}
 	}
 
 	public double getShiftInCents() {
-		return -Math.log(factor)*1200/Math.log(2);
+		return -Math.log(_factor)*1200/Math.log(2);
 	}
 	
 }

@@ -17,6 +17,7 @@ public interface PlaybackChannel extends RMS, AudioSubscriber{
 	public int getAddDelayMS();
 	public int getDelayInMS();
 	public void setFilter(AudioFilter filter);
-	public AudioFormat getFormat();
+	public AudioFormat getInputFormat();
+	public AudioFormat getPlaybackFormat();
 	public AudioFilter getFilter();
 }

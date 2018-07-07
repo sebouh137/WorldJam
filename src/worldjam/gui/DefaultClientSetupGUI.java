@@ -1,6 +1,5 @@
 package worldjam.gui;
 
-import javax.swing.JDialog;
 import javax.swing.JFrame;
 
 import java.awt.GridBagLayout;
@@ -12,8 +11,6 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 import javax.swing.JRadioButton;
@@ -26,12 +23,12 @@ import javax.swing.event.ChangeListener;
 
 import worldjam.core.BeatClock;
 import worldjam.exe.DefaultClient;
+import worldjam.gui.conductor.DefaultConductor;
 import worldjam.util.DefaultObjects;
 
 import javax.swing.JSpinner;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
-import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.Mixer;
 import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.TargetDataLine;
@@ -39,7 +36,8 @@ import javax.swing.ButtonGroup;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.SwingConstants;
-import javax.swing.JComboBox;;
+import javax.swing.JComboBox;
+import javax.swing.JPanel;;
 
 public class DefaultClientSetupGUI extends JFrame{
 	/**
@@ -50,7 +48,7 @@ public class DefaultClientSetupGUI extends JFrame{
 	private JTextField txtIP;
 	private JTextField txtSession;
 	private JTextField txtBPM;
-	private JTextField txt_msPerBeat;
+	private JSpinner spinner_msPerBeat;
 	private final ButtonGroup buttonGroup = new ButtonGroup();
 	private final ButtonGroup buttonGroup_1 = new ButtonGroup();
 	private JLabel lblTimeSignature;
@@ -65,6 +63,8 @@ public class DefaultClientSetupGUI extends JFrame{
 	private JComboBox comboBox;
 	private JLabel lblOutput;
 	private JComboBox comboBox_1;
+	private DefaultConductor previewConductor;
+	private JLabel label;
 	public DefaultClientSetupGUI() {
 		this.setSize(769, 304);
 		setTitle("Client Setup");
@@ -77,9 +77,9 @@ public class DefaultClientSetupGUI extends JFrame{
 			e1.printStackTrace();
 		}*/
 		GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.columnWidths = new int[]{53, 76, 0, 56, 56, 91, 157, 0};
+		gridBagLayout.columnWidths = new int[]{53, 76, 0, 56, 56, 81, 94, 235, 0};
 		gridBagLayout.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-		gridBagLayout.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
+		gridBagLayout.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
 		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		getContentPane().setLayout(gridBagLayout);
 		
@@ -114,6 +114,7 @@ public class DefaultClientSetupGUI extends JFrame{
 		comboBox = new JComboBox();
 		comboBox.setModel(getComboBoxModel(getMixers(TargetDataLine.class)));
 		GridBagConstraints gbc_comboBox = new GridBagConstraints();
+		gbc_comboBox.gridwidth = 2;
 		gbc_comboBox.insets = new Insets(0, 0, 5, 0);
 		gbc_comboBox.fill = GridBagConstraints.HORIZONTAL;
 		gbc_comboBox.gridx = 6;
@@ -151,6 +152,7 @@ public class DefaultClientSetupGUI extends JFrame{
 		comboBox_1 = new JComboBox();
 		comboBox_1.setModel(getComboBoxModel(getMixers(SourceDataLine.class)));
 		GridBagConstraints gbc_comboBox_1 = new GridBagConstraints();
+		gbc_comboBox_1.gridwidth = 2;
 		gbc_comboBox_1.insets = new Insets(0, 0, 5, 0);
 		gbc_comboBox_1.fill = GridBagConstraints.HORIZONTAL;
 		gbc_comboBox_1.gridx = 6;
@@ -187,15 +189,16 @@ public class DefaultClientSetupGUI extends JFrame{
 				spinner.setEnabled(enable);
 				spinner_1.setEnabled(enable);
 				txtBPM.setEnabled(enable);
-				txt_msPerBeat.setEnabled(enable);
+				spinner_msPerBeat.setEnabled(enable);
 				
 				if(rdbtnMsPerBeat.isSelected() && enable){
 					txtBPM.setEnabled(false);
-					txt_msPerBeat.setEnabled(true);
+					spinner_msPerBeat.setEnabled(true);
 				} else if (rdbtnBeatsPerMinute.isSelected() && enable){
-					txt_msPerBeat.setEnabled(false);
+					spinner_msPerBeat.setEnabled(false);
 					txtBPM.setEnabled(true);
 				}
+				previewConductor.setVisible(enable);
 			}
 		};
 		rdbtnJoinExistingSession.addChangeListener(cl);
@@ -210,6 +213,7 @@ public class DefaultClientSetupGUI extends JFrame{
 		
 		rdbtnStartNewSession = new JRadioButton("Start New Session");
 		buttonGroup.add(rdbtnStartNewSession);
+		
 		rdbtnStartNewSession.setSelected(true);
 		GridBagConstraints gbc_rdbtnStartNewSession = new GridBagConstraints();
 		gbc_rdbtnStartNewSession.gridwidth = 3;
@@ -219,6 +223,8 @@ public class DefaultClientSetupGUI extends JFrame{
 		gbc_rdbtnStartNewSession.gridy = 4;
 		getContentPane().add(rdbtnStartNewSession, gbc_rdbtnStartNewSession);
 		rdbtnStartNewSession.addChangeListener(cl);
+		
+		
 		
 		lblTimeSignature = new JLabel("    Time Signature");
 		lblTimeSignature.setHorizontalAlignment(SwingConstants.LEFT);
@@ -237,6 +243,15 @@ public class DefaultClientSetupGUI extends JFrame{
 		gbc_spinner.gridy = 5;
 		spinner.setModel(new SpinnerNumberModel(4,1,64,1));
 		getContentPane().add(spinner, gbc_spinner);
+		ChangeListener changeTimeSignature = new ChangeListener(){
+
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				previewConductor.clock.beatsPerMeasure = (int)spinner.getValue();
+				previewConductor.setClock(previewConductor.clock);
+			}
+		};
+		spinner.addChangeListener(changeTimeSignature);
 		
 		spinner_1 = new JSpinner();
 		GridBagConstraints gbc_spinner_1 = new GridBagConstraints();
@@ -248,11 +263,13 @@ public class DefaultClientSetupGUI extends JFrame{
 		spinner_1.setModel(new SpinnerListModel(new Integer[]{1, 2, 4, 8, 16, 32, 64}));
 		spinner_1.getModel().setValue(4);
 		getContentPane().add(spinner_1, gbc_spinner_1);
+		spinner_1.addChangeListener(changeTimeSignature);
 		
 		rdbtnBeatsPerMinute = new JRadioButton("Beats Per Minute");
 		buttonGroup_1.add(rdbtnBeatsPerMinute);
 		rdbtnBeatsPerMinute.setSelected(true);
 		rdbtnBeatsPerMinute.addChangeListener(cl);
+		
 		GridBagConstraints gbc_rdbtnBeatsPerMinute = new GridBagConstraints();
 		gbc_rdbtnBeatsPerMinute.gridwidth = 2;
 		gbc_rdbtnBeatsPerMinute.anchor = GridBagConstraints.WEST;
@@ -279,8 +296,9 @@ public class DefaultClientSetupGUI extends JFrame{
 				
 				int val = (int)(60000./Double.parseDouble(txtBPM.getText()));
 				val = val-(val%10);
-				txt_msPerBeat.setText(Integer.toString(val));
+				spinner_msPerBeat.setValue(val);
 				txtBPM.setText(String.format("%.2f", 60000./val));
+				previewConductor.clock.msPerBeat = val;
 			}
 			
 		});
@@ -297,33 +315,42 @@ public class DefaultClientSetupGUI extends JFrame{
 		getContentPane().add(rdbtnMsPerBeat, gbc_rdbtnMsPerBeat);
 		rdbtnMsPerBeat.addChangeListener(cl);
 		
-		txt_msPerBeat = new JTextField();
-		txt_msPerBeat.setEnabled(false);
-		txt_msPerBeat.setText("500");
-		txt_msPerBeat.addActionListener(new ActionListener(){
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				int val = Integer.parseInt(txt_msPerBeat.getText());
-				val = val-(val%10);
-				txt_msPerBeat.setText(Integer.toString(val));
-				txtBPM.setText(String.format("%.2f", 60000./val));
-			}
-			
-		});
+		spinner_msPerBeat = new JSpinner();
+		spinner_msPerBeat.setModel(new SpinnerNumberModel(500, 10, 1000, 10));
+		spinner_msPerBeat.setEnabled(false);
 		GridBagConstraints gbc_txt_msPerBeat = new GridBagConstraints();
 		gbc_txt_msPerBeat.gridwidth = 2;
 		gbc_txt_msPerBeat.insets = new Insets(0, 0, 5, 5);
 		gbc_txt_msPerBeat.fill = GridBagConstraints.HORIZONTAL;
 		gbc_txt_msPerBeat.gridx = 3;
 		gbc_txt_msPerBeat.gridy = 7;
-		getContentPane().add(txt_msPerBeat, gbc_txt_msPerBeat);
-		txt_msPerBeat.setColumns(10);
+		getContentPane().add(spinner_msPerBeat, gbc_txt_msPerBeat);
+		
+		previewConductor = new DefaultConductor(
+				new BeatClock(
+						(int)spinner_msPerBeat.getValue(),
+						(int)spinner.getValue(),
+						(int)spinner_1.getValue()));
+		GridBagConstraints gbc_panel = new GridBagConstraints();
+		gbc_panel.gridwidth = 2;
+		gbc_panel.gridheight = 6;
+		gbc_panel.insets = new Insets(0, 0, 5, 5);
+		gbc_panel.fill = GridBagConstraints.BOTH;
+		gbc_panel.gridx = 5;
+		gbc_panel.gridy = 3;
+		getContentPane().add(previewConductor, gbc_panel);
+		
+		label = new JLabel("      ");
+		GridBagConstraints gbc_label = new GridBagConstraints();
+		gbc_label.insets = new Insets(0, 0, 5, 5);
+		gbc_label.gridx = 1;
+		gbc_label.gridy = 8;
+		getContentPane().add(label, gbc_label);
+		
 		
 		btnStart = new JButton("Start");
 		GridBagConstraints gbc_btnStart = new GridBagConstraints();
-		gbc_btnStart.insets = new Insets(0, 0, 0, 5);
-		gbc_btnStart.gridwidth = 7;
+		gbc_btnStart.gridwidth = 8;
 		gbc_btnStart.gridx = 0;
 		gbc_btnStart.gridy = 9;
 		getContentPane().add(btnStart, gbc_btnStart);
@@ -362,7 +389,7 @@ public class DefaultClientSetupGUI extends JFrame{
 			String displayName = gui.txtUser.getText();
 			int num = (int)gui.spinner.getModel().getValue();
 			int denom = (int)gui.spinner_1.getModel().getValue();
-			int msPerBeat = Integer.parseInt(gui.txt_msPerBeat.getText());
+			int msPerBeat = (int) gui.spinner_msPerBeat.getValue();
 			boolean join = gui.rdbtnJoinExistingSession.isSelected();
 			Mixer inputMixer =  AudioSystem.getMixer((Mixer.Info)gui.comboBox.getModel().getSelectedItem());
 			Mixer outputMixer = AudioSystem.getMixer((Mixer.Info)gui.comboBox_1.getModel().getSelectedItem());

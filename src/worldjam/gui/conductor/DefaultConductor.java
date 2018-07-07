@@ -1,4 +1,4 @@
-package worldjam.gui;
+package worldjam.gui.conductor;
 
 import java.util.Scanner;
 

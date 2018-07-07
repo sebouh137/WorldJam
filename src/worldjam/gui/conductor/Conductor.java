@@ -1,10 +1,11 @@
-package worldjam.gui;
+package worldjam.gui.conductor;
 
 import java.awt.BasicStroke;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
 import worldjam.core.BeatClock;
+import worldjam.gui.VisualMetronome;
 /**
  * Mimics a conductor's baton.
  * @author spaul

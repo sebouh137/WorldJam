@@ -37,7 +37,7 @@ public class VisualMetronome extends Canvas {
 		frame.setVisible(true);
 		return frame;
 	}
-	void setClock(BeatClock clock){
+	public void setClock(BeatClock clock){
 		this.clock = clock;
 	}
 }

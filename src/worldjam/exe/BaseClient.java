@@ -142,6 +142,14 @@ public abstract class BaseClient implements AudioSubscriber{
 
 	};
 	
+	public String getUserName(){
+		return this.displayName;
+	}
+	
+	public String getSessionName(){
+		return this.sessionName;
+	}
+	
 	protected void printClientConfiguration() {
 		System.out.println("Joined jam session with the following configuration:");
 		System.out.printf("  BPM: %.2f  (%d ms per beat)\n", 60000./beatClock.msPerBeat, beatClock.msPerBeat);

@@ -6,6 +6,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 
 import worldjam.exe.DefaultClient;
+import worldjam.gui.conductor.BezierConductor;
 import worldjam.gui.conductor.Conductor;
 import worldjam.gui.conductor.DefaultConductor;
 import worldjam.audio.*;
@@ -30,7 +31,7 @@ public class DefaultClientGUI extends JFrame implements PlaybackManager.ChannelC
 	private static final long serialVersionUID = -6893387160409587544L;
 	private DefaultClient client;
 	private JMenu mnChannels;
-	private Conductor conductor;
+	private BezierConductor conductor;
 	public DefaultClientGUI(DefaultClient client) {
 		setTitle("World Jam");
 		
@@ -68,7 +69,7 @@ public class DefaultClientGUI extends JFrame implements PlaybackManager.ChannelC
 		});
 		
 		
-		this.conductor = new DefaultConductor(client.getClock());
+		this.conductor = new BezierConductor(client.getClock());
 		getContentPane().add(conductor, BorderLayout.CENTER);
 		
 		getContentPane().add(createTimeInfoPanel(), BorderLayout.SOUTH);;

@@ -6,7 +6,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
 
-public class BeatClock implements Externalizable{
+public class BeatClock implements Externalizable, Cloneable{
 	/**
 	 * 
 	 */
@@ -58,5 +58,15 @@ public class BeatClock implements Externalizable{
 		startTime = in.readLong();
 	}
 	
+	@Override
+	public Object clone(){
+		try {
+			return super.clone();
+		} catch (CloneNotSupportedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
 	
 }

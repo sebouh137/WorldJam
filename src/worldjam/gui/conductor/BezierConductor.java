@@ -1,6 +1,7 @@
 package worldjam.gui.conductor;
 
 import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
@@ -31,8 +32,21 @@ public class BezierConductor extends VisualMetronome{
 	public BezierConductor(BeatClock clock, ConductingPattern pattern) {
 		super(clock);
 		this.pattern = pattern;
-		segments = pattern.getSegments();
-		
+		segments = pattern.getSegments();	
+	}
+	
+	public void setClock(BeatClock clock){
+		if(getClock() == null){
+			super.setClock(clock);
+			return;
+		}
+		if(getClock().beatsPerMeasure < clock.beatsPerMeasure){
+			setPattern(DefaultConductingPatternProvider.getInstance().getDefaultPattern(clock.beatsPerMeasure));
+			super.setClock(clock);
+		} else if(getClock().beatsPerMeasure > clock.beatsPerMeasure){
+			super.setClock(clock);
+			setPattern(DefaultConductingPatternProvider.getInstance().getDefaultPattern(clock.beatsPerMeasure));
+		}
 	}
 
 	public Object getPattern() {
@@ -42,7 +56,7 @@ public class BezierConductor extends VisualMetronome{
 	
 
 	public BezierConductor(BeatClock clock) {
-		super(clock);
+		this(clock, DefaultConductingPatternProvider.getInstance().getDefaultPattern(clock.beatsPerMeasure));
 	}
 
 	
@@ -53,20 +67,40 @@ public class BezierConductor extends VisualMetronome{
 
 		double u = t%1;
 		Segment segment = segments.get((int)t);
-		double x1 =  segment.interpolateX(u);
-		double y1 =  segment.interpolateY(u);
+		double x =  segment.interpolateX(u);
+		double y =  segment.interpolateY(u);
 
 		Graphics2D g2 = (Graphics2D)g;
 		
 		g2.setStroke(stroke);
 		
 		g.drawLine(
-				(int)(getWidth()*(.1+.8*x1)), 
-				(int)(getHeight()*(.1+.8*y1)), 
-				(int)(getWidth()*(.1+.4*x1)), 
-				(int)(getHeight()*(.25+.4*y1))
+				(int)(getWidth()*(.1+.8*x)), 
+				(int)(getHeight()*(.1+.8*y)), 
+				(int)(getWidth()*(.1+.4*x)), 
+				(int)(getHeight()*(.25+.4*y))
 				);
-
+		
+		/*
+		//try shading the baton lighter towards the back, to make it more 3d looking
+		Color darkGrey = new Color(30, 30, 30);
+		g.setColor(darkGrey);
+		
+		double x1 = getWidth()*(.1+.8*x);
+		double y1 = getHeight()*(.1+.8*y);
+		double x2 = getWidth()*(.1+.4*x);
+		double y2 = getHeight()*(.25+.4*y);
+		g.drawLine(
+				(int)x1, 
+				(int)y1, 
+				(int)x2, 
+				(int)y2
+				);
+		g.setColor(Color.black);
+		g.drawLine(
+				(int)((2*x2+x1)/3), (int)((2*y2+y1)/3), (int)x1, (int)y1);*/
+		
+		
 	}
 	
 	public static void main(String arg[]){

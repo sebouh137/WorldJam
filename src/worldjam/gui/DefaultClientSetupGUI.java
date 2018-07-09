@@ -23,7 +23,7 @@ import javax.swing.event.ChangeListener;
 
 import worldjam.core.BeatClock;
 import worldjam.exe.DefaultClient;
-import worldjam.gui.conductor.DefaultConductor;
+import worldjam.gui.conductor.BezierConductor;
 import worldjam.util.DefaultObjects;
 
 import javax.swing.JSpinner;
@@ -63,7 +63,7 @@ public class DefaultClientSetupGUI extends JFrame{
 	private JComboBox comboBox;
 	private JLabel lblOutput;
 	private JComboBox comboBox_1;
-	private DefaultConductor previewConductor;
+	private BezierConductor previewConductor;
 	private JLabel label;
 	public DefaultClientSetupGUI() {
 		this.setSize(769, 304);
@@ -247,8 +247,9 @@ public class DefaultClientSetupGUI extends JFrame{
 
 			@Override
 			public void stateChanged(ChangeEvent e) {
-				previewConductor.clock.beatsPerMeasure = (int)spinner.getValue();
-				previewConductor.setClock(previewConductor.clock);
+				BeatClock clock = (BeatClock) (previewConductor.clock.clone());
+				clock.beatsPerMeasure = (int)spinner.getValue();
+				previewConductor.setClock(clock);
 			}
 		};
 		spinner.addChangeListener(changeTimeSignature);
@@ -326,7 +327,20 @@ public class DefaultClientSetupGUI extends JFrame{
 		gbc_txt_msPerBeat.gridy = 7;
 		getContentPane().add(spinner_msPerBeat, gbc_txt_msPerBeat);
 		
-		previewConductor = new DefaultConductor(
+		spinner_msPerBeat.addChangeListener(new ChangeListener(){
+
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				int val = (int)spinner_msPerBeat.getValue();
+				val = val-(val%10);
+				spinner_msPerBeat.setValue(val);
+				txtBPM.setText(String.format("%.2f", 60000./val));
+				previewConductor.clock.msPerBeat = val;
+			}
+			
+		});
+		
+		previewConductor = new BezierConductor(
 				new BeatClock(
 						(int)spinner_msPerBeat.getValue(),
 						(int)spinner.getValue(),

@@ -40,4 +40,7 @@ public class VisualMetronome extends Canvas {
 	public void setClock(BeatClock clock){
 		this.clock = clock;
 	}
+	public BeatClock getClock() {
+		return clock;
+	}
 }

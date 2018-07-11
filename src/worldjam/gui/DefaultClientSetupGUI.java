@@ -247,8 +247,7 @@ public class DefaultClientSetupGUI extends JFrame{
 
 			@Override
 			public void stateChanged(ChangeEvent e) {
-				BeatClock clock = (BeatClock) (previewConductor.clock.clone());
-				clock.beatsPerMeasure = (int)spinner.getValue();
+				BeatClock clock = previewConductor.getClock().createWithDifferentBeatCount((int)spinner.getValue());
 				previewConductor.setClock(clock);
 			}
 		};
@@ -299,7 +298,7 @@ public class DefaultClientSetupGUI extends JFrame{
 				val = val-(val%10);
 				spinner_msPerBeat.setValue(val);
 				txtBPM.setText(String.format("%.2f", 60000./val));
-				previewConductor.clock.msPerBeat = val;
+				previewConductor.setClock(previewConductor.getClock().createWithDifferentTempo(val));
 			}
 			
 		});
@@ -335,7 +334,7 @@ public class DefaultClientSetupGUI extends JFrame{
 				val = val-(val%10);
 				spinner_msPerBeat.setValue(val);
 				txtBPM.setText(String.format("%.2f", 60000./val));
-				previewConductor.clock.msPerBeat = val;
+				previewConductor.setClock(previewConductor.getClock().createWithDifferentTempo(val));
 			}
 			
 		});
@@ -416,10 +415,10 @@ public class DefaultClientSetupGUI extends JFrame{
 				if(join){
 					client.joinSession();
 				} else{
-					BeatClock clock = new BeatClock();
-					clock.beatsPerMeasure = num;
+					BeatClock clock = new BeatClock(msPerBeat, num, denom);
+					/*clock.beatsPerMeasure = num;
 					clock.beatDenominator = denom;
-					clock.msPerBeat = msPerBeat;
+					clock.msPerBeat = msPerBeat;*/
 					client.startNewSession(clock);
 				}
 			} catch (Exception e1) {

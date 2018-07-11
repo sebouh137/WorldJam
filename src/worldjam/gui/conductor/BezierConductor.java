@@ -46,6 +46,8 @@ public class BezierConductor extends VisualMetronome{
 		} else if(getClock().beatsPerMeasure > clock.beatsPerMeasure){
 			super.setClock(clock);
 			setPattern(DefaultConductingPatternProvider.getInstance().getDefaultPattern(clock.beatsPerMeasure));
+		} else {
+			super.setClock(clock);
 		}
 	}
 

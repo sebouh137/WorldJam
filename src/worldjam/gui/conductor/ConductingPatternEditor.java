@@ -11,29 +11,19 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import java.awt.geom.Path2D;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JRadioButton;
 import javax.swing.JSpinner;
 
 import worldjam.core.BeatClock;
 import worldjam.gui.conductor.BezierConductor;
-import worldjam.util.DefaultObjects;
-import javax.swing.JToolBar;
 import javax.swing.SpinnerNumberModel;
 
 import java.awt.BorderLayout;
+
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -58,6 +48,9 @@ public class ConductingPatternEditor extends JFrame{
 				}
 				if(e.getKeyChar() == 'p'){
 					showPath ^= true;
+				}
+				if(e.getKeyChar() == 'n'){
+					showBeatNumbers ^= true;
 				}
 					
 			}
@@ -91,16 +84,6 @@ public class ConductingPatternEditor extends JFrame{
 
 			}
 
-			@Override
-			public void mouseMoved(MouseEvent e) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void mouseClicked(MouseEvent e) {
-
-			}
 
 			@Override
 			public void mousePressed(MouseEvent e) {
@@ -124,24 +107,42 @@ public class ConductingPatternEditor extends JFrame{
 				selectedAnchor = -1;
 			}
 
-			@Override
-			public void mouseEntered(MouseEvent e) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void mouseExited(MouseEvent e) {
-				// TODO Auto-generated method stub
-
-			}
 
 		};
 		Stroke stroke2 = new BasicStroke(1);
 		private Stroke stroke3 = new BasicStroke(2);
 		private boolean showPath;
+		private boolean showBatton = true;
+		private boolean showBeatNumbers = false;
 		public void paint(Graphics g){
-			super.paint(g);
+			//System.out.println(clock.msPerBeat);
+			if(showBatton){
+				super.paint(g);
+			}
+			if(showBeatNumbers){
+				for(int i = 0; i<segments.size(); i++){
+					
+					int x = tipCoordX(segments.get(i).x[0]);
+					int y = tipCoordY(segments.get(i).y[0]);
+					String text = Integer.toString(i+1);
+					x-= g.getFontMetrics().stringWidth(text)/2;
+					y+= g.getFontMetrics().getAscent()/2;
+					
+					Segment prev = segments.get((i+segments.size()-1)%segments.size());
+					
+					//now create another offset, based on the previous segment's tangent line
+					double dx = prev.x[prev.type]-prev.x[prev.type-1];
+					double dy = prev.y[prev.type]-prev.y[prev.type-1];
+					double d = Math.hypot(dx, dy);
+					double offset = g.getFontMetrics().getAscent();
+					offset+=1.5;
+					
+					x+=(int)offset*dx/d;
+					y+=(int)offset*dy/d;
+					
+					g.drawString(text, x, y);
+				}
+			}
 
 			Graphics2D g2 = (Graphics2D)g;
 			if(showGuides){
@@ -243,7 +244,6 @@ public class ConductingPatternEditor extends JFrame{
 					open(chooser.getSelectedFile());
 					repaint();
 				} catch (FileNotFoundException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 			}
@@ -267,7 +267,6 @@ public class ConductingPatternEditor extends JFrame{
 					}
 					save(openedFile);
 				} catch (FileNotFoundException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 			}
@@ -292,7 +291,6 @@ public class ConductingPatternEditor extends JFrame{
 
 					setTitle(openedFile.getPath());
 				} catch (FileNotFoundException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 			}
@@ -306,31 +304,59 @@ public class ConductingPatternEditor extends JFrame{
 		JCheckBoxMenuItem chckbxmntmShowGuides = new JCheckBoxMenuItem("Show guides");
 		chckbxmntmShowGuides.setSelected(true);
 		chckbxmntmShowGuides.setMnemonic(KeyEvent.getExtendedKeyCodeForChar('g'));
-		chckbxmntmShowGuides.addActionListener(new ActionListener(){
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
+		mnView.add(chckbxmntmShowGuides);
+		chckbxmntmShowGuides.addActionListener(
+				e-> {
 				if(conductor != null)
 					conductor.showGuides = chckbxmntmShowGuides.isSelected();
-			}
+				}
 
-		});
+		);
 
-		mnView.add(chckbxmntmShowGuides);
 
 		JCheckBoxMenuItem chckbxmntmShowPath = new JCheckBoxMenuItem("Show Path");
 		mnView.add(chckbxmntmShowPath);
-		chckbxmntmShowPath.addActionListener(new ActionListener(){
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if(conductor != null)
+		chckbxmntmShowPath.setMnemonic(KeyEvent.getExtendedKeyCodeForChar('p'));
+		chckbxmntmShowPath.addActionListener(
+				e-> {if(conductor != null)
 					conductor.showPath = chckbxmntmShowPath.isSelected();
 			}
 
-		});
+		);
+		
+		JCheckBoxMenuItem chckbxmntmShowBeats = new JCheckBoxMenuItem("Show Beat Numbers");
+		mnView.add(chckbxmntmShowBeats);
+		chckbxmntmShowBeats.setMnemonic(KeyEvent.getExtendedKeyCodeForChar('n'));
+		chckbxmntmShowBeats.addActionListener(
+				e-> {if(conductor != null)
+					conductor.showBeatNumbers = chckbxmntmShowBeats.isSelected();
+			}
+
+		);
 		
 		getContentPane().setLayout(new BorderLayout());
+		
+		
+		JPanel panel = new JPanel();
+		getContentPane().add(panel, BorderLayout.SOUTH);
+		panel.setLayout(new GridLayout(1, 3, 0, 0));
+		
+		JLabel labelBPM = new JLabel("(120.00 BPM)");
+		labelBPM.setHorizontalAlignment(JLabel.RIGHT);
+		JSpinner spinner = new JSpinner();
+		panel.add(spinner);
+		spinner.setModel(new SpinnerNumberModel(500, 100, 2000, 10));
+		spinner.addChangeListener(
+				e -> {
+					int val = (int)spinner.getValue();
+					conductor.setClock(conductor.getClock().createWithDifferentTempo(val));
+					labelBPM.setText(String.format("%.2f BPM", 60000./val));
+				}
+		);
+		panel.add(new JLabel("ms per beat"));
+		//panel.add((Component)null);
+		panel.add(labelBPM);
+		
 		newPattern(4);
 	}
 

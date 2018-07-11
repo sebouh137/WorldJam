@@ -51,8 +51,7 @@ public class MultiSessionServer {
 					int beatsPerMeasure = dis.readInt();
 					int denom = dis.readInt();
 					long startTime = dis.readLong();
-					BeatClock beatClock = new BeatClock(msPerBeat, beatsPerMeasure, denom);
-					beatClock.startTime = startTime;
+					BeatClock beatClock = new BeatClock(msPerBeat, beatsPerMeasure, denom, startTime);
 
 					ServerSession session = new ServerSession(beatClock, sessionName);
 

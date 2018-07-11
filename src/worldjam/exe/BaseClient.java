@@ -118,8 +118,7 @@ public abstract class BaseClient implements AudioSubscriber{
 							int beatsPerMeasure = dis.readInt();
 							int denom = dis.readInt();
 							long startTime = dis.readLong();
-							BeatClock beatClock = new BeatClock(msPerBeat, beatsPerMeasure, denom);
-							beatClock.startTime = startTime;
+							BeatClock beatClock = new BeatClock(msPerBeat, beatsPerMeasure, denom, startTime);
 							
 							//System.out.println("received time information");
 							setBeatClock(beatClock);

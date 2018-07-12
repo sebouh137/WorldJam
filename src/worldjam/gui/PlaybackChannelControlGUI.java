@@ -248,9 +248,9 @@ public class PlaybackChannelControlGUI extends JFrame {
 		JPanel filterControls = new JPanel();
 		GridBagLayout gbl_filterControls = new GridBagLayout();
 		gbl_filterControls.columnWidths = new int[]{0, 60, 104, 0, 0, 0};
-		gbl_filterControls.rowHeights = new int[]{26, 0, 0, 0, 0, 0,0};
+		gbl_filterControls.rowHeights = new int[]{26, 0, 0, 0, 0, 0, 0, 0,0};
 		gbl_filterControls.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
-		gbl_filterControls.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_filterControls.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, Double.MIN_VALUE};
 		filterControls.setLayout(gbl_filterControls);
 		
 		
@@ -292,16 +292,18 @@ public class PlaybackChannelControlGUI extends JFrame {
 		gbc_separator.gridy = 1;
 		filterControls.add(separator, gbc_separator);
 		
-		JLabel lblAdvancedSettings = new JLabel("Advanced settings");
-		GridBagConstraints gbc_lblAdvancedSettings = new GridBagConstraints();
-		gbc_lblAdvancedSettings.gridwidth = 3;
-		gbc_lblAdvancedSettings.insets = new Insets(0, 0, 5, 5);
-		gbc_lblAdvancedSettings.gridx = 1;
-		gbc_lblAdvancedSettings.gridy = 2;
-		filterControls.add(lblAdvancedSettings, gbc_lblAdvancedSettings);
+		JCheckBox chkbxAdvancedSettings = new JCheckBox("Show advanced settings");
+		GridBagConstraints gbc_chkbxAdvancedSettings = new GridBagConstraints();
+		gbc_chkbxAdvancedSettings.anchor = GridBagConstraints.WEST;
+		gbc_chkbxAdvancedSettings.gridwidth = 3;
+		gbc_chkbxAdvancedSettings.insets = new Insets(0, 0, 5, 5);
+		gbc_chkbxAdvancedSettings.gridx = 1;
+		gbc_chkbxAdvancedSettings.gridy = 2;
+		filterControls.add(chkbxAdvancedSettings, gbc_chkbxAdvancedSettings);
 		
 		JLabel lblSegmentSize = new JLabel("segment size");
 		GridBagConstraints gbc_lblSegmentSize = new GridBagConstraints();
+		gbc_lblSegmentSize.anchor = GridBagConstraints.WEST;
 		gbc_lblSegmentSize.insets = new Insets(0, 0, 5, 5);
 		gbc_lblSegmentSize.gridx = 1;
 		gbc_lblSegmentSize.gridy = 3;
@@ -325,7 +327,8 @@ public class PlaybackChannelControlGUI extends JFrame {
 		
 		JLabel lblOverlap = new JLabel("overlap size");
 		GridBagConstraints gbc_lblOverlap = new GridBagConstraints();
-		gbc_lblOverlap.insets = new Insets(0, 0, 0, 5);
+		gbc_lblOverlap.anchor = GridBagConstraints.WEST;
+		gbc_lblOverlap.insets = new Insets(0, 0, 5, 5);
 		gbc_lblOverlap.gridx = 1;
 		gbc_lblOverlap.gridy = 4;
 		filterControls.add(lblOverlap, gbc_lblOverlap);
@@ -333,7 +336,7 @@ public class PlaybackChannelControlGUI extends JFrame {
 		JSpinner spinner_2 = new JSpinner();
 		GridBagConstraints gbc_spinner_2 = new GridBagConstraints();
 		gbc_spinner_2.fill = GridBagConstraints.HORIZONTAL;
-		gbc_spinner_2.insets = new Insets(0, 0, 0, 5);
+		gbc_spinner_2.insets = new Insets(0, 0, 5, 5);
 		gbc_spinner_2.gridx = 2;
 		gbc_spinner_2.gridy = 4;
 		spinner_2.setValue((int)filter.getMsPerOverlap());
@@ -341,14 +344,14 @@ public class PlaybackChannelControlGUI extends JFrame {
 
 		JLabel lblMs_2 = new JLabel("ms");
 		GridBagConstraints gbc_lblMs_2 = new GridBagConstraints();
-		gbc_lblMs_2.insets = new Insets(0, 0, 0, 5);
+		gbc_lblMs_2.insets = new Insets(0, 0, 5, 5);
 		gbc_lblMs_2.gridx = 3;
 		gbc_lblMs_2.gridy = 4;
 		filterControls.add(lblMs_2, gbc_lblMs_2);
 		
 		JLabel lblSearch = new JLabel("search window");
 		GridBagConstraints gbc_lblSearch = new GridBagConstraints();
-		gbc_lblSearch.insets = new Insets(0, 0, 0, 5);
+		gbc_lblSearch.insets = new Insets(0, 0, 5, 5);
 		gbc_lblSearch.gridx = 1;
 		gbc_lblSearch.gridy = 5;
 		filterControls.add(lblSearch, gbc_lblSearch);
@@ -356,7 +359,7 @@ public class PlaybackChannelControlGUI extends JFrame {
 		JSpinner spinner_3 = new JSpinner();
 		GridBagConstraints gbc_spinner_3 = new GridBagConstraints();
 		gbc_spinner_3.fill = GridBagConstraints.HORIZONTAL;
-		gbc_spinner_3.insets = new Insets(0, 0, 0, 5);
+		gbc_spinner_3.insets = new Insets(0, 0, 5, 5);
 		gbc_spinner_3.gridx = 2;
 		gbc_spinner_3.gridy = 5;
 		spinner_3.setValue((int)filter.getMsPerSearch());
@@ -364,10 +367,18 @@ public class PlaybackChannelControlGUI extends JFrame {
 		
 		JLabel lblMs_4 = new JLabel("ms");
 		GridBagConstraints gbc_lblMs_4 = new GridBagConstraints();
-		gbc_lblMs_4.insets = new Insets(0, 0, 0, 5);
+		gbc_lblMs_4.insets = new Insets(0, 0, 5, 5);
 		gbc_lblMs_4.gridx = 3;
 		gbc_lblMs_4.gridy = 5;
 		filterControls.add(lblMs_4, gbc_lblMs_4);
+		
+		JLabel lblSemitone = new JLabel("*  1 semitone = 100 cents");
+		GridBagConstraints gbc_lblSemitone = new GridBagConstraints();
+		gbc_lblSemitone.gridwidth = 4;
+		gbc_lblSemitone.insets = new Insets(0, 0, 0, 5);
+		gbc_lblSemitone.gridx = 1;
+		gbc_lblSemitone.gridy = 7;
+		filterControls.add(lblSemitone, gbc_lblSemitone);
 		
 		
 		
@@ -394,6 +405,23 @@ public class PlaybackChannelControlGUI extends JFrame {
 		spinner_2.addChangeListener(changeListener);
 		spinner_3.addChangeListener(changeListener);
 		chckbxPitchShift.addChangeListener(changeListener);
+		
+		Component[] advancedSettingsComponents = {spinner_1, spinner_2, spinner_3,
+				lblMs_4, lblMs_3, lblMs_2, 
+				lblSearch, lblOverlap, lblSegmentSize
+		};
+		for(Component c : advancedSettingsComponents){
+			c.setVisible(false);
+		}
+		
+		chkbxAdvancedSettings.addChangeListener(
+				e ->{
+					for(Component component : advancedSettingsComponents){
+						component.setVisible(chkbxAdvancedSettings.isSelected());
+					}
+				}
+		);
+		
 		return filterControls;
 	}
 

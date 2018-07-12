@@ -16,7 +16,7 @@ import javax.swing.event.ChangeListener;
 
 import worldjam.audio.PlaybackChannel;
 import worldjam.filters.pitchshift.PitchShift;
-import worldjam.filters.pitchshift.StretchPitchShift;
+import worldjam.filters.pitchshift.WfsoPitchShift;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -239,18 +239,18 @@ public class PlaybackChannelControlGUI extends JFrame {
 	private JPanel createFilterControls(PlaybackChannel channel){
 		
 		
-		StretchPitchShift filter;
-		if(channel.getFilter() == null || !(channel.getFilter() instanceof StretchPitchShift))
-			filter = new StretchPitchShift(channel.getInputFormat(), 0);
+		WfsoPitchShift filter;
+		if(channel.getFilter() == null || !(channel.getFilter() instanceof WfsoPitchShift))
+			filter = new WfsoPitchShift(channel.getInputFormat(), 0);
 		else
-			filter = (StretchPitchShift)channel.getFilter();
+			filter = (WfsoPitchShift)channel.getFilter();
 			
 		JPanel filterControls = new JPanel();
 		GridBagLayout gbl_filterControls = new GridBagLayout();
 		gbl_filterControls.columnWidths = new int[]{0, 60, 104, 0, 0, 0};
-		gbl_filterControls.rowHeights = new int[]{26, 0, 0, 0, 0, 0};
+		gbl_filterControls.rowHeights = new int[]{26, 0, 0, 0, 0, 0,0};
 		gbl_filterControls.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
-		gbl_filterControls.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_filterControls.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		filterControls.setLayout(gbl_filterControls);
 		
 		
@@ -339,13 +339,36 @@ public class PlaybackChannelControlGUI extends JFrame {
 		spinner_2.setValue((int)filter.getMsPerOverlap());
 		filterControls.add(spinner_2, gbc_spinner_2);
 
-		
 		JLabel lblMs_2 = new JLabel("ms");
 		GridBagConstraints gbc_lblMs_2 = new GridBagConstraints();
 		gbc_lblMs_2.insets = new Insets(0, 0, 0, 5);
 		gbc_lblMs_2.gridx = 3;
 		gbc_lblMs_2.gridy = 4;
 		filterControls.add(lblMs_2, gbc_lblMs_2);
+		
+		JLabel lblSearch = new JLabel("search window");
+		GridBagConstraints gbc_lblSearch = new GridBagConstraints();
+		gbc_lblSearch.insets = new Insets(0, 0, 0, 5);
+		gbc_lblSearch.gridx = 1;
+		gbc_lblSearch.gridy = 5;
+		filterControls.add(lblSearch, gbc_lblSearch);
+		
+		JSpinner spinner_3 = new JSpinner();
+		GridBagConstraints gbc_spinner_3 = new GridBagConstraints();
+		gbc_spinner_3.fill = GridBagConstraints.HORIZONTAL;
+		gbc_spinner_3.insets = new Insets(0, 0, 0, 5);
+		gbc_spinner_3.gridx = 2;
+		gbc_spinner_3.gridy = 5;
+		spinner_3.setValue((int)filter.getMsPerSearch());
+		filterControls.add(spinner_3, gbc_spinner_3);
+		
+		JLabel lblMs_4 = new JLabel("ms");
+		GridBagConstraints gbc_lblMs_4 = new GridBagConstraints();
+		gbc_lblMs_4.insets = new Insets(0, 0, 0, 5);
+		gbc_lblMs_4.gridx = 3;
+		gbc_lblMs_4.gridy = 5;
+		filterControls.add(lblMs_4, gbc_lblMs_4);
+		
 		
 		
 		ChangeListener changeListener = new ChangeListener(){
@@ -357,10 +380,11 @@ public class PlaybackChannelControlGUI extends JFrame {
 					filter.setShiftInCents(cents);
 					filter.setMsPerSegment((Integer)spinner_1.getValue());
 					filter.setMsPerOverlap((Integer)spinner_2.getValue());
+					filter.setMsPerSearch((Integer)spinner_3.getValue());
 					channel.setFilter(filter);
 				}
 				else {
-					channel.setFilter(filter);
+					channel.setFilter(null);
 				}
 			}
 			
@@ -368,6 +392,7 @@ public class PlaybackChannelControlGUI extends JFrame {
 		spinner.addChangeListener(changeListener);
 		spinner_1.addChangeListener(changeListener);
 		spinner_2.addChangeListener(changeListener);
+		spinner_3.addChangeListener(changeListener);
 		chckbxPitchShift.addChangeListener(changeListener);
 		return filterControls;
 	}

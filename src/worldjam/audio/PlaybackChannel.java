@@ -1,5 +1,7 @@
 package worldjam.audio;
 
+import java.io.OutputStream;
+
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.Line;
 import javax.sound.sampled.Mixer;
@@ -21,4 +23,8 @@ public interface PlaybackChannel extends RMS, AudioSubscriber{
 	public AudioFormat getInputFormat();
 	public AudioFormat getPlaybackFormat();
 	public AudioFilter getFilter();
+	public String getSourceName();
+	public long getSenderID();
+	void startRecording(OutputStream output, long startTime);
+	public void stopRecording(long timestamp);
 }

@@ -1,5 +1,8 @@
 package worldjam.audio;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,7 +30,7 @@ public class PlaybackManager implements AudioSubscriber{
 	Map<Long, PlaybackChannel> channels = new HashMap<Long, PlaybackChannel>();
 	private Map<Long, String> channelNames = new HashMap();
 	public void addChannel(long senderID, String name) throws LineUnavailableException{
-		PlaybackChannel channel = new PlaybackThread(mixer, format, clock);
+		PlaybackChannel channel = new PlaybackThread(mixer, format, clock, name, senderID);
 		
 		channels.put(senderID, channel);
 		channelNames.put(senderID, name);
@@ -99,6 +102,24 @@ public class PlaybackManager implements AudioSubscriber{
 		this.clock = beatClock;
 		for(PlaybackChannel channel : channels.values()){
 			channel.setClock(clock);
+		}
+	}
+	public void startRecording(File directory, String ext) throws FileNotFoundException{
+		directory.mkdir();
+		long timestamp = System.currentTimeMillis();
+		//round to the 10 ms.  This is because at 44100 frames/second,
+		// 10 ms is the smallest integer number of ms that are an integer number
+		// of frames.
+		timestamp/=10; timestamp*= 10; 
+		for(PlaybackChannel channel : channels.values()){
+			File trackFile = new File(directory.getPath() + File.separatorChar +"trk_"+ channel.getSourceName() + ext);
+			channel.startRecording(new FileOutputStream(trackFile), timestamp);
+		}
+	}
+	public void stopRecording(){
+		long timestamp = System.currentTimeMillis();
+		for(PlaybackChannel channel : channels.values()){
+			channel.stopRecording(timestamp);
 		}
 	}
 }

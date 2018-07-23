@@ -1,5 +1,7 @@
 package worldjam.audio;
 
+import java.io.OutputStream;
+
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.Line;
@@ -11,6 +13,7 @@ import worldjam.core.BeatClock;
 import worldjam.util.DigitalAnalogConverter;
 
 public class PlaybackThread extends Thread implements PlaybackChannel{
+	AudioTrackRecorder recorder;
 	private boolean convertToStereo = true;
 	private SourceDataLine sdl;
 	/**
@@ -22,7 +25,11 @@ public class PlaybackThread extends Thread implements PlaybackChannel{
 	private AudioFormat playbackFormat;
 	private AudioFormat inputFormat;
 	private Mixer mixer;
-	public PlaybackThread(Mixer mixer, AudioFormat inputFormat, BeatClock clock) throws LineUnavailableException{
+	private String sourceName;
+	private long senderID;
+	public PlaybackThread(Mixer mixer, AudioFormat inputFormat, BeatClock clock, String sourceName, long senderID) throws LineUnavailableException{
+		this.sourceName = sourceName;
+		this.senderID = senderID;
 		this.inputFormat = inputFormat;
 		System.out.println("input format: " + inputFormat);
 		if(convertToStereo){
@@ -53,6 +60,14 @@ public class PlaybackThread extends Thread implements PlaybackChannel{
 				nMeasuresInBuffer);
 		buffer = new byte[bufferSize];
 		this.start();
+	}
+	public String getSourceName() {
+		return sourceName;
+	}
+
+
+	public long getSenderID() {
+		return senderID;
 	}
 	private byte[] buffer;
 	private int bufferPosition;
@@ -88,7 +103,10 @@ public class PlaybackThread extends Thread implements PlaybackChannel{
 			destPos += buffer.length;
 		if(filter != null){
 			sample.sampleData = filter.process(sample.sampleData, inputFormat);
-		}
+		} 
+		if(recorder != null)
+			recorder.sampleReceived(sample);
+		
 		if(convertToStereo){
 			sample.sampleData = stereoConvert(sample.sampleData);
 		}
@@ -213,7 +231,6 @@ public class PlaybackThread extends Thread implements PlaybackChannel{
 	}
 
 	public BeatClock getClock() {
-		// TODO Auto-generated method stub
 		return clock;
 	}
 
@@ -224,6 +241,19 @@ public class PlaybackThread extends Thread implements PlaybackChannel{
 	@Override
 	public AudioFilter getFilter() {
 		return filter;
+	}
+
+
+	@Override
+	public void startRecording(OutputStream output, long startTime) {
+		this.recorder = new AudioTrackRecorder(output, this.inputFormat, startTime);
+		
+	}
+
+
+	@Override
+	public void stopRecording(long timestamp) {
+		this.recorder.stopRecording(timestamp);
 	}
 
 	

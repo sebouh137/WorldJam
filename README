@@ -3,13 +3,17 @@ mvn -o clean package appbundle:bundle
 
 To run start the server locally:
 java -cp target/WorldJam-x.x.x-SNAPSHOT.jar worldjam.exe.MultiSessionServer
-where x.x.x-SNAPSHOT is replaced with the latest release or snapshot.
+where x.x.x-SNAPSHOT is replaced with the current release or snapshot.
 
 
 To run client as an application (this brings up the client setup window):
 
 MacOS:
-click on the icon for target/WorldJam-x.x.x-SNAPSHOT/WorldJam.app
+double click on the icon for target/WorldJam-x.x.x-SNAPSHOT/WorldJam.app
+
+Windows:
+double click on the icon in target/WorldJam.exe
+
 
 Any operating system (Linux, MacOS, or Windows), using the command-line:
 java -jar target/WorldJam-x.x.x-SNAPSHOT.jar

@@ -30,11 +30,11 @@ public abstract class BaseClient implements AudioSubscriber{
 	private String serverIP;
 	private String sessionName;
 	private String clientIP;
-	public BaseClient(String serverIP, String sessionName, String displayName) throws UnknownHostException, IOException {
+	public BaseClient(String serverIP, int port, String sessionName, String displayName) throws UnknownHostException, IOException {
 		this.serverIP = serverIP;
 		this.sessionName = sessionName;
 		System.out.println("attempting to connect to server at " + serverIP);
-		socket = new Socket(serverIP, DefaultObjects.defaultPort);
+		socket = new Socket(serverIP, port);
 		System.out.println("connected to server at " + serverIP);
 		socket.setTcpNoDelay(true);
 		//socket.setSoTimeout(10000);

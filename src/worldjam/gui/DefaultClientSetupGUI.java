@@ -67,10 +67,11 @@ public class DefaultClientSetupGUI extends JFrame{
 	private JLabel lblOutput;
 	private JComboBox<MixerWrapper> comboBox_1;
 	private BezierConductor previewConductor;
-	private JLabel label;
+	private JLabel lblPort;
+	private JTextField textFieldPort;
 	
 	public DefaultClientSetupGUI() {
-		this.setSize(575, 359);
+		this.setSize(666, 388);
 		setTitle("WorldJam Client Setup");
 		/*Image image;
 		try {
@@ -85,7 +86,7 @@ public class DefaultClientSetupGUI extends JFrame{
 		tabs.addTab("General", mainPanel);
 		this.getContentPane().add(tabs);
 		GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.columnWidths = new int[]{53, 76, 0, 56, 56, 81, 0};
+		gridBagLayout.columnWidths = new int[]{83, 45, 113, 64, 64, 96, 0};
 		gridBagLayout.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 		gridBagLayout.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
 		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
@@ -103,9 +104,9 @@ public class DefaultClientSetupGUI extends JFrame{
 		txtUser = new JTextField();
 		txtUser.setText("user1");
 		GridBagConstraints gbc_txtUser = new GridBagConstraints();
+		gbc_txtUser.fill = GridBagConstraints.HORIZONTAL;
 		gbc_txtUser.gridwidth = 3;
 		gbc_txtUser.insets = new Insets(0, 0, 5, 5);
-		gbc_txtUser.fill = GridBagConstraints.HORIZONTAL;
 		gbc_txtUser.gridx = 2;
 		gbc_txtUser.gridy = 0;
 		mainPanel.add(txtUser, gbc_txtUser);
@@ -125,13 +126,29 @@ public class DefaultClientSetupGUI extends JFrame{
 		txtIP = new JTextField();
 		txtIP.setText("127.0.0.1");
 		GridBagConstraints gbc_txtIP = new GridBagConstraints();
-		gbc_txtIP.gridwidth = 3;
-		gbc_txtIP.insets = new Insets(0, 0, 5, 5);
 		gbc_txtIP.fill = GridBagConstraints.HORIZONTAL;
+		gbc_txtIP.insets = new Insets(0, 0, 5, 5);
 		gbc_txtIP.gridx = 2;
 		gbc_txtIP.gridy = 1;
 		mainPanel.add(txtIP, gbc_txtIP);
-		txtIP.setColumns(10);
+		txtIP.setColumns(9);
+		
+		lblPort = new JLabel("Port");
+		GridBagConstraints gbc_lblPort = new GridBagConstraints();
+		gbc_lblPort.insets = new Insets(0, 0, 5, 5);
+		gbc_lblPort.gridx = 3;
+		gbc_lblPort.gridy = 1;
+		mainPanel.add(lblPort, gbc_lblPort);
+		
+		textFieldPort = new JTextField();
+		textFieldPort.setText(Integer.toString(DefaultObjects.defaultPort));
+		GridBagConstraints gbc_textFieldPort = new GridBagConstraints();
+		gbc_textFieldPort.fill = GridBagConstraints.HORIZONTAL;
+		gbc_textFieldPort.insets = new Insets(0, 0, 5, 5);
+		gbc_textFieldPort.gridx = 4;
+		gbc_textFieldPort.gridy = 1;
+		mainPanel.add(textFieldPort, gbc_textFieldPort);
+		//textFieldPort.setColumns(1);
 		
 		
 		
@@ -147,9 +164,9 @@ public class DefaultClientSetupGUI extends JFrame{
 		txtSession = new JTextField();
 		txtSession.setText("awesome jam session");
 		GridBagConstraints gbc_txtSession = new GridBagConstraints();
+		gbc_txtSession.fill = GridBagConstraints.HORIZONTAL;
 		gbc_txtSession.gridwidth = 3;
 		gbc_txtSession.insets = new Insets(0, 0, 5, 5);
-		gbc_txtSession.fill = GridBagConstraints.HORIZONTAL;
 		gbc_txtSession.gridx = 2;
 		gbc_txtSession.gridy = 2;
 		mainPanel.add(txtSession, gbc_txtSession);
@@ -204,9 +221,10 @@ public class DefaultClientSetupGUI extends JFrame{
 		
 		
 		
-		lblTimeSignature = new JLabel("    Time Signature");
+		lblTimeSignature = new JLabel("      Time Signature");
 		lblTimeSignature.setHorizontalAlignment(SwingConstants.LEFT);
 		GridBagConstraints gbc_lblTimeSignature = new GridBagConstraints();
+		gbc_lblTimeSignature.anchor = GridBagConstraints.WEST;
 		gbc_lblTimeSignature.gridwidth = 2;
 		gbc_lblTimeSignature.insets = new Insets(0, 0, 5, 5);
 		gbc_lblTimeSignature.gridx = 1;
@@ -260,12 +278,12 @@ public class DefaultClientSetupGUI extends JFrame{
 		txtBPM.setText("120");
 		GridBagConstraints gbc_txtBPM = new GridBagConstraints();
 		gbc_txtBPM.gridwidth = 2;
-		gbc_txtBPM.insets = new Insets(0, 0, 5, 5);
 		gbc_txtBPM.fill = GridBagConstraints.HORIZONTAL;
+		gbc_txtBPM.insets = new Insets(0, 0, 5, 5);
 		gbc_txtBPM.gridx = 3;
 		gbc_txtBPM.gridy = 6;
 		mainPanel.add(txtBPM, gbc_txtBPM);
-		txtBPM.setColumns(10);
+		txtBPM.setColumns(1);
 		
 		txtBPM.addActionListener(new ActionListener(){
 
@@ -294,12 +312,12 @@ public class DefaultClientSetupGUI extends JFrame{
 		rdbtnMsPerBeat.addChangeListener(cl);
 		
 		spinner_msPerBeat = new JSpinner();
-		spinner_msPerBeat.setModel(new SpinnerNumberModel(500, 10, 1000, 10));
 		spinner_msPerBeat.setEnabled(false);
+		spinner_msPerBeat.setModel(new SpinnerNumberModel(500, 10, 1000, 10));
 		GridBagConstraints gbc_txt_msPerBeat = new GridBagConstraints();
 		gbc_txt_msPerBeat.gridwidth = 2;
-		gbc_txt_msPerBeat.insets = new Insets(0, 0, 5, 5);
 		gbc_txt_msPerBeat.fill = GridBagConstraints.HORIZONTAL;
+		gbc_txt_msPerBeat.insets = new Insets(0, 0, 5, 5);
 		gbc_txt_msPerBeat.gridx = 3;
 		gbc_txt_msPerBeat.gridy = 7;
 		mainPanel.add(spinner_msPerBeat, gbc_txt_msPerBeat);
@@ -329,13 +347,6 @@ public class DefaultClientSetupGUI extends JFrame{
 		gbc_panel.gridx = 5;
 		gbc_panel.gridy = 1;
 		mainPanel.add(previewConductor, gbc_panel);
-		
-		label = new JLabel("      ");
-		GridBagConstraints gbc_label = new GridBagConstraints();
-		gbc_label.insets = new Insets(0, 0, 5, 5);
-		gbc_label.gridx = 1;
-		gbc_label.gridy = 8;
-		mainPanel.add(label, gbc_label);
 		
 		JPanel tabAudioIO = new JPanel(); 
 		tabs.addTab("Audio IO", tabAudioIO);
@@ -445,11 +456,12 @@ public class DefaultClientSetupGUI extends JFrame{
 			Mixer inputMixer =  AudioSystem.getMixer(((MixerWrapper)(gui.comboBox.getModel().getSelectedItem())).info);
 			Mixer outputMixer = AudioSystem.getMixer(((MixerWrapper)(gui.comboBox_1.getModel().getSelectedItem())).info);
 
+			int port = Integer.parseInt(gui.textFieldPort.getText());
 			gui.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			gui.dispose();
 			DefaultClient client;
 			try {
-				client = new DefaultClient(serverIP, sessionName, displayName, inputMixer, outputMixer);
+				client = new DefaultClient(serverIP, port, sessionName, displayName, inputMixer, outputMixer);
 				if(join){
 					client.joinSession();
 				} else{

@@ -76,8 +76,8 @@ public class DefaultClient extends BaseClient{
 
 	Mixer inputMixer, outputMixer;
 
-	public DefaultClient(String serverIP, String sessionName, String displayName, Mixer inputMixer, Mixer outputMixer) throws LineUnavailableException, UnknownHostException, IOException{
-		super(serverIP, sessionName, displayName);
+	public DefaultClient(String serverIP, int port, String sessionName, String displayName, Mixer inputMixer, Mixer outputMixer) throws LineUnavailableException, UnknownHostException, IOException{
+		super(serverIP, port, sessionName, displayName);
 		this.inputMixer = inputMixer;
 		this.outputMixer = outputMixer;
 	}

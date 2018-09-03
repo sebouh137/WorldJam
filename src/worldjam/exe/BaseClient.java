@@ -33,12 +33,15 @@ public abstract class BaseClient implements AudioSubscriber{
 	public BaseClient(String serverIP, String sessionName, String displayName) throws UnknownHostException, IOException {
 		this.serverIP = serverIP;
 		this.sessionName = sessionName;
+		System.out.println("attempting to connect to server at " + serverIP);
 		socket = new Socket(serverIP, DefaultObjects.defaultPort);
+		System.out.println("connected to server at " + serverIP);
 		socket.setTcpNoDelay(true);
+		//socket.setSoTimeout(10000);
 		this.dos = new DataOutputStream(socket.getOutputStream());
 		this.dis = new DataInputStream(socket.getInputStream());
 		this.displayName = displayName;
-		this.clientIP = NetworkUtils.getIP();
+		this.clientIP = NetworkUtils.getLocalIP();
 
 		this.receiverThread.start();
 		//joinSession();

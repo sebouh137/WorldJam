@@ -2,7 +2,7 @@ To compile, type into the commandline:
 mvn -o clean package appbundle:bundle
 
 To run start the server locally:
-java -cp target/WorldJam-x.x.x-SNAPSHOT.jar worldjam.exe.MultiSessionServer
+java -cp target/WorldJam-x.x.x-SNAPSHOT.jar worldjam.exe.Server [-p port]
 where x.x.x-SNAPSHOT is replaced with the current release or snapshot.
 
 

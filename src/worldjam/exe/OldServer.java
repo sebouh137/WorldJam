@@ -3,65 +3,91 @@ package worldjam.exe;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Scanner;
 
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.DataLine;
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.Mixer;
-import javax.sound.sampled.SourceDataLine;
-import javax.sound.sampled.TargetDataLine;
-import javax.xml.crypto.Data;
-
-import worldjam.audio.InputThread;
-import worldjam.audio.PlaybackManager;
 import worldjam.core.BeatClock;
 import worldjam.net.NetworkUtils;
 import worldjam.net.WJConstants;
 import worldjam.util.DefaultObjects;
 
-public class ServerSession {
-	private  BeatClock beatClock;
-	private  String localIP;
-	private String sessionName;
+public class OldServer {
+	private static BeatClock beatClock;
+	private static String localIP;
 
 
-	ServerSession(BeatClock beatClock, String sessionName){
-		this.beatClock = beatClock;
-		this.sessionName = sessionName;
+	public static void main(String arg[]) throws IOException{
+		Scanner scanner = new Scanner(System.in);		
+
 		localIP = NetworkUtils.getLocalIP();
 
+		beatClock = configureClock(scanner);
 
-		printSessionConfiguration();
+		printServerConfiguration();
+		joinHandlerThread.start();
 		refreshClientList.start();
+
 	}
 
-	private void printSessionConfiguration() {
-		synchronized(System.out){
-			System.out.println(new Date() + ":  Jam session started with the following configuration:");
-			System.out.println("Session name: " + sessionName);
-			System.out.printf("BPM: %.2f  (%d ms per beat)\n", 60000./beatClock.msPerBeat, beatClock.msPerBeat);
-			System.out.println("Time Signature: " + beatClock.beatsPerMeasure + "/" + beatClock.beatDenominator);
-			System.out.println("Server IP:  " + localIP);
+
+
+
+	private static void printServerConfiguration() {
+		System.out.println("Jam session started with the following configuration:");
+		System.out.printf("BPM: %.2f  (%d ms per beat)\n", 60000./beatClock.msPerBeat, beatClock.msPerBeat);
+		System.out.println("Time Signature: " + beatClock.beatsPerMeasure + "/" + beatClock.beatDenominator);
+
+		System.out.println("Server IP:  " + localIP);
+	}
+
+
+	static BeatClock configureClock(Scanner scanner){
+		System.out.println("How many beats per minute? (this will be converted to ms per beat, which will be "
+				+ "rounded to the nearest 10 ms)");
+		double bpm = Double.parseDouble(scanner.nextLine());
+		int msPerBeat = (int)(60000/bpm);
+		msPerBeat = (msPerBeat/10)*10;
+
+		System.out.println("Time signature?  (for instance, type '3/4' or '4/4')");
+
+		String sig[] = scanner.nextLine().split("[ /\t]+");
+		int num = Integer.parseInt(sig[0]);
+		int denom = Integer.parseInt(sig[1]);
+
+		return new BeatClock(msPerBeat, num, denom);
+
+	}
+
+	static Thread joinHandlerThread = new Thread(){
+		public void run(){
+			ServerSocket serverSocket = null;
+			try {
+				serverSocket = new ServerSocket(DefaultObjects.defaultPort);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			while(true){
+				try{
+					Socket socket = serverSocket.accept();
+					ClientHandler handler = new ClientHandler(socket);
+					handlers.add(handler);
+					handler.start();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 		}
-	}
+	};
 
-	void addClientHandler(Socket socket) throws IOException{
-		ClientHandler handler = new ClientHandler(socket);
-		handlers.add(handler);
-		handler.start();
-	}
+	static ArrayList<ClientHandler> handlers = new ArrayList();
 
-	ArrayList<ClientHandler> handlers = new ArrayList();
-
-	class ClientHandler extends Thread{
+	static class ClientHandler extends Thread{
 
 		Socket socket;
 		private DataOutputStream dos;
@@ -79,7 +105,7 @@ public class ServerSession {
 				readJoinStatement();
 				writeAcknowledgeJoinStatement();
 
-				while(!closed){
+				while(true){
 					synchronized(dis){
 						byte code = dis.readByte();
 						//System.out.println(code);
@@ -120,11 +146,13 @@ public class ServerSession {
 				dos.writeInt(beatClock.beatsPerMeasure);
 				dos.writeInt(beatClock.beatDenominator);
 				dos.writeLong(beatClock.startTime);
+				//dos.writeObject(beatClock);
 				//System.out.println("sent time information");
 			}
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			//next send a list of other clients.  
@@ -133,11 +161,14 @@ public class ServerSession {
 
 		void readJoinStatement() throws Exception{
 			synchronized(dis){
+				byte join = dis.readByte();
+				if(join != WJConstants.COMMAND_JOIN)
+					throw new Exception("wrong initial byte when joining");
+				String sessionName = dis.readUTF();
 				displayName = dis.readUTF();
 				id = dis.readLong();
-				synchronized(System.out){
-					System.out.println(new Date() + ":  client '" + displayName + "' (" + id + ") joined session '" + sessionName + "'");
-				}
+				System.out.println("client '" + displayName + "' (" + id + ") just joined ");
+
 			}
 		}
 
@@ -155,7 +186,7 @@ public class ServerSession {
 		}
 
 	}
-	void broadcastClientList() throws IOException{
+	static void broadcastClientList() throws IOException{
 		ArrayList<ClientHandler> brokenConnections = new ArrayList();
 		for(ClientHandler handler : handlers){
 			synchronized(handler){
@@ -176,36 +207,28 @@ public class ServerSession {
 		}
 	}
 
-	private void removeClient(ClientHandler handler) {
+	private static void removeClient(ClientHandler handler) {
 		synchronized(handlers){
-			synchronized(System.out){
-				System.out.println(new Date() + ":  client '" + handler.displayName + "' (id = " + handler.id + ") has disconnected from session '" + sessionName + "'");
-			}
+			System.out.println("client " + handler.displayName + " (id = " + handler.id + ") has disconnected");
 			handlers.remove(handler);
 		}
 	}
 
-	boolean closed = false;
-
-	Thread refreshClientList = new Thread(){
+	static Thread refreshClientList = new Thread(){
 		public void run(){
-			while(!closed){
+			while(true){
 				try {
 
 					Thread.sleep(1000);
 					//System.out.println("broadcasting client list");
 					broadcastClientList();
 				} catch (IOException | InterruptedException e) {
+					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
 		}
 	};
-
-
-	public void close() {
-		closed = true;
-	}
 
 
 }

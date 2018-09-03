@@ -128,7 +128,7 @@ public class SoundLevelBar extends Canvas{
 		g.fillRect(getWidth()/4, (int)((.9-.8*maxLevel)*getHeight()), getWidth()/2, (int)(.8*(maxLevel-minLevel)*getHeight())+1);
 	}
 	
-	public static void main(String arg[]) throws LineUnavailableException{
+	/*public static void main(String arg[]) throws LineUnavailableException{
 		JFrame frame = new JFrame();
 		System.out.println(DefaultObjects.inputMixer.getClass());
 		DefaultObjects.inputMixer.open();
@@ -138,5 +138,5 @@ public class SoundLevelBar extends Canvas{
 		frame.setSize(40, 140);
 		frame.setVisible(true);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	}	
+	}	*/
 }

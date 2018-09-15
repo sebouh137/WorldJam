@@ -12,7 +12,6 @@ import worldjam.audio.SampleMessage;
 import worldjam.core.BeatClock;
 import worldjam.net.NetworkUtils;
 import worldjam.net.WJConstants;
-import worldjam.util.DefaultObjects;
 
 /**
  * Base-class for programs that send data to/from the server
@@ -20,9 +19,10 @@ import worldjam.util.DefaultObjects;
  *
  */
 public abstract class BaseClient implements AudioSubscriber{
-	protected DataOutputStream dos;
+	//all output streams that are being broadcast to.  
+	private ArrayList<DataOutputStream> broadcastStreams = new ArrayList<DataOutputStream>();
 
-	protected DataInputStream dis;
+	DataOutputStream outServer; //output stream to server
 
 	protected String displayName;
 	protected int clientID;
@@ -38,24 +38,25 @@ public abstract class BaseClient implements AudioSubscriber{
 		System.out.println("connected to server at " + serverIP);
 		socket.setTcpNoDelay(true);
 		//socket.setSoTimeout(10000);
-		this.dos = new DataOutputStream(socket.getOutputStream());
-		this.dis = new DataInputStream(socket.getInputStream());
+		this.outServer = new DataOutputStream(socket.getOutputStream());
+		broadcastStreams.add(outServer);
+		//this.dis = ;
 		this.displayName = displayName;
 		this.clientIP = NetworkUtils.getLocalIP();
 
-		this.receiverThread.start();
+		new ReceiverThread(new DataInputStream(socket.getInputStream())).start();
 		//joinSession();
 
 	}
 	Socket socket;
 
 	public void joinSession() throws IOException{
-		synchronized (dos){
-			dos.writeByte(WJConstants.COMMAND_JOIN);
-			dos.writeUTF(this.sessionName);
-			dos.writeUTF(this.displayName);
+		synchronized (outServer){
+			outServer.writeByte(WJConstants.COMMAND_JOIN);
+			outServer.writeUTF(this.sessionName);
+			outServer.writeUTF(this.displayName);
 			clientID = displayName.hashCode();
-			dos.writeLong(clientID);
+			outServer.writeLong(clientID);
 		}
 		//System.out.println("sent join request to session");
 
@@ -63,18 +64,18 @@ public abstract class BaseClient implements AudioSubscriber{
 	
 	public void startNewSession(BeatClock clock) throws IOException{
 		this.beatClock = clock;
-		synchronized (dos){
-			dos.writeByte(WJConstants.COMMAND_CREATE_NEW_SESSION);
-			dos.writeUTF(this.sessionName);
+		synchronized (outServer){
+			outServer.writeByte(WJConstants.COMMAND_CREATE_NEW_SESSION);
+			outServer.writeUTF(this.sessionName);
 			
-			dos.writeInt(beatClock.msPerBeat);
-			dos.writeInt(beatClock.beatsPerMeasure);
-			dos.writeInt(beatClock.beatDenominator);
-			dos.writeLong(beatClock.startTime);
+			outServer.writeInt(beatClock.msPerBeat);
+			outServer.writeInt(beatClock.beatsPerMeasure);
+			outServer.writeInt(beatClock.beatDenominator);
+			outServer.writeLong(beatClock.startTime);
 			
-			dos.writeUTF(this.displayName);
+			outServer.writeUTF(this.displayName);
 			clientID = displayName.hashCode();
-			dos.writeLong(clientID);
+			outServer.writeLong(clientID);
 		}
 		
 	}
@@ -83,7 +84,12 @@ public abstract class BaseClient implements AudioSubscriber{
 
 	protected AudioSubscriber subs;
 
-	Thread receiverThread = new Thread(){
+	private class ReceiverThread extends Thread{
+		DataInputStream dis;
+		ReceiverThread(DataInputStream dis){
+			this.dis = dis;
+		}
+		@SuppressWarnings("rawtypes")
 		public void run(){
 
 			try {
@@ -169,5 +175,32 @@ public abstract class BaseClient implements AudioSubscriber{
 	
 	public BeatClock getClock(){
 		return beatClock;
+	}
+	
+	protected void sendSample(SampleMessage sample){
+		for(int i = 0; i< broadcastStreams.size(); i++)
+			this.sendSample(sample, broadcastStreams.get(i));
+	}
+	
+	private void sendSample(SampleMessage sample, DataOutputStream dos) {
+		synchronized(dos){
+			try {
+				dos.writeByte(WJConstants.AUDIO_SAMPLE);
+				int overhead = 2*Long.BYTES;
+
+				dos.writeInt(sample.sampleData.length+overhead);
+				int start = dos.size();
+				dos.writeLong(sample.sampleStartTime);
+				dos.writeLong(clientID);
+				dos.write(sample.sampleData);
+				if(dos.size() - start != sample.sampleData.length + overhead){
+					System.out.println("oops, wrote the wrong number of bytes");
+					System.exit(0);
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 }

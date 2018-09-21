@@ -13,13 +13,14 @@ public class VisualMetronome extends Canvas {
 	private static final long serialVersionUID = -9058766362349172334L;
 	protected BeatClock clock;
 
+	int MS_PER_FRAME= 40;
 	public VisualMetronome(BeatClock clock){
 		setClock(clock);
 		Thread th = new Thread(){
 			public void run(){
 				while(true){
 					try {
-						Thread.sleep(10);
+						Thread.sleep(MS_PER_FRAME);
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();

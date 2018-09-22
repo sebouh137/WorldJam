@@ -1,14 +1,11 @@
 package worldjam.gui;
 
-import javax.sound.sampled.Line;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 
-import worldjam.exe.DefaultClient;
+import worldjam.exe.Client;
 import worldjam.gui.conductor.BezierConductor;
-import worldjam.gui.conductor.Conductor;
-import worldjam.gui.conductor.DefaultConductor;
 import worldjam.audio.*;
 import worldjam.core.BeatClock;
 
@@ -24,15 +21,15 @@ import java.awt.Font;
 import javax.swing.SwingConstants;
 import javax.swing.JPanel;
 
-public class DefaultClientGUI extends JFrame implements PlaybackManager.ChannelChangeListener {
+public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeListener {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -6893387160409587544L;
-	private DefaultClient client;
+	private Client client;
 	private JMenu mnChannels;
 	private BezierConductor conductor;
-	public DefaultClientGUI(DefaultClient client) {
+	public ClientGUI(Client client) {
 		setTitle("World Jam");
 		
 		this.client = client;
@@ -69,7 +66,7 @@ public class DefaultClientGUI extends JFrame implements PlaybackManager.ChannelC
 		});
 		
 		
-		this.conductor = new BezierConductor(client.getClock());
+		this.conductor = new BezierConductor(client.getBeatClock());
 		getContentPane().add(conductor, BorderLayout.CENTER);
 		
 		getContentPane().add(createTimeInfoPanel(), BorderLayout.SOUTH);;
@@ -100,7 +97,7 @@ public class DefaultClientGUI extends JFrame implements PlaybackManager.ChannelC
 		JPanel panel = new JPanel();
 		panel.setLayout(new BorderLayout());
 		
-		BeatClock clock = client.getClock();
+		BeatClock clock = client.getBeatClock();
 		
 		JLabel lblTimeSig = new JLabel(String.format("%d/%d", clock.beatsPerMeasure, clock.beatDenominator));
 		lblTimeSig.setFont(infoFont);

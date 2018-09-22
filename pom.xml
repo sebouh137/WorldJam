@@ -20,6 +20,8 @@
        			<directory>resources</directory>
      		</resource>
    		</resources>
+   	
+   		
 		<plugins>
 
 			<plugin>
@@ -38,7 +40,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>worldjam.exe.DefaultClient</mainClass>
+							<mainClass>worldjam.exe.Client</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
@@ -100,7 +102,7 @@
                     </goals>
                     <configuration>
                         <headerType>gui</headerType>
-                        <jar>${project.build.directory}/${artifactId}-${version}-shaded.jar</jar>
+                        <jar>${project.build.directory}/${project.artifactId}-${version}-shaded.jar</jar>
                         <outfile>${project.build.directory}/WorldJam.exe</outfile>
                         <downloadUrl>http://java.com/download</downloadUrl>
                         <classPath>
@@ -116,13 +118,13 @@
                             <fileVersion>1.0.0.0</fileVersion>
                             <txtFileVersion>${project.version}</txtFileVersion>
                             <fileDescription>${project.name}</fileDescription>
-                            <copyright>2012 hasCode.com</copyright>
+                            <copyright>2018 WorldJam</copyright>
                             <productVersion>1.0.0.0</productVersion>
                             <txtProductVersion>1.0.0.0</txtProductVersion>
                             <productName>${project.name}</productName>
-                            <companyName>hasCode.com</companyName>
-                            <internalName>hasCode</internalName>
-                            <originalFilename>hasCode.exe</originalFilename>
+                            <companyName>SJP Code</companyName>
+                            <internalName>WorldJam</internalName>
+                            <originalFilename>WorldJam.exe</originalFilename>
                         </versionInfo>
                     </configuration>
                 </execution>
@@ -130,4 +132,11 @@
 			</plugin>
 		</plugins>
 	</build>
+	<dependencies>
+	  <!--<dependency>
+			<groupId>org.apache.felix</groupId>
+			<artifactId>org.apache.felix.upnp.basedriver</artifactId>
+			<version>0.8.0</version>
+		</dependency>-->
+	</dependencies>
 </project>

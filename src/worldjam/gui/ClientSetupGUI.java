@@ -24,7 +24,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import worldjam.core.BeatClock;
-import worldjam.exe.DefaultClient;
+import worldjam.exe.Client;
 import worldjam.gui.conductor.BezierConductor;
 import worldjam.util.DefaultObjects;
 
@@ -42,7 +42,7 @@ import javax.swing.SwingConstants;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;;
 
-public class DefaultClientSetupGUI extends JFrame{
+public class ClientSetupGUI extends JFrame{
 	/**
 	 * 
 	 */
@@ -70,7 +70,7 @@ public class DefaultClientSetupGUI extends JFrame{
 	private JLabel lblPort;
 	private JTextField textFieldPort;
 	
-	public DefaultClientSetupGUI() {
+	public ClientSetupGUI() {
 		this.setSize(666, 388);
 		setTitle("WorldJam Client Setup");
 		/*Image image;
@@ -438,7 +438,7 @@ public class DefaultClientSetupGUI extends JFrame{
 
 
 	public static void main(String arg[]){
-		DefaultClientSetupGUI gui = new DefaultClientSetupGUI();
+		ClientSetupGUI gui = new ClientSetupGUI();
 		gui.setVisible(true);
 
 		gui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -459,9 +459,9 @@ public class DefaultClientSetupGUI extends JFrame{
 			int port = Integer.parseInt(gui.textFieldPort.getText());
 			gui.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			gui.dispose();
-			DefaultClient client;
+			Client client;
 			try {
-				client = new DefaultClient(serverIP, port, sessionName, displayName, inputMixer, outputMixer);
+				client = new Client(serverIP, port, sessionName, displayName, inputMixer, outputMixer);
 				if(join){
 					client.joinSession();
 				} else{

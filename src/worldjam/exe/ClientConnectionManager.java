@@ -3,6 +3,7 @@ package worldjam.exe;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -14,56 +15,59 @@ import worldjam.net.NetworkUtils;
 import worldjam.net.WJConstants;
 
 /**
- * Base-class for programs that send data to/from the server
  * @author spaul
  *
  */
-public abstract class BaseClient implements AudioSubscriber{
+public class ClientConnectionManager {
 	//all output streams that are being broadcast to.  
-	private ArrayList<DataOutputStream> broadcastStreams = new ArrayList<DataOutputStream>();
+	//private ArrayList<DataOutputStream> broadcastStreams = new ArrayList<DataOutputStream>();
 
-	DataOutputStream outServer; //output stream to server
+	private DataOutputStream outServer; //output stream to server
+	private DataInputStream inServer; //input stream from server
 
-	protected String displayName;
-	protected int clientID;
+	private String displayName;
+	//private int clientID;
 
 	private String serverIP;
 	private String sessionName;
 	private String clientIP;
-	public BaseClient(String serverIP, int port, String sessionName, String displayName) throws UnknownHostException, IOException {
+	private Client client;
+	public ClientConnectionManager(String serverIP, int port, String sessionName, String displayName, Client client) throws UnknownHostException, IOException {
+		this.client = client;
 		this.serverIP = serverIP;
 		this.sessionName = sessionName;
 		System.out.println("attempting to connect to server at " + serverIP);
-		socket = new Socket(serverIP, port);
+		Socket socket = new Socket(serverIP, port);
 		System.out.println("connected to server at " + serverIP);
 		socket.setTcpNoDelay(true);
 		//socket.setSoTimeout(10000);
 		this.outServer = new DataOutputStream(socket.getOutputStream());
-		broadcastStreams.add(outServer);
+		this.inServer = new DataInputStream(socket.getInputStream());
+		
 		//this.dis = ;
 		this.displayName = displayName;
 		this.clientIP = NetworkUtils.getLocalIP();
-
-		new ReceiverThread(new DataInputStream(socket.getInputStream())).start();
+		
 		//joinSession();
 
 	}
-	Socket socket;
 
 	public void joinSession() throws IOException{
 		synchronized (outServer){
 			outServer.writeByte(WJConstants.COMMAND_JOIN);
 			outServer.writeUTF(this.sessionName);
 			outServer.writeUTF(this.displayName);
-			clientID = displayName.hashCode();
+			long clientID = displayName.hashCode();
 			outServer.writeLong(clientID);
 		}
+
+		client.addConnection(inServer, outServer, true);
 		//System.out.println("sent join request to session");
 
 	}
 	
-	public void startNewSession(BeatClock clock) throws IOException{
-		this.beatClock = clock;
+	public void startNewSession(BeatClock beatClock) throws IOException{
+		
 		synchronized (outServer){
 			outServer.writeByte(WJConstants.COMMAND_CREATE_NEW_SESSION);
 			outServer.writeUTF(this.sessionName);
@@ -74,17 +78,13 @@ public abstract class BaseClient implements AudioSubscriber{
 			outServer.writeLong(beatClock.startTime);
 			
 			outServer.writeUTF(this.displayName);
-			clientID = displayName.hashCode();
+			long clientID = displayName.hashCode();
 			outServer.writeLong(clientID);
 		}
-		
+		client.addConnection(inServer, outServer, true);
 	}
-	
-	protected BeatClock beatClock;
 
-	protected AudioSubscriber subs;
-
-	private class ReceiverThread extends Thread{
+	/*private class ReceiverThread extends Thread{
 		DataInputStream dis;
 		ReceiverThread(DataInputStream dis){
 			this.dis = dis;
@@ -148,59 +148,18 @@ public abstract class BaseClient implements AudioSubscriber{
 
 
 
-	};
+	};*/
 	
-	public String getUserName(){
-		return this.displayName;
-	}
 	
-	public String getSessionName(){
-		return this.sessionName;
-	}
 	
 	protected void printClientConfiguration() {
 		System.out.println("Joined jam session with the following configuration:");
-		System.out.printf("  BPM: %.2f  (%d ms per beat)\n", 60000./beatClock.msPerBeat, beatClock.msPerBeat);
-		System.out.println("  Time Signature: " + beatClock.beatsPerMeasure + "/" + beatClock.beatDenominator);
 		System.out.println("  Server IP:  " + serverIP);
 		System.out.println("Client configuration:");
-		System.out.println("  client ID Number:  " + clientID);
+		System.out.println("  client ID Number:  " + (long)(displayName.hashCode()));
 		System.out.println("  client IP Address:  " + clientIP);
 	}
 	
-	protected void setBeatClock(BeatClock beatClock) {
-		this.beatClock = beatClock;
-	}
-	protected abstract void processClientList(ArrayList<String> names, ArrayList<Long> ids);
-	
-	public BeatClock getClock(){
-		return beatClock;
-	}
-	
-	protected void sendSample(SampleMessage sample){
-		for(int i = 0; i< broadcastStreams.size(); i++)
-			this.sendSample(sample, broadcastStreams.get(i));
-	}
-	
-	private void sendSample(SampleMessage sample, DataOutputStream dos) {
-		synchronized(dos){
-			try {
-				dos.writeByte(WJConstants.AUDIO_SAMPLE);
-				int overhead = 2*Long.BYTES;
 
-				dos.writeInt(sample.sampleData.length+overhead);
-				int start = dos.size();
-				dos.writeLong(sample.sampleStartTime);
-				dos.writeLong(clientID);
-				dos.write(sample.sampleData);
-				if(dos.size() - start != sample.sampleData.length + overhead){
-					System.out.println("oops, wrote the wrong number of bytes");
-					System.exit(0);
-				}
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-	}
+	
 }

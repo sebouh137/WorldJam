@@ -52,6 +52,7 @@ public class SoundLevelBar extends Canvas{
 	double log10 = Math.log(10);
 	private boolean useDB = true;
 	public void paint(Graphics g){
+		super.paint(g);
 		double level = rms.getRMS(200);
 		int divisions = 10;
 		double yellowThreshold = 1, redThreshold = 1;

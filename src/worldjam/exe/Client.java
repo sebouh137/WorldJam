@@ -20,7 +20,7 @@ import worldjam.util.DefaultObjects;
 
 public class Client implements AudioSubscriber{
 
-	ClientConnectionManager base;
+	private ClientConnectionManager base;
 	public static void main(String arg[]) throws LineUnavailableException, UnknownHostException, IOException{
 
 		//if(arg.length >= 1 && arg[0].equals("-g")){
@@ -28,7 +28,7 @@ public class Client implements AudioSubscriber{
 
 	}
 
-	Mixer inputMixer, outputMixer;
+	private Mixer inputMixer, outputMixer;
 
 	public Client(String serverIP, int port, String sessionName, String displayName, Mixer inputMixer, Mixer outputMixer) throws LineUnavailableException, UnknownHostException, IOException{
 		base = new ClientConnectionManager(serverIP, port, sessionName, displayName, this);
@@ -131,12 +131,9 @@ public class Client implements AudioSubscriber{
 
 	}
 
-	void audioSampleReceived(SampleMessage sample){
+	
 
-		playback.sampleReceived(sample);
-	}
-
-	ClientGUI gui;
+	private ClientGUI gui;
 
 	public PlaybackManager getPlaybackManager(){
 		return playback;

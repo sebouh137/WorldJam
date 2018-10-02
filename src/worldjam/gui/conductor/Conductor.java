@@ -25,6 +25,7 @@ public abstract class Conductor extends VisualMetronome{
 
 	
 	public void paint(Graphics g){
+		super.paint(g);
 		if(prev != null)
 			g.drawImage(prev, 0, 0, null);
 		double t = ((System.currentTimeMillis() - clock.startTime)%(clock.msPerBeat*clock.beatsPerMeasure))/(double)clock.msPerBeat;

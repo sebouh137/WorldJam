@@ -16,8 +16,8 @@ public class DefaultConductor extends Conductor{
 	 * 
 	 */
 	private static final long serialVersionUID = -9144008189374506436L;
-	double x[];
-	double y[];
+	private double x[];
+	private double y[];
 	public DefaultConductor(BeatClock clock) {
 		super(clock);	
 	}

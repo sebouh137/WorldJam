@@ -11,14 +11,14 @@ import javax.sound.sampled.Mixer;
 import worldjam.audio.AudioSubscriber;
 import worldjam.audio.InputThread;
 import worldjam.audio.PlaybackManager;
-import worldjam.audio.SampleMessage;
+import worldjam.audio.AudioSample;
 import worldjam.core.BeatClock;
 import worldjam.gui.ClientGUI;
 import worldjam.gui.ClientSetupGUI;
 import worldjam.net.WJConstants;
 import worldjam.util.DefaultObjects;
 
-public class Client implements AudioSubscriber{
+public class Client {
 
 	private ClientConnectionManager base;
 	public static void main(String arg[]) throws LineUnavailableException, UnknownHostException, IOException{
@@ -31,11 +31,13 @@ public class Client implements AudioSubscriber{
 	private Mixer inputMixer, outputMixer;
 
 	public Client(String serverIP, int port, String sessionName, String displayName, Mixer inputMixer, Mixer outputMixer) throws LineUnavailableException, UnknownHostException, IOException{
+		this.selfDescriptor = new ClientDescriptor(displayName, displayName.hashCode());
 		base = new ClientConnectionManager(serverIP, port, sessionName, displayName, this);
 		this.sessionName = sessionName;
 		this.displayName = displayName;
 		this.inputMixer = inputMixer;
 		this.outputMixer = outputMixer;
+		
 
 	}
 
@@ -44,45 +46,20 @@ public class Client implements AudioSubscriber{
 		connections.add(new Connection(dis, dos, isServer));
 	}
 
-	/*private static Mixer getMixer(Scanner scanner, Class<? extends DataLine> clazz) {
-		ArrayList<Mixer> availableMixers = new ArrayList();
-		for(Mixer.Info info : AudioSystem.getMixerInfo()){
-			if(AudioSystem.getMixer(info).isLineSupported(
-					new DataLine.Info(clazz, DefaultObjects.defaultFormat)))
-				availableMixers.add(AudioSystem.getMixer(info));
-		}
-		System.out.println("Select output device");
-		int i = 0;
-		for(Mixer mixer : availableMixers){
-			System.out.println("(" + i++ + ") " +  mixer.getMixerInfo());
-		}
-
-		return availableMixers.get(scanner.nextInt());
-	}*/
-
 	private static InputThread input;
 
 	private static PlaybackManager playback;
 
-	//when the client receives an audio sample from the microphone,
-	//it sends it out.  
-	@Override
-	public void sampleReceived(SampleMessage sample) {
-		broadcastAudioSample(sample);
 
-	}
-
-
-
-	protected void processClientList(ArrayList<String> names, ArrayList<Long> ids) {
+	void processClientList(ArrayList<ClientDescriptor> descriptors) {
 		if(playback == null)
 			return;
 
-		for(int i = 0; i< names.size(); i++){
+		for(ClientDescriptor descriptor : descriptors){
 
-			if(!playback.getIDs().contains(ids.get(i))){
+			if(!playback.getIDs().contains(descriptor.clientID)){
 				try {
-					playback.addChannel(ids.get(i), names.get(i));
+					playback.addChannel(descriptor.clientID, descriptor.displayName);
 					//System.out.println("added playback thread");
 				} catch (LineUnavailableException e) {
 					// TODO Auto-generated catch block
@@ -92,7 +69,7 @@ public class Client implements AudioSubscriber{
 		}
 	}
 
-	protected void printClientConfiguration(){
+	void printClientConfiguration(){
 		base.printClientConfiguration();
 		System.out.println("  Audio configurations:");
 		System.out.println("    output mixer: " + outputMixer.getMixerInfo());
@@ -103,6 +80,7 @@ public class Client implements AudioSubscriber{
 	public BeatClock getBeatClock(){
 		return beatClock;
 	}
+	
 	protected void setBeatClock(BeatClock clock){
 		if(playback == null){
 			playback = new PlaybackManager(outputMixer, beatClock, DefaultObjects.defaultFormat);
@@ -118,20 +96,16 @@ public class Client implements AudioSubscriber{
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			input.setReceiver(this);
+			input.setReceiver(sample -> {this.broadcastAudioSample(sample);});
 			input.start();
 		}else{
 			input.setClock(beatClock);
 		}
 
-
-
 		gui = new ClientGUI(this);
 		gui.setVisible(true);
 
 	}
-
-	
 
 	private ClientGUI gui;
 
@@ -141,7 +115,12 @@ public class Client implements AudioSubscriber{
 	public InputThread getInput(){
 		return input;
 	}
-
+	
+	/**
+	 * represents a connection either to a relay server or another peer in a p2p system  
+	 * @author spaul
+	 *
+	 */
 	private class Connection extends Thread{
 		Connection(DataInputStream dis, DataOutputStream dos, boolean isServer){
 			this.dis = dis;
@@ -166,28 +145,19 @@ public class Client implements AudioSubscriber{
 							byte code;
 							code = dis.readByte();
 							//System.out.println("received code " + (char)code);
-							if(code == WJConstants.AUDIO_SAMPLE){
-								int datalength = dis.readInt()-2*Long.BYTES;
-								long sampleStartTime = dis.readLong();
-								long senderID = dis.readLong();
-								byte[] data = new byte[datalength];
-								dis.readFully(data);
-								SampleMessage sample = new SampleMessage();
-								sample.sampleData = data;
-								sample.senderID = senderID;
-								sample.sampleStartTime = sampleStartTime;
+							if(code == WJConstants.AUDIO_SAMPLE){								
+								AudioSample sample = AudioSample.readFromStream(dis);
 								//System.out.println("received sample (" + datalength + " bytes)");
 								if(playback != null)
 									playback.sampleReceived(sample);
 							} else if(code == WJConstants.LIST_CLIENTS){
 								int N = dis.readInt();
-								ArrayList<String> names = new ArrayList();
-								ArrayList<Long> ids = new ArrayList();
+								ArrayList<ClientDescriptor> clientList = new ArrayList();
 								for(int i = 0; i<N; i++){
-									names.add(dis.readUTF());
-									ids.add(dis.readLong());
+									ClientDescriptor descriptor = ClientDescriptor.readFromStream(dis);
+									clientList.add(descriptor);
 								}
-								processClientList(names, ids);
+								processClientList(clientList);
 							} else if(code == WJConstants.TIME_CHANGED){
 								dis.readInt();
 
@@ -213,26 +183,26 @@ public class Client implements AudioSubscriber{
 				}
 			}
 
-
-
-
 		}
 		
-		private void sendAudioSample(SampleMessage sample) {
+		private void sendAudioSample(AudioSample sample) {
 			synchronized(dos){
 				try {
+					//change the sourceID to the client's id number
+					sample.sourceID = selfDescriptor.clientID;
 					dos.writeByte(WJConstants.AUDIO_SAMPLE);
-					int overhead = 2*Long.BYTES;
-
-					dos.writeInt(sample.sampleData.length+overhead);
-					int start = dos.size();
-					dos.writeLong(sample.sampleStartTime);
-					dos.writeLong(displayName.hashCode());
-					dos.write(sample.sampleData);
-					if(dos.size() - start != sample.sampleData.length + overhead){
-						System.out.println("oops, wrote the wrong number of bytes");
-						System.exit(0);
-					}
+					sample.writeToStream(dos);
+//					int overhead = 2*Long.BYTES;
+//
+//					dos.writeInt(sample.sampleData.length+overhead);
+//					int start = dos.size();
+//					dos.writeLong(sample.sampleStartTime);
+//					dos.writeLong(displayName.hashCode());
+//					dos.write(sample.sampleData);
+//					if(dos.size() - start != sample.sampleData.length + overhead){
+//						System.out.println("oops, wrote the wrong number of bytes");
+//						System.exit(0);
+//					}
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -250,6 +220,7 @@ public class Client implements AudioSubscriber{
 	public String getSessionName(){
 		return this.sessionName;
 	}
+	
 	public void joinSession() throws IOException{
 		this.base.joinSession();
 	}
@@ -265,14 +236,19 @@ public class Client implements AudioSubscriber{
 	
 	ConnectionMode connectionMode = ConnectionMode.THROUGH_SERVER;
 	
-	public void broadcastAudioSample(SampleMessage sample){
+	public void broadcastAudioSample(AudioSample sample){
 		for(int i = 0; i< connections.size(); i++){
 			if(connectionMode == ConnectionMode.DIRECT && connections.get(i).isServer)
 				continue;
 			connections.get(i).sendAudioSample(sample);
 		}
 	}
-
 	
+	ClientDescriptor selfDescriptor;
+
+	public ClientDescriptor getDescriptor() {
+		// TODO Auto-generated method stub
+		return this.selfDescriptor;
+	}
 	
 }

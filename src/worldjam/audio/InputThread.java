@@ -51,9 +51,9 @@ public class InputThread extends Thread implements RMS{
 		//time = (time*format.getFrameSize())/format.getFrameSize();
 		while(alive){
 			tdl.read(buffer, 0, buffer.length);
-			SampleMessage message = new SampleMessage();
+			AudioSample message = new AudioSample();
 			message.sampleData = buffer.clone();
-			message.senderID = this.lineID;
+			message.sourceID = this.lineID;
 			message.sampleStartTime = timestamp;
 			timestamp+= nMsPerLoop;
 			System.arraycopy(buffer, 0, buffer2, 0, buffer.length);

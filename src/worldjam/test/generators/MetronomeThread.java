@@ -4,7 +4,7 @@ import javax.sound.sampled.AudioFormat;
 
 import worldjam.audio.AudioUtils;
 import worldjam.audio.PlaybackThread;
-import worldjam.audio.SampleMessage;
+import worldjam.audio.AudioSample;
 import worldjam.audio.AudioSubscriber;
 import worldjam.core.BeatClock;
 

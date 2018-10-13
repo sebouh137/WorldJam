@@ -63,8 +63,8 @@ public class PlaybackManager implements AudioSubscriber{
 	private ArrayList<ChannelChangeListener> channelChangeListeners = new ArrayList();
 	
 	@Override
-	public void sampleReceived(SampleMessage sample) {
-		long senderID = sample.senderID;
+	public void sampleReceived(AudioSample sample) {
+		long senderID = sample.sourceID;
 		if(channels.containsKey(senderID))
 			channels.get(senderID).sampleReceived(sample);
 		else

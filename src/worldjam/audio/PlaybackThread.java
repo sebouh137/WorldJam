@@ -94,7 +94,7 @@ public class PlaybackThread extends Thread implements PlaybackChannel{
 		this.replayOffsetInBytes = offset;
 	}*/
 	private int replayOffsetInBytes;
-	public void sampleReceived(SampleMessage sample) {
+	public void sampleReceived(AudioSample sample) {
 		int dt = (int) (sample.sampleStartTime-loopStartTime);
 		int destPos = (int) (dt*playbackFormat.getFrameRate()/1000.)*playbackFormat.getFrameSize();
 		destPos += replayOffsetInBytes;

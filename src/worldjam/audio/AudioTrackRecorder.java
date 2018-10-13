@@ -24,7 +24,7 @@ public class AudioTrackRecorder implements AudioSubscriber{
 
 	boolean receivedFirstSample = false;
 	@Override
-	public void sampleReceived(SampleMessage sample) {
+	public void sampleReceived(AudioSample sample) {
 		try {
 			if(receivedFirstSample){
 				//pad with 0's.  

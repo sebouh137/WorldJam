@@ -6,7 +6,7 @@ import javax.sound.sampled.AudioFormat;
 
 import worldjam.audio.AudioUtils;
 import worldjam.audio.PlaybackThread;
-import worldjam.audio.SampleMessage;
+import worldjam.audio.AudioSample;
 import worldjam.audio.AudioSubscriber;
 import worldjam.core.BeatClock;
 
@@ -41,7 +41,7 @@ public abstract class LoopThread extends Thread {
 			
 			byte[] sample = AudioUtils.getClip(loop, (int)((time-clock.startTime)%msPerLoop), msPerClip, format);
 			if(rec != null)
-				rec.sampleReceived(new SampleMessage(senderID, time, sample));
+				rec.sampleReceived(new AudioSample(senderID, time, sample));
 			try {
 				Thread.sleep(msPerClip);
 				time+=msPerClip;

@@ -9,7 +9,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 import worldjam.audio.AudioSubscriber;
-import worldjam.audio.SampleMessage;
+import worldjam.audio.AudioSample;
 import worldjam.core.BeatClock;
 import worldjam.net.NetworkUtils;
 import worldjam.net.WJConstants;
@@ -56,9 +56,11 @@ public class ClientConnectionManager {
 		synchronized (outServer){
 			outServer.writeByte(WJConstants.COMMAND_JOIN);
 			outServer.writeUTF(this.sessionName);
-			outServer.writeUTF(this.displayName);
-			long clientID = displayName.hashCode();
-			outServer.writeLong(clientID);
+			
+			client.getDescriptor().writeToStream(outServer);
+			//outServer.writeUTF(this.displayName);
+			//long clientID = displayName.hashCode();
+			//outServer.writeLong(clientID);
 		}
 
 		client.addConnection(inServer, outServer, true);
@@ -77,9 +79,10 @@ public class ClientConnectionManager {
 			outServer.writeInt(beatClock.beatDenominator);
 			outServer.writeLong(beatClock.startTime);
 			
-			outServer.writeUTF(this.displayName);
-			long clientID = displayName.hashCode();
-			outServer.writeLong(clientID);
+			client.getDescriptor().writeToStream(outServer);
+			//outServer.writeUTF(this.displayName);
+			//long clientID = displayName.hashCode();
+			//outServer.writeLong(clientID);
 		}
 		client.addConnection(inServer, outServer, true);
 	}

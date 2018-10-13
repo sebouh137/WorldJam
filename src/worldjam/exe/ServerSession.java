@@ -66,8 +66,9 @@ public class ServerSession {
 		Socket socket;
 		private DataOutputStream dos;
 		private DataInputStream dis;
-		String displayName;
-		long id;
+		//String displayName;
+		//long id;
+		public ClientDescriptor clientDescriptor;
 		public ClientHandler(Socket socket) throws IOException {
 			this.socket = socket;
 			this.dos = new DataOutputStream(socket.getOutputStream());
@@ -133,10 +134,9 @@ public class ServerSession {
 
 		void readJoinStatement() throws Exception{
 			synchronized(dis){
-				displayName = dis.readUTF();
-				id = dis.readLong();
+				this.clientDescriptor = ClientDescriptor.readFromStream(dis);
 				synchronized(System.out){
-					System.out.println(new Date() + ":  client '" + displayName + "' (" + id + ") joined session '" + sessionName + "'");
+					System.out.println(new Date() + ":  client '" + clientDescriptor.displayName + "' (" + clientDescriptor.clientID + ") joined session '" + sessionName + "'");
 				}
 			}
 		}
@@ -163,8 +163,10 @@ public class ServerSession {
 					handler.dos.writeByte(WJConstants.LIST_CLIENTS);
 					handler.dos.writeInt(handlers.size());
 					for(ClientHandler handler2 : handlers){
-						handler.dos.writeUTF(handler2.displayName);
-						handler.dos.writeLong(handler2.id);
+						ClientDescriptor descriptor = handler2.clientDescriptor;
+						descriptor.writeToStream(handler.dos);
+						//handler.dos.writeUTF(handler2.displayName);
+						//handler.dos.writeLong(handler2.id);
 					}
 				} catch(SocketException e){
 					brokenConnections.add(handler);
@@ -179,7 +181,7 @@ public class ServerSession {
 	private void removeClient(ClientHandler handler) {
 		synchronized(handlers){
 			synchronized(System.out){
-				System.out.println(new Date() + ":  client '" + handler.displayName + "' (id = " + handler.id + ") has disconnected from session '" + sessionName + "'");
+				System.out.println(new Date() + ":  client '" + handler.clientDescriptor.displayName + "' (id = " + handler.clientDescriptor.clientID + ") has disconnected from session '" + sessionName + "'");
 			}
 			handlers.remove(handler);
 		}

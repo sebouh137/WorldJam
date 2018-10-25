@@ -3,10 +3,9 @@ package worldjam.exe;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.InetAddress;
 
 public class ClientDescriptor {
-	static ClientDescriptor readFromStream(DataInputStream dis) throws IOException{
+	public static ClientDescriptor readFromStream(DataInputStream dis) throws IOException{
 		String displayName = dis.readUTF();
 		long clientID = dis.readLong();
 		return new ClientDescriptor(displayName, clientID);

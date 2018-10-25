@@ -1,7 +1,6 @@
 package worldjam.audio;
 
 import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.SourceDataLine;
 
 
 public class AudioUtils {

@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.Mixer;
 
-import worldjam.audio.AudioSubscriber;
 import worldjam.audio.InputThread;
 import worldjam.audio.PlaybackManager;
 import worldjam.audio.AudioSample;
@@ -41,7 +40,7 @@ public class Client {
 
 	}
 
-	ArrayList<Connection> connections = new ArrayList();
+	ArrayList<Connection> connections = new ArrayList<Connection>();
 	void addConnection(DataInputStream dis, DataOutputStream dos, boolean isServer){
 		connections.add(new Connection(dis, dos, isServer));
 	}
@@ -161,12 +160,12 @@ public class Client {
 							} else if(code == WJConstants.TIME_CHANGED){
 								dis.readInt();
 
-								int msPerBeat = dis.readInt();
-								int beatsPerMeasure = dis.readInt();
-								int denom = dis.readInt();
-								long startTime = dis.readLong();
-								BeatClock beatClock = new BeatClock(msPerBeat, beatsPerMeasure, denom, startTime);
-
+								//int msPerBeat = dis.readInt();
+								//int beatsPerMeasure = dis.readInt();
+								//int denom = dis.readInt();
+								//long startTime = dis.readLong();
+								//BeatClock beatClock = new BeatClock(msPerBeat, beatsPerMeasure, denom, startTime);
+								BeatClock beatClock = BeatClock.readFromStream(dis); 
 								//System.out.println("received time information");
 								setBeatClock(beatClock);
 								printClientConfiguration();

@@ -1,10 +1,8 @@
 package worldjam.core;
 
-import java.io.Externalizable;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.io.Serializable;
 
 public class BeatClock {
 	//should be divisible by 10
@@ -28,7 +26,13 @@ public class BeatClock {
 		this.beatDenominator = beatDenominator;
 		this.startTime = startTime;
 	}
-
+	
+	/**
+	 * creates another instance of BeatClock with the same time signature,
+	 * but a different tempo.  At the time that the create Both the original and the created 
+	 * @param newMsPerBeat
+	 * @return another instance of BeatClock with a different tempo
+	 */
 	public BeatClock createWithDifferentTempo(int newMsPerBeat){
 		long t = System.currentTimeMillis();
 		long newStartTime = t - (long)((newMsPerBeat/(double)msPerBeat*(t- this.startTime)));
@@ -36,6 +40,12 @@ public class BeatClock {
 		return new BeatClock(newMsPerBeat, beatsPerMeasure, beatDenominator, newStartTime);
 	}
 	
+	/**
+	 * creates another instance of BeatClock with the same time signature,
+	 * but a different tempo.  At the time that the create Both the original and the created 
+	 * @param newMsPerBeat
+	 * @return another instance of BeatClock with a different tempo
+	 */
 	public BeatClock createWithDifferentBeatCount(int newBeatCount){
 		return new BeatClock(msPerBeat, newBeatCount, beatDenominator, startTime);
 	}
@@ -44,5 +54,20 @@ public class BeatClock {
 	public int getMsPerMeasure() {
 		return msPerBeat*beatsPerMeasure;
 	}
+
+	public void writeToStream(DataOutputStream dos) throws IOException {
+		dos.writeInt(msPerBeat);
+		dos.writeInt(beatsPerMeasure);
+		dos.writeInt(beatDenominator);
+		dos.writeLong(startTime);
+	}
 	
+	public static BeatClock readFromStream(DataInputStream dis) throws IOException{
+		int msPerBeat = dis.readInt();
+		int beatsPerMeasure = dis.readInt();
+		int beatDenominator = dis.readInt();
+		long startTime = dis.readLong();
+		return new BeatClock(msPerBeat, beatsPerMeasure, beatDenominator, startTime);
+			
+	}
 }

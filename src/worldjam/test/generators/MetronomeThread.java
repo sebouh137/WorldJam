@@ -3,9 +3,6 @@ package worldjam.test.generators;
 import javax.sound.sampled.AudioFormat;
 
 import worldjam.audio.AudioUtils;
-import worldjam.audio.PlaybackThread;
-import worldjam.audio.AudioSample;
-import worldjam.audio.AudioSubscriber;
 import worldjam.core.BeatClock;
 
 public class MetronomeThread extends LoopThread{

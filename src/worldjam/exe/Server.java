@@ -16,7 +16,7 @@ import worldjam.util.DefaultObjects;
 
 public class Server {
 
-	static Map<String, ServerSession> sessions = new HashMap();
+	static Map<String, ServerSession> sessions = new HashMap<String, ServerSession>();
 	static int port;
 
 	public static void main(String args[]) throws LineUnavailableException, IOException{
@@ -53,11 +53,11 @@ public class Server {
 					session.addClientHandler(socket);
 				} else if(joinOrCreate == WJConstants.COMMAND_CREATE_NEW_SESSION){
 					String sessionName = dis.readUTF();
-					int msPerBeat = dis.readInt();
-					int beatsPerMeasure = dis.readInt();
-					int denom = dis.readInt();
-					long startTime = dis.readLong();
-					BeatClock beatClock = new BeatClock(msPerBeat, beatsPerMeasure, denom, startTime);
+					//int msPerBeat = dis.readInt();
+					//int beatsPerMeasure = dis.readInt();
+					//int denom = dis.readInt();
+					//long startTime = dis.readLong();
+					BeatClock beatClock = BeatClock.readFromStream(dis);//new BeatClock(msPerBeat, beatsPerMeasure, denom, startTime);
 
 					ServerSession session = new ServerSession(beatClock, sessionName);
 

@@ -3,13 +3,8 @@ package worldjam.exe;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-
-import worldjam.audio.AudioSubscriber;
-import worldjam.audio.AudioSample;
 import worldjam.core.BeatClock;
 import worldjam.net.NetworkUtils;
 import worldjam.net.WJConstants;
@@ -74,10 +69,7 @@ public class ClientConnectionManager {
 			outServer.writeByte(WJConstants.COMMAND_CREATE_NEW_SESSION);
 			outServer.writeUTF(this.sessionName);
 			
-			outServer.writeInt(beatClock.msPerBeat);
-			outServer.writeInt(beatClock.beatsPerMeasure);
-			outServer.writeInt(beatClock.beatDenominator);
-			outServer.writeLong(beatClock.startTime);
+			beatClock.writeToStream(outServer);
 			
 			client.getDescriptor().writeToStream(outServer);
 			//outServer.writeUTF(this.displayName);

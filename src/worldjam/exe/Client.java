@@ -5,6 +5,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Date;
+
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.Mixer;
 
@@ -29,6 +31,10 @@ public class Client {
 
 	private Mixer inputMixer, outputMixer;
 
+	private boolean debug;
+	public void setDebug(boolean debug){
+		this.debug = debug;
+	}
 	public Client(String serverIP, int port, String sessionName, String displayName, Mixer inputMixer, Mixer outputMixer) throws LineUnavailableException, UnknownHostException, IOException{
 		this.selfDescriptor = new ClientDescriptor(displayName, displayName.hashCode());
 		base = new ClientConnectionManager(serverIP, port, sessionName, displayName, this);
@@ -45,9 +51,9 @@ public class Client {
 		connections.add(new Connection(dis, dos, isServer));
 	}
 
-	private static InputThread input;
+	private InputThread input;
 
-	private static PlaybackManager playback;
+	private PlaybackManager playback;
 
 
 	void processClientList(ArrayList<ClientDescriptor> descriptors) {
@@ -81,6 +87,9 @@ public class Client {
 	}
 	
 	protected void setBeatClock(BeatClock clock){
+		if(clock == null)
+			throw new NullPointerException();
+		this.beatClock = clock;
 		if(playback == null){
 			playback = new PlaybackManager(outputMixer, beatClock, DefaultObjects.defaultFormat);
 			//System.out.println("playback initialized");
@@ -100,10 +109,10 @@ public class Client {
 		}else{
 			input.setClock(beatClock);
 		}
-
-		gui = new ClientGUI(this);
-		gui.setVisible(true);
-
+		if(gui == null){
+			gui = new ClientGUI(this);
+			gui.setVisible(true);
+		}
 	}
 
 	private ClientGUI gui;
@@ -225,7 +234,7 @@ public class Client {
 	}
 
 	public void startNewSession(BeatClock clock) throws IOException{
-		this.beatClock = clock;
+		this.setBeatClock(clock);
 		this.base.startNewSession(clock);
 	}
 	
@@ -236,6 +245,8 @@ public class Client {
 	ConnectionMode connectionMode = ConnectionMode.THROUGH_SERVER;
 	
 	public void broadcastAudioSample(AudioSample sample){
+		if(debug)
+			System.out.println(this.getUserName()+": sending audio message at " + new Date());
 		for(int i = 0; i< connections.size(); i++){
 			if(connectionMode == ConnectionMode.DIRECT && connections.get(i).isServer)
 				continue;

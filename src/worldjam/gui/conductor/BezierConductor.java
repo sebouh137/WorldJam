@@ -58,8 +58,10 @@ public class BezierConductor extends VisualMetronome{
 	
 
 	public BezierConductor(BeatClock clock) {
-		this(clock, DefaultConductingPatternProvider.getInstance().getDefaultPattern(clock.beatsPerMeasure));
+		this(clock, DefaultConductingPatternProvider.getInstance().getDefaultPattern(clock != null ? clock.beatsPerMeasure : 4));
 	}
+	
+	
 
 	
 	public void paint(Graphics g){

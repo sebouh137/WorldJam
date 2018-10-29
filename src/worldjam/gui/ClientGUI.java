@@ -33,6 +33,8 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		setTitle("World Jam");
 		
 		this.client = client;
+		this.setClock(client.getBeatClock());
+		
 		this.setSize(400, 400);
 		
 		/*try {
@@ -133,6 +135,7 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		}
 	}
 	public void setClock(BeatClock clock){
-		this.conductor.setClock(clock);
+		if(this.conductor != null)
+			this.conductor.setClock(clock);
 	}
 }

@@ -166,7 +166,7 @@ public class WfsoPitchShift extends AudioFilter{
 				}
 				//if(outIndex<merged.length){
 					merged[outIndex] = val;
-					if(stretchedSegmentLength != outSegmentLength && outIndex % 100 ==0) 
+					if(debug && stretchedSegmentLength != outSegmentLength && outIndex % 100 ==0) 
 						System.out.println(inIndex + " "
 							+ altInIndex + " " + outIndex + " " + val + " " + overlapLength + " " + outSegmentLength + " " + searchLength + " " + offset + " " + prevOffset + " " + j);
 				//}
@@ -175,6 +175,7 @@ public class WfsoPitchShift extends AudioFilter{
 		}
 	}
 
+	boolean debug = false;
 	public double getShiftInCents() {
 		return -Math.log(_factor)*1200/Math.log(2);
 	}

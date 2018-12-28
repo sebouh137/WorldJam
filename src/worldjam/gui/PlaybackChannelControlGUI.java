@@ -15,6 +15,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import worldjam.audio.PlaybackChannel;
+import worldjam.filters.NoiseGateFilter;
 import worldjam.filters.pitchshift.PitchShift;
 import worldjam.filters.pitchshift.WfsoPitchShift;
 
@@ -30,6 +31,7 @@ import javax.swing.SwingConstants;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JRadioButton;
+import javax.swing.JTextField;
 
 public class PlaybackChannelControlGUI extends JFrame {
 	/*public static void main(String arg[]) throws LineUnavailableException{
@@ -54,7 +56,7 @@ public class PlaybackChannelControlGUI extends JFrame {
 	LineControls lineControls;
 	private SoundLevelBar slb;
 
-	public PlaybackChannelControlGUI(PlaybackChannel playbackClip, String title) {
+	public PlaybackChannelControlGUI(PlaybackChannel playbackChannel, String title) {
 
 
 		setTitle(title);
@@ -64,15 +66,16 @@ public class PlaybackChannelControlGUI extends JFrame {
 
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		getContentPane().add(tabbedPane, BorderLayout.CENTER);
-		lineControls = new LineControls(playbackClip.getLine());
+		lineControls = new LineControls(playbackChannel.getLine());
 		tabbedPane.addTab("Line", null, lineControls, null);
-		tabbedPane.addTab("Transpose", null, createFilterControls(playbackClip), null);
-		tabbedPane.addTab("Delay", null, createDelayControls(playbackClip), null);
-		tabbedPane.addTab("Info", null, createInfoPanel(playbackClip), null);
+		tabbedPane.addTab("Transpose", null, createTransposeControls(playbackChannel), null);
+		tabbedPane.addTab("Noise Gate", null, createNoiseGateControls(playbackChannel), null);
+		tabbedPane.addTab("Delay", null, createDelayControls(playbackChannel), null);
+		tabbedPane.addTab("Info", null, createInfoPanel(playbackChannel), null);
 
-		slb = new SoundLevelBar(playbackClip, SoundLevelBar.VERTICAL);
+		slb = new SoundLevelBar(playbackChannel, SoundLevelBar.VERTICAL);
 
-		if(playbackClip != null)
+		if(playbackChannel != null)
 			getContentPane().add(slb, BorderLayout.WEST); 
 	}
 
@@ -297,8 +300,67 @@ public class PlaybackChannelControlGUI extends JFrame {
 		return delayPanel;
 	}
 
+	private JPanel createNoiseGateControls(PlaybackChannel channel){
+		NoiseGateFilter filter;
+		if(channel.getFilter() == null || !(channel.getFilter() instanceof WfsoPitchShift))
+			filter = new NoiseGateFilter(channel.getInputFormat());
+		else
+			filter = (NoiseGateFilter)channel.getFilter();
 
-	private JPanel createFilterControls(PlaybackChannel channel){
+		JPanel filterControls = new JPanel();
+		GridBagLayout gbl_filterControls = new GridBagLayout();
+		gbl_filterControls.columnWidths = new int[]{0, 0, 105, 0, 0};
+		gbl_filterControls.rowHeights = new int[]{0, 0, 0};
+		gbl_filterControls.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_filterControls.rowWeights = new double[]{0.0, 0.0, Double.MIN_VALUE};
+		filterControls.setLayout(gbl_filterControls);
+		
+		JCheckBox chckbxEnableNoiseGate = new JCheckBox("Enable Noise Gate");
+		GridBagConstraints gbc_chckbxEnableNoiseGate = new GridBagConstraints();
+		gbc_chckbxEnableNoiseGate.insets = new Insets(0, 0, 5, 5);
+		gbc_chckbxEnableNoiseGate.gridx = 1;
+		gbc_chckbxEnableNoiseGate.gridy = 0;
+		filterControls.add(chckbxEnableNoiseGate, gbc_chckbxEnableNoiseGate);
+		
+		chckbxEnableNoiseGate.addActionListener(
+				e->{
+					if(chckbxEnableNoiseGate.isSelected())
+						channel.setFilter(filter);
+					else
+						channel.setFilter(null);
+				});
+		
+		JLabel lblThreshold = new JLabel("Threshold");
+		GridBagConstraints gbc_lblThreshold = new GridBagConstraints();
+		gbc_lblThreshold.insets = new Insets(0, 0, 0, 5);
+		gbc_lblThreshold.anchor = GridBagConstraints.EAST;
+		gbc_lblThreshold.gridx = 1;
+		gbc_lblThreshold.gridy = 1;
+		filterControls.add(lblThreshold, gbc_lblThreshold);
+		
+		JSpinner spinnerThreshold = new JSpinner();
+		GridBagConstraints gbc_jtfThreshold = new GridBagConstraints();
+		gbc_jtfThreshold.insets = new Insets(0, 0, 0, 5);
+		gbc_jtfThreshold.fill = GridBagConstraints.HORIZONTAL;
+		gbc_jtfThreshold.gridx = 2;
+		gbc_jtfThreshold.gridy = 1;
+		filterControls.add(spinnerThreshold, gbc_jtfThreshold);
+		spinnerThreshold.setValue((int)filter.getThresholdDB());
+		spinnerThreshold.addChangeListener(
+				e->{
+					filter.setThresholdDB((Integer)spinnerThreshold.getValue());
+				}
+			);
+		
+		JLabel lblDb = new JLabel("dB");
+		GridBagConstraints gbc_lblDb = new GridBagConstraints();
+		gbc_lblDb.gridx = 3;
+		gbc_lblDb.gridy = 1;
+		filterControls.add(lblDb, gbc_lblDb);
+		return filterControls;
+	}
+	
+	private JPanel createTransposeControls(PlaybackChannel channel){
 
 
 		WfsoPitchShift filter;

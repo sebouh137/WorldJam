@@ -26,10 +26,12 @@ public abstract class Conductor extends VisualMetronome{
 	
 	public void paint(Graphics g){
 		super.paint(g);
+		//apparently this is supposed to make things render smoother
 		if(prev != null)
 			g.drawImage(prev, 0, 0, null);
+		//g.setColor(this.get);
+		
 		double t = ((System.currentTimeMillis() - clock.startTime)%(clock.msPerBeat*clock.beatsPerMeasure))/(double)clock.msPerBeat;
-
 
 		BufferedImage img = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_3BYTE_BGR);
 		double x1 =  x(t);//interpolate(x[i],x[(i+1)%x.length], Math.pow(a, 1.5));
@@ -43,6 +45,9 @@ public abstract class Conductor extends VisualMetronome{
 				(int)(getWidth()*(.1+.4*x1)), 
 				(int)(getHeight()*(.25+.4*y1))
 				);
+		
+
+		//apparently this is supposed to make things render smoother
 		g.drawImage(img, 0, 0, null);
 		prev = img;
 	}

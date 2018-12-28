@@ -1,5 +1,7 @@
 package worldjam.audio;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Random;
 
 import javax.sound.sampled.AudioFormat;
@@ -19,8 +21,9 @@ public class InputThread extends Thread implements RMS{
 	
 	private int nBytesPerLoop;
 	private byte[] buffer;
-	private AudioSubscriber receiver;
+	private ArrayList<AudioSubscriber> subscribers = new ArrayList();
 	private AudioFormat format;
+	
 	public InputThread(Mixer mixer, AudioFormat format, BeatClock clock) throws LineUnavailableException{
 		this.format = format;
 		this.mixer = mixer;
@@ -57,14 +60,14 @@ public class InputThread extends Thread implements RMS{
 			message.sampleStartTime = timestamp;
 			timestamp+= nMsPerLoop;
 			System.arraycopy(buffer, 0, buffer2, 0, buffer.length);
-			if(receiver!= null)
-				receiver.sampleReceived(message);
+			for(AudioSubscriber subscriber : subscribers)
+				subscriber.sampleReceived(message);
 			
 		}
 	}
 	private byte buffer2[];
-	public void setReceiver(AudioSubscriber rec){
-		this.receiver = rec;
+	public void addSubscriber(AudioSubscriber subs){
+		this.subscribers.add(subs);
 	}
 	public long getSenderID() {
 		return lineID;

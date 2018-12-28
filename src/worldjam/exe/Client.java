@@ -67,7 +67,6 @@ public class Client {
 					playback.addChannel(descriptor.clientID, descriptor.displayName);
 					//System.out.println("added playback thread");
 				} catch (LineUnavailableException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -97,17 +96,16 @@ public class Client {
 		else{
 			playback.setClock(beatClock);
 		}
-		if(input == null){
+		if(input == null && inputMixer != null){
 			try {
 				input = new InputThread(inputMixer, DefaultObjects.defaultFormat, beatClock);
 			} catch (LineUnavailableException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			input.setReceiver(sample -> {this.broadcastAudioSample(sample);});
+			input.addSubscriber(sample -> {this.broadcastAudioSample(sample);});
 			input.start();
 		}else{
-			input.setClock(beatClock);
+			if(input != null) input.setClock(beatClock);
 		}
 		if(gui == null){
 			gui = new ClientGUI(this);
@@ -130,14 +128,14 @@ public class Client {
 	 *
 	 */
 	private class Connection extends Thread{
-		Connection(DataInputStream dis, DataOutputStream dos, boolean isServer){
+		Connection(DataInputStream dis, DataOutputStream dos, boolean isToServer){
 			this.dis = dis;
 			this.dos = dos;
-			this.isServer = isServer;
+			this.isToServer = isToServer;
 			new ReceiverThread().start();
 			
 		}
-		boolean isServer;
+		boolean isToServer;
 		private DataOutputStream dos;
 		private DataInputStream dis;
 		
@@ -152,10 +150,8 @@ public class Client {
 						synchronized(dis){
 							byte code;
 							code = dis.readByte();
-							//System.out.println("received code " + (char)code);
 							if(code == WJConstants.AUDIO_SAMPLE){								
 								AudioSample sample = AudioSample.readFromStream(dis);
-								//System.out.println("received sample (" + datalength + " bytes)");
 								if(playback != null)
 									playback.sampleReceived(sample);
 							} else if(code == WJConstants.LIST_CLIENTS){
@@ -169,13 +165,7 @@ public class Client {
 							} else if(code == WJConstants.TIME_CHANGED){
 								dis.readInt();
 
-								//int msPerBeat = dis.readInt();
-								//int beatsPerMeasure = dis.readInt();
-								//int denom = dis.readInt();
-								//long startTime = dis.readLong();
-								//BeatClock beatClock = new BeatClock(msPerBeat, beatsPerMeasure, denom, startTime);
 								BeatClock beatClock = BeatClock.readFromStream(dis); 
-								//System.out.println("received time information");
 								setBeatClock(beatClock);
 								printClientConfiguration();
 							} else throw new Exception("unrecognized code");
@@ -183,10 +173,8 @@ public class Client {
 						}
 					}
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -200,19 +188,7 @@ public class Client {
 					sample.sourceID = selfDescriptor.clientID;
 					dos.writeByte(WJConstants.AUDIO_SAMPLE);
 					sample.writeToStream(dos);
-//					int overhead = 2*Long.BYTES;
-//
-//					dos.writeInt(sample.sampleData.length+overhead);
-//					int start = dos.size();
-//					dos.writeLong(sample.sampleStartTime);
-//					dos.writeLong(displayName.hashCode());
-//					dos.write(sample.sampleData);
-//					if(dos.size() - start != sample.sampleData.length + overhead){
-//						System.out.println("oops, wrote the wrong number of bytes");
-//						System.exit(0);
-//					}
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -248,7 +224,7 @@ public class Client {
 		if(debug)
 			System.out.println(this.getUserName()+": sending audio message at " + new Date());
 		for(int i = 0; i< connections.size(); i++){
-			if(connectionMode == ConnectionMode.DIRECT && connections.get(i).isServer)
+			if(connectionMode == ConnectionMode.DIRECT && connections.get(i).isToServer)
 				continue;
 			connections.get(i).sendAudioSample(sample);
 		}
@@ -257,7 +233,6 @@ public class Client {
 	ClientDescriptor selfDescriptor;
 
 	public ClientDescriptor getDescriptor() {
-		// TODO Auto-generated method stub
 		return this.selfDescriptor;
 	}
 	

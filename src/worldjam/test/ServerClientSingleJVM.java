@@ -73,7 +73,7 @@ public class ServerClientSingleJVM {
 		if(twoClients){
 			Thread.sleep(2000);
 			new Thread(()->{try {
-				Client client2 = new Client("127.0.0.1", port, sessionName, "user2", inputMixer, outputMixer);
+				Client client2 = new Client("127.0.0.1", port, sessionName, "user2", null, outputMixer);
 				client2.setDebug(true);
 				client2.joinSession();
 			} catch (LineUnavailableException e) {

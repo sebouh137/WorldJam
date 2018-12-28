@@ -18,3 +18,8 @@ double click on the icon in target/WorldJam.exe
 Any operating system (Linux, MacOS, or Windows), using the command-line:
 java -jar target/WorldJam-x.x.x-SNAPSHOT.jar
 
+Firewall Stuff:
+if connection does not work, disable unnecessary stuff in the firewall.  Here is some info about how to do this in Windows:
+
+http://www.tomshardware.com/faq/id-3114787/open-firewall-ports-windows.html
+https://tunecomp.net/allow-incoming-ping-echo-request-without-disabling-windows-10-firewall/

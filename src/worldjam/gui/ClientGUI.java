@@ -58,6 +58,9 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		
 		JMenuItem mntmInputMonitor = new JMenuItem("Input Monitor...");
 		mnInput.add(mntmInputMonitor);
+		if(client.getInput() == null){
+			mntmInputMonitor.setEnabled(false);
+		}
 		mntmInputMonitor.addActionListener(new ActionListener(){
 
 			@Override

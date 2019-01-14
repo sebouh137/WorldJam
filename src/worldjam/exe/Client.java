@@ -6,6 +6,7 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -39,6 +40,8 @@ public class Client {
 	private Mixer inputMixer, outputMixer;
 
 	private boolean debug;
+
+	private ListenForConnectionsRequestThread listenForConnectionsRequestThread;
 	public void setDebug(boolean debug){
 		this.debug = debug;
 	}
@@ -73,23 +76,28 @@ public class Client {
 			}
 			input.addSubscriber(playback);
 		}
-		new ListenForConnectionsRequestThread(listeningPort).start();
+		this.listenForConnectionsRequestThread = new ListenForConnectionsRequestThread(listeningPort);
+		listenForConnectionsRequestThread.start();
+		this.checkForTimeoutThread = new CheckForTimeoutThread();
+		checkForTimeoutThread.start();
 		this.setBeatClock(clock);
 	}
 
 	Map<Long,Connection> connections = new HashMap<Long,Connection>();
-	void addConnection(long id, String name, Socket socket, DataInputStream dis, DataOutputStream dos, boolean isServer){
+	void addConnection(ClientDescriptor peer, Socket socket, DataInputStream dis, DataOutputStream dos, boolean isServer){
 		try {
 			if(playback != null)
-				playback.addChannel(id, name);
+				playback.addChannel(peer.clientID,peer.displayName);
 		} catch (LineUnavailableException e) {
 			e.printStackTrace();
 		}
-		connections.put(id, new Connection(socket, dis, dos, isServer));
+		connections.put(peer.clientID, new Connection(socket, dis, dos, peer, isServer));
 	}
 
 	private void removeConnection(long id){
 		connections.remove(id);
+		playback.removeChannel(id);
+		gui.channelsChanged();
 	}
 
 	private BeatClock beatClock;
@@ -174,15 +182,17 @@ public class Client {
 	 */
 	private class Connection{
 
-		Connection(Socket socket, DataInputStream dis, DataOutputStream dos, boolean isToServer){
+		Connection(Socket socket, DataInputStream dis, DataOutputStream dos, ClientDescriptor peer, boolean isToServer){
 			this.dis = dis;
 			this.dos = dos;
+			this.socket = socket;
+			this.peer = peer;
 			this.isToServer = isToServer;
 			new ReceiverThread().start();
 			//new ImAliveThread().start();
 		}
 		
-		boolean alive;
+		boolean alive = true;
 		boolean isToServer;
 		private DataOutputStream dos;
 		private DataInputStream dis;
@@ -195,7 +205,7 @@ public class Client {
 			public void run(){
 
 				try {
-					while(true){
+					while(alive){
 						synchronized(dis){
 							byte code;
 							code = dis.readByte();
@@ -250,7 +260,11 @@ public class Client {
 					sample.sourceID = selfDescriptor.clientID;
 					dos.writeByte(WJConstants.AUDIO_SAMPLE);
 					sample.writeToStream(dos);
+				} catch (SocketException e) {
+					System.out.println("closing connection");
+					removeConnection(peer.clientID);
 				} catch (IOException e) {
+					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -258,7 +272,9 @@ public class Client {
 
 		public void close() throws IOException {
 			socket.close();
+			this.alive = false;
 		}
+		ClientDescriptor peer;
 	}
 	//list of objects that react to new audio samples received
 	ArrayList<AudioSubscriber> reactors = new ArrayList();
@@ -300,6 +316,8 @@ public class Client {
 
 	ClientDescriptor selfDescriptor;
 
+	private CheckForTimeoutThread checkForTimeoutThread;
+
 	public ClientDescriptor getDescriptor() {
 		return this.selfDescriptor;
 	}
@@ -311,9 +329,9 @@ public class Client {
 		//max amount of time between the (recorded) start of the sample
 		//and the current time.  
 		int maxDiff = 10000;
-
+		boolean closed = false;
 		public void run(){
-			while(true){
+			while(!closed){
 				try {
 					Thread.sleep(500);
 				} catch (InterruptedException e) {
@@ -335,6 +353,9 @@ public class Client {
 		public void sampleReceived(AudioSample sample) {
 			lastTimestamps.put(sample.sourceID, sample.sampleStartTime);
 		}
+		void close(){
+			this.closed = true;
+		}
 	}
 
 	public class ListenForConnectionsRequestThread extends Thread {
@@ -342,10 +363,11 @@ public class Client {
 		ListenForConnectionsRequestThread(int port){
 			this.port = port;
 		}
+		ServerSocket serverSocket;
 		public void run(){
 			try {
-				ServerSocket serverSocket = new ServerSocket(port);
-				while(true){
+				serverSocket = new ServerSocket(port);
+				while(!closed){
 					Socket socket = serverSocket.accept();
 					System.out.println("socket accepted");
 					
@@ -360,10 +382,20 @@ public class Client {
 							dos.writeByte(WJConstants.TIME_CHANGED);
 							beatClock.writeToStream(dos);
 						}
-						addConnection(peer.clientID, peer.displayName, socket, dis, dos, false);
+						addConnection(peer, socket, dis, dos, false);
 					}
 				}
 			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		boolean closed = false;
+		void close(){
+			closed = true;
+			try {
+				serverSocket.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -379,7 +411,7 @@ public class Client {
 		dis.readByte();
 		ClientDescriptor peerDescriptor = ClientDescriptor.readFromStream(dis); 
 		System.out.println(displayName + ":  received welcome from peer " + peerDescriptor.displayName);
-		addConnection(peerDescriptor.clientID, peerDescriptor.displayName, socket, dis, dos, debug);
+		addConnection(peerDescriptor, socket, dis, dos, debug);
 	}
 
 	void welcomeIntoSessionP2P(){
@@ -390,6 +422,7 @@ public class Client {
 		
 	}
 	public void exit() throws IOException {
+		System.out.println("pre: "+  Thread.activeCount() + " active thread");
 		for(Connection c : connections.values()){
 			c.close();
 		}
@@ -398,5 +431,16 @@ public class Client {
 		}
 		if(input != null)
 			input.close();
+		listenForConnectionsRequestThread.close();
+		checkForTimeoutThread.close();
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		System.out.println("post: "+  Thread.activeCount() + " active thread");
+		for (Thread t : Thread.getAllStackTraces().keySet()){
+			System.out.println(t.getClass());
+		}
 	}
 }

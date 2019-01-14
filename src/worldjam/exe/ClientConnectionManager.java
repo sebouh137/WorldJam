@@ -59,7 +59,7 @@ public class ClientConnectionManager {
 			//outServer.writeLong(clientID);
 		}
 
-		client.addConnection(0,"server",socket,  inServer, outServer, true);
+		client.addConnection(null, socket,  inServer, outServer, true);
 		//System.out.println("sent join request to session");
 
 	}
@@ -77,7 +77,7 @@ public class ClientConnectionManager {
 			//long clientID = displayName.hashCode();
 			//outServer.writeLong(clientID);
 		}
-		client.addConnection(0,"server",socket, inServer, outServer, true);
+		client.addConnection(null, socket, inServer, outServer, true);
 	}
 
 	/*private class ReceiverThread extends Thread{

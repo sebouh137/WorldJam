@@ -18,7 +18,7 @@ public class VisualMetronome extends Canvas {
 		setClock(clock);
 		Thread th = new Thread(){
 			public void run(){
-				while(!killed){
+				while(!closed){
 					try {
 						Thread.sleep(MS_PER_FRAME);
 					} catch (InterruptedException e) {
@@ -31,9 +31,9 @@ public class VisualMetronome extends Canvas {
 		};
 		th.start();
 	}
-	private boolean killed = false;
-	public void kill(){
-		this.killed = true;
+	private boolean closed = false;
+	public void close(){
+		this.closed = true;
 	}
 	public JFrame showInFrame(){
 		JFrame frame = new JFrame();

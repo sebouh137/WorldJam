@@ -31,6 +31,7 @@ import javax.swing.JList;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import javax.swing.JButton;
 
 public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeListener {
 	/**
@@ -45,6 +46,7 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 			@Override
 			public void windowClosed(WindowEvent e) {
 				try {
+					conductor.close();
 					client.exit();
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
@@ -80,6 +82,20 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		
 		JMenuItem mntmInputMonitor = new JMenuItem("Input Monitor...");
 		mnInput.add(mntmInputMonitor);
+		
+		/*JButton btnClose = new JButton("Close");
+		btnClose.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					client.exit();
+					System.out.println("client.close();");
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		});
+		menuBar.add(btnClose);*/
 		if(client.getInput() == null){
 			mntmInputMonitor.setEnabled(false);
 		}

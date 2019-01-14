@@ -458,6 +458,8 @@ public class ClientSetupGUI_P2P extends JFrame{
 		
 		@Override
 		public void actionPerformed(ActionEvent e) {
+			gui.previewConductor.close();
+			
 			String serverIP = gui.txtIP.getText();
 			String displayName = gui.txtUser.getText();
 			int num = (int)gui.spinner.getModel().getValue();

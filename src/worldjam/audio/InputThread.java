@@ -16,7 +16,7 @@ import worldjam.util.DigitalAnalogConverter;
 
 public class InputThread extends Thread implements RMS{
 	static Random random = new Random();
-	private final long lineID = random.nextLong();
+	private long lineID = random.nextLong();
 	private TargetDataLine tdl;
 	
 	private int nBytesPerLoop;
@@ -107,5 +107,9 @@ public class InputThread extends Thread implements RMS{
 		//System.out.println(max + " " + posOfMax);
 		return Math.sqrt(sumSqr)/nSamples;
 
+	}
+	public void setSenderID(long lineID) {
+		this.lineID = lineID;
+		
 	}
 }

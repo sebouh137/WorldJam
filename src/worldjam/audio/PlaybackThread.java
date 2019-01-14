@@ -3,6 +3,7 @@ package worldjam.audio;
 import java.io.OutputStream;
 
 import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.BooleanControl;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.Line;
 import javax.sound.sampled.LineUnavailableException;
@@ -255,6 +256,25 @@ public class PlaybackThread extends Thread implements PlaybackChannel{
 	public void stopRecording(long timestamp) {
 		this.recorder.stopRecording(timestamp);
 	}
+	@Override
+	public void setMuted(boolean muted) {
+		BooleanControl muteControl = (BooleanControl) this.getLine().getControl(BooleanControl.Type.MUTE);
+		if(muteControl != null){
+			muteControl.setValue(muted);
+		}
+	}
 
+	@Override
+	public boolean canBeMuted(){
+		return (BooleanControl) this.getLine().getControl(BooleanControl.Type.MUTE) != null;
+	}
+	@Override
+	public boolean isMuted() {
+		BooleanControl muteControl = (BooleanControl) this.getLine().getControl(BooleanControl.Type.MUTE);
+		if (muteControl != null){
+			return muteControl.getValue();
+		}
+		return false;
+	}
 	
 }

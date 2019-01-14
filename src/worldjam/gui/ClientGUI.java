@@ -1,5 +1,7 @@
 package worldjam.gui;
 
+import javax.swing.DefaultListModel;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -19,7 +21,13 @@ import javax.swing.JLabel;
 import java.awt.Font;
 
 import javax.swing.SwingConstants;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.ListModel;
+import javax.swing.ListSelectionModel;
+import javax.swing.JList;
 
 public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeListener {
 	/**
@@ -35,7 +43,7 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		this.client = client;
 		this.setClock(client.getBeatClock());
 		
-		this.setSize(400, 400);
+		this.setSize(559, 400);
 		
 		/*try {
 			Image image = ImageIO.read(new File("img/icons/wj_logo.png"));
@@ -86,17 +94,64 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		JLabel lblSessionName = new JLabel(client.getSessionName());
 		lblSessionName.setFont(infoFont);
 		panel.add(lblSessionName, BorderLayout.WEST);
-		JLabel lblUserName = new JLabel(client.getUserName());
+		/*JLabel lblUserName = new JLabel(client.getUserName());
 		lblUserName.setFont(infoFont);
-		panel.add(lblUserName, BorderLayout.EAST);
+		panel.add(lblUserName, BorderLayout.EAST);*/
 		
+		JList<ClientListItem> clientList = new JList<ClientListItem>();
+		JPopupMenu popupMenu = new JPopupMenu();
+		clientList.setComponentPopupMenu(popupMenu);
+		clientList.setFixedCellWidth(130);
+		
+		JCheckBoxMenuItem muteButton = new JCheckBoxMenuItem("Mute Channel");
+		muteButton.setSelected(false);
+		muteButton.addChangeListener(e->{
+			ClientListItem selection = clientList.getSelectedValue();
+			long channelID = selection.getClientID();
+			PlaybackChannel channel = client.getPlaybackManager().getChannel(channelID);
+			channel.setMuted(muteButton.isSelected());
+			selection.setMuted(muteButton.isSelected());
+			clientList.validate();
+			clientList.repaint();
+		});
+		popupMenu.add(muteButton);
+		popupMenu.addPopupMenuListener(new PopupMenuListener(){
+
+			@Override
+			public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+				long channelID = clientList.getSelectedValue().getClientID();
+				PlaybackChannel channel = client.getPlaybackManager().getChannel(channelID);
+				muteButton.setSelected(channel.isMuted());
+			}
+
+			@Override
+			public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void popupMenuCanceled(PopupMenuEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
+		clientListModel = new DefaultListModel<ClientListItem>();
+		clientList.setModel(clientListModel);
+		clientList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		clientList.setSelectedIndex(0);
+		clientListModel.addElement(new ClientListItem(client.getUserName(), client.getDescriptor().clientID, true));
+		
+		clientList.validate();
+		getContentPane().add(clientList, BorderLayout.EAST);
 		
 		
 		
 		client.getPlaybackManager().addChannelChangeListener(this);
+		client.getPlaybackManager().updateChannels();
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
-
+	DefaultListModel<ClientListItem> clientListModel;
 	Font infoFont = new Font("Lucida Grande", Font.PLAIN, 16);
 	private Component createTimeInfoPanel() {
 		JPanel panel = new JPanel();
@@ -119,6 +174,7 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		
 		return panel;
 	}
+	
 	public void channelsChanged(){
 		mnChannels.removeAll();
 		for(Long id : client.getPlaybackManager().getIDs()){
@@ -134,7 +190,30 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 				}
 				
 			});
-			
+			boolean found = false;
+			for(Object item : clientListModel.toArray()){
+				if(((ClientListItem)item).clientID == id)
+				{
+					found = true;
+					break;
+				}
+			}
+			if(!found)
+				clientListModel.addElement(new ClientListItem(channelName, id, false));
+		}
+		//now remove any dead channels.
+		for(Object item : clientListModel.toArray()){
+			boolean found = false;
+			for(Long id : client.getPlaybackManager().getIDs()){
+				if(((ClientListItem)item).clientID == id)
+				{
+					found = true;
+					break;
+				}
+			}
+			if(!found)
+				clientListModel.removeElement(item);
+				
 		}
 	}
 	public void setClock(BeatClock clock){

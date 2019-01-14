@@ -27,4 +27,7 @@ public interface PlaybackChannel extends RMS, AudioSubscriber{
 	public long getSenderID();
 	void startRecording(OutputStream output, long startTime);
 	public void stopRecording(long timestamp);
+	public void setMuted(boolean muted);
+	public boolean isMuted();
+	public boolean canBeMuted();
 }

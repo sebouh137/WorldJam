@@ -42,6 +42,10 @@ public class PlaybackManager implements AudioSubscriber{
 		channelsChanged();
 	}
 	
+	public void updateChannels(){
+		channelsChanged();
+	}
+	
 	public String getChannelName(long id){
 		return channelNames.get(id);
 	}

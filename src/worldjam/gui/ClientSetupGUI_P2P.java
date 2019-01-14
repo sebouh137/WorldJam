@@ -475,19 +475,19 @@ public class ClientSetupGUI_P2P extends JFrame{
 			try {
 				if(join){
 					InputThread input = new InputThread(inputMixer, DefaultObjects.defaultFormat, DefaultObjects.bc0);
-					PlaybackManager playback = new PlaybackManager(outputMixer, DefaultObjects.bc0, DefaultObjects.defaultFormat);
-					client = new Client(localPort, displayName, input, playback);
+					BeatClock clock = DefaultObjects.bc0;
+					PlaybackManager playback = new PlaybackManager(outputMixer, clock, DefaultObjects.defaultFormat);
+					client = new Client(localPort, displayName, input, playback, clock);
 					client.joinSessionP2P(serverIP, peerPort);
 				} else{
 					BeatClock clock = new BeatClock(msPerBeat, num, denom);
 					InputThread input = new InputThread(inputMixer, DefaultObjects.defaultFormat, clock);
 					PlaybackManager playback = new PlaybackManager(outputMixer, clock, DefaultObjects.defaultFormat);
 					System.out.println("user name is " + displayName);
-					client = new Client(localPort, displayName, input, playback);
+					client = new Client(localPort, displayName, input, playback, clock);
 					/*clock.beatsPerMeasure = num;
 					clock.beatDenominator = denom;
 					clock.msPerBeat = msPerBeat;*/
-					client.setBeatClock(clock);
 				}
 			} catch (Exception e1) {
 				JOptionPane.showMessageDialog(null, e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);

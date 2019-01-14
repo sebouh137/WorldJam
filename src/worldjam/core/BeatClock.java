@@ -70,4 +70,7 @@ public class BeatClock {
 		return new BeatClock(msPerBeat, beatsPerMeasure, beatDenominator, startTime);
 			
 	}
+	public String toString(){
+		return beatsPerMeasure + "/" + beatDenominator + ",  " + msPerBeat + "ms per measure, offset = " + startTime;
+	}
 }

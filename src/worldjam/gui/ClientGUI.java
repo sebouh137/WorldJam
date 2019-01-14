@@ -28,6 +28,9 @@ import javax.swing.JPopupMenu;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.JList;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.IOException;
 
 public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeListener {
 	/**
@@ -38,6 +41,17 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 	private JMenu mnChannels;
 	private BezierConductor conductor;
 	public ClientGUI(Client client) {
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosed(WindowEvent e) {
+				try {
+					client.exit();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		});
 		setTitle("World Jam");
 		
 		this.client = client;
@@ -98,7 +112,7 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		lblUserName.setFont(infoFont);
 		panel.add(lblUserName, BorderLayout.EAST);*/
 		
-		JList<ClientListItem> clientList = new JList<ClientListItem>();
+		clientList = new JList<ClientListItem>();
 		JPopupMenu popupMenu = new JPopupMenu();
 		clientList.setComponentPopupMenu(popupMenu);
 		clientList.setFixedCellWidth(130);
@@ -151,6 +165,7 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		client.getPlaybackManager().updateChannels();
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
+	JList<ClientListItem> clientList;
 	DefaultListModel<ClientListItem> clientListModel;
 	Font infoFont = new Font("Lucida Grande", Font.PLAIN, 16);
 	private Component createTimeInfoPanel() {
@@ -159,24 +174,27 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		
 		BeatClock clock = client.getBeatClock();
 		
-		JLabel lblTimeSig = new JLabel(String.format("%d/%d", clock.beatsPerMeasure, clock.beatDenominator));
+		lblTimeSig = new JLabel(String.format("%d/%d", clock.beatsPerMeasure, clock.beatDenominator));
 		lblTimeSig.setFont(infoFont);
 		panel.add(lblTimeSig, BorderLayout.WEST);
 		
-		JLabel lblBPM = new JLabel(String.format("%.1f BPM", 60000./clock.msPerBeat));
+		lblBPM = new JLabel(String.format("%.1f BPM", 60000./clock.msPerBeat));
 		lblBPM.setHorizontalAlignment(SwingConstants.CENTER);
 		lblBPM.setFont(infoFont);
 		panel.add(lblBPM, BorderLayout.CENTER);
 		
-		JLabel lblMS = new JLabel(String.format("(%d ms per beat)", clock.msPerBeat));
+		lblMS = new JLabel(String.format("(%d ms per beat)", clock.msPerBeat));
 		lblMS.setFont(infoFont);
 		panel.add(lblMS, BorderLayout.EAST);
 		
 		return panel;
 	}
 	
+	JLabel lblTimeSig, lblBPM, lblMS;
+	
 	public void channelsChanged(){
 		mnChannels.removeAll();
+		boolean listChanged = false;
 		for(Long id : client.getPlaybackManager().getIDs()){
 			//Line line = client.getPlaybackManager().getLine(id);
 			String channelName = client.getPlaybackManager().getChannelName(id);
@@ -195,6 +213,7 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 				if(((ClientListItem)item).clientID == id)
 				{
 					found = true;
+					listChanged = true;
 					break;
 				}
 			}
@@ -208,6 +227,7 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 				if(((ClientListItem)item).clientID == id)
 				{
 					found = true;
+					listChanged = true;
 					break;
 				}
 			}
@@ -215,9 +235,20 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 				clientListModel.removeElement(item);
 				
 		}
+		if(listChanged){
+			clientList.validate();
+			clientList.repaint();
+		}
 	}
 	public void setClock(BeatClock clock){
 		if(this.conductor != null)
 			this.conductor.setClock(clock);
+		if(lblTimeSig != null)
+			lblTimeSig.setText(String.format("%d/%d", clock.beatsPerMeasure, clock.beatDenominator));
+		if(lblBPM != null)
+			lblBPM.setText(String.format("%.1f BPM", 60000./clock.msPerBeat));
+		if(lblMS != null)
+			lblMS.setText(String.format("(%d ms per beat)", clock.msPerBeat));
 	}
+	
 }

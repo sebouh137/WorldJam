@@ -27,12 +27,13 @@ public class ClientConnectionManager {
 	private String sessionName;
 	private String clientIP;
 	private Client client;
+	private Socket socket;
 	public ClientConnectionManager(String serverIP, int port, String sessionName, String displayName, Client client) throws UnknownHostException, IOException {
 		this.client = client;
 		this.serverIP = serverIP;
 		this.sessionName = sessionName;
 		System.out.println("attempting to connect to server at " + serverIP);
-		Socket socket = new Socket(serverIP, port);
+		socket = new Socket(serverIP, port);
 		System.out.println("connected to server at " + serverIP);
 		socket.setTcpNoDelay(true);
 		//socket.setSoTimeout(10000);
@@ -58,7 +59,7 @@ public class ClientConnectionManager {
 			//outServer.writeLong(clientID);
 		}
 
-		client.addConnection(0, inServer, outServer, true);
+		client.addConnection(0,"server",socket,  inServer, outServer, true);
 		//System.out.println("sent join request to session");
 
 	}
@@ -76,7 +77,7 @@ public class ClientConnectionManager {
 			//long clientID = displayName.hashCode();
 			//outServer.writeLong(clientID);
 		}
-		client.addConnection(0, inServer, outServer, true);
+		client.addConnection(0,"server",socket, inServer, outServer, true);
 	}
 
 	/*private class ReceiverThread extends Thread{

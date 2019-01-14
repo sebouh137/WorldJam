@@ -2,6 +2,7 @@ package worldjam.exe;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -50,7 +51,7 @@ public class Client {
 		this.outputMixer = outputMixer;
 	}
 
-	public Client(int listeningPort, String displayName, InputThread input, PlaybackManager playback) 
+	public Client(int listeningPort, String displayName, InputThread input, PlaybackManager playback, BeatClock clock) 
 			throws LineUnavailableException, UnknownHostException, IOException{
 		this.selfDescriptor = new ClientDescriptor(displayName, displayName.hashCode());
 		this.displayName = displayName;
@@ -73,12 +74,18 @@ public class Client {
 			input.addSubscriber(playback);
 		}
 		new ListenForConnectionsRequestThread(listeningPort).start();
-
+		this.setBeatClock(clock);
 	}
 
 	Map<Long,Connection> connections = new HashMap<Long,Connection>();
-	void addConnection(long id, DataInputStream dis, DataOutputStream dos, boolean isServer){
-		connections.put(id, new Connection(dis, dos, isServer));
+	void addConnection(long id, String name, Socket socket, DataInputStream dis, DataOutputStream dos, boolean isServer){
+		try {
+			if(playback != null)
+				playback.addChannel(id, name);
+		} catch (LineUnavailableException e) {
+			e.printStackTrace();
+		}
+		connections.put(id, new Connection(socket, dis, dos, isServer));
 	}
 
 	private void removeConnection(long id){
@@ -111,12 +118,7 @@ public class Client {
 		}
 	}
 
-	void printClientConfiguration(){
-		base.printClientConfiguration();
-		System.out.println("  Audio configurations:");
-		System.out.println("    output mixer: " + outputMixer.getMixerInfo());
-		System.out.println("    input mixer: " + inputMixer.getMixerInfo());
-	}
+
 
 	public BeatClock getBeatClock(){
 		return beatClock;
@@ -155,6 +157,7 @@ public class Client {
 			gui = new ClientGUI(this);
 			gui.setVisible(true);
 		}
+		gui.setClock(clock);
 	}
 
 	public PlaybackManager getPlaybackManager(){
@@ -171,17 +174,19 @@ public class Client {
 	 */
 	private class Connection{
 
-		Connection(DataInputStream dis, DataOutputStream dos, boolean isToServer){
+		Connection(Socket socket, DataInputStream dis, DataOutputStream dos, boolean isToServer){
 			this.dis = dis;
 			this.dos = dos;
 			this.isToServer = isToServer;
 			new ReceiverThread().start();
 			//new ImAliveThread().start();
 		}
+		
 		boolean alive;
 		boolean isToServer;
 		private DataOutputStream dos;
 		private DataInputStream dis;
+		private Socket socket;
 
 		private class ReceiverThread extends Thread{
 
@@ -209,11 +214,10 @@ public class Client {
 								}
 								processClientList(clientList);
 							} else if(code == WJConstants.TIME_CHANGED){
-								dis.readInt();
-
-								BeatClock beatClock = BeatClock.readFromStream(dis); 
+								//dis.readInt();
+								BeatClock beatClock = BeatClock.readFromStream(dis);
+								System.out.println(displayName + ": received clock " + beatClock);
 								setBeatClock(beatClock);
-								printClientConfiguration();
 							} else throw new Exception("unrecognized code");
 
 						}
@@ -250,6 +254,10 @@ public class Client {
 					e.printStackTrace();
 				}
 			}
+		}
+
+		public void close() throws IOException {
+			socket.close();
 		}
 	}
 	//list of objects that react to new audio samples received
@@ -339,15 +347,20 @@ public class Client {
 				ServerSocket serverSocket = new ServerSocket(port);
 				while(true){
 					Socket socket = serverSocket.accept();
+					System.out.println("socket accepted");
+					
 					DataInputStream dis = new DataInputStream(socket.getInputStream());
 					DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
 					if(dis.readByte() == WJConstants.COMMAND_JOIN){
 						ClientDescriptor peer = ClientDescriptor.readFromStream(dis);
+						System.out.println(displayName + ":  received join request from peer " + peer.displayName);
 						synchronized(dos){
+							dos.writeByte(WJConstants.COMMAND_JOIN_RECEIVED);
+							selfDescriptor.writeToStream(dos);
 							dos.writeByte(WJConstants.TIME_CHANGED);
 							beatClock.writeToStream(dos);
 						}
-						addConnection(peer.clientID, dis, dos, false);
+						addConnection(peer.clientID, peer.displayName, socket, dis, dos, false);
 					}
 				}
 			} catch (IOException e) {
@@ -358,13 +371,32 @@ public class Client {
 
 	public void joinSessionP2P(String peerIpAddress, int port) throws UnknownHostException, IOException{
 		Socket socket = new Socket(peerIpAddress, port);
+		System.out.println("socket connected");
 		DataInputStream dis = new DataInputStream(socket.getInputStream());
 		DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
 		dos.writeByte(WJConstants.COMMAND_JOIN);
 		selfDescriptor.writeToStream(dos);
+		dis.readByte();
+		ClientDescriptor peerDescriptor = ClientDescriptor.readFromStream(dis); 
+		System.out.println(displayName + ":  received welcome from peer " + peerDescriptor.displayName);
+		addConnection(peerDescriptor.clientID, peerDescriptor.displayName, socket, dis, dos, debug);
 	}
 
 	void welcomeIntoSessionP2P(){
 
+	}
+	public ClientGUI getGUI() {
+		return gui;
+		
+	}
+	public void exit() throws IOException {
+		for(Connection c : connections.values()){
+			c.close();
+		}
+		if(playback != null){
+			playback.close();
+		}
+		if(input != null)
+			input.close();
 	}
 }

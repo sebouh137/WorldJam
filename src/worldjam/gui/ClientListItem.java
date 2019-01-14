@@ -4,12 +4,10 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.Graphics;
 
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
-import javax.swing.plaf.ListUI;
 
 public class ClientListItem {
 	static final int CONNECTED = 0;
@@ -30,7 +28,6 @@ public class ClientListItem {
 		
 		return username +  (isSelf ? " (me)": "") + (muted ? muteSymbol: unmuteSymbol);
 	}
-	
 	static class ClientListItemRenderer extends Container implements ListCellRenderer<ClientListItem> {
 		JLabel label = new JLabel();
 		ClientListItemRenderer(){

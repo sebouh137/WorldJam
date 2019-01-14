@@ -7,5 +7,6 @@ public class WJConstants {
 	public static final byte TIME_CHANGED = (byte)'T';
 	public static final byte COMMAND_CREATE_NEW_SESSION = 'C';
 	public static final byte IM_ALIVE = 'I';
+	public static final byte COMMAND_JOIN_RECEIVED = 'R';
 	
 }

@@ -126,4 +126,9 @@ public class PlaybackManager implements AudioSubscriber{
 			channel.stopRecording(timestamp);
 		}
 	}
+	public void close() {
+		for(PlaybackChannel channel : channels.values()){
+			channel.close();
+		}
+	}
 }

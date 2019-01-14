@@ -112,4 +112,7 @@ public class InputThread extends Thread implements RMS{
 		this.lineID = lineID;
 		
 	}
+	public void close() {
+		alive = false;
+	}
 }

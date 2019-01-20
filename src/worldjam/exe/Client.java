@@ -65,9 +65,11 @@ public class Client {
 		}
 		//now setup the input
 		this.input = input;
-		input.addSubscriber(sample -> {this.broadcastAudioSample(sample);});
-		input.start();
-		if(playback != null){
+		if(input != null){
+			input.addSubscriber(sample -> {this.broadcastAudioSample(sample);});
+			input.start();
+		}
+		if(playback != null && input != null){
 			try {
 				input.setSenderID(this.selfDescriptor.clientID);
 				playback.addChannel(input.getSenderID(), this.selfDescriptor.displayName);

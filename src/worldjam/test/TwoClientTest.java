@@ -14,6 +14,10 @@ import worldjam.util.DefaultObjects;
 
 public class TwoClientTest {
 	public static void main(String arg[]){
+		boolean joinerHasMicrophone = true;
+		int msPerBeat = 750, num = 2, denom = 4;
+		BeatClock clock = new BeatClock(msPerBeat, num, denom);
+		
 		Thread thread1 = new Thread(
 				()->{
 					try{
@@ -21,9 +25,15 @@ public class TwoClientTest {
 						Mixer inputMixer = DefaultObjects.getInputMixer();
 						Mixer outputMixer = DefaultObjects.getInputMixer();
 						String displayName = "initiator";
-						int msPerBeat = 300, num = 3, denom = 4;
-						BeatClock clock = new BeatClock(msPerBeat, num, denom);
-						InputThread input = new InputThread(inputMixer, DefaultObjects.defaultFormat, clock);
+						
+						
+						InputThread input;
+						if(!joinerHasMicrophone){
+							input = new InputThread(inputMixer, DefaultObjects.defaultFormat, clock);
+						}
+						else 
+							input = null;
+						
 						PlaybackManager playback = new PlaybackManager(outputMixer, clock, DefaultObjects.defaultFormat);
 						System.out.println("user name is " + displayName);
 						Client client = new Client(localPort, displayName, input, playback, clock);
@@ -41,19 +51,23 @@ public class TwoClientTest {
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
 		}
-		Thread thread2 = new Thread(
+		Thread joiner = new Thread(
 				()->{
 					try {
 						int localPort = 2902;
 						Mixer inputMixer = DefaultObjects.getInputMixer();
 						Mixer outputMixer = DefaultObjects.getInputMixer();
 						String displayName = "joiner";
-						InputThread input = new InputThread(inputMixer, DefaultObjects.defaultFormat, DefaultObjects.bc0);
-						BeatClock clock = DefaultObjects.bc0;
-						PlaybackManager playback = new PlaybackManager(outputMixer, clock, DefaultObjects.defaultFormat);
+						BeatClock defaultClock = DefaultObjects.bc0;
+						InputThread input;
+						if(joinerHasMicrophone)
+							input = new InputThread(inputMixer, DefaultObjects.defaultFormat, defaultClock);
+						else 
+							input = null;
+						PlaybackManager playback = new PlaybackManager(outputMixer, defaultClock, DefaultObjects.defaultFormat);
 						Client client;
 
-						client = new Client(localPort, displayName, input, playback, clock);
+						client = new Client(localPort, displayName, input, playback, defaultClock);
 						String serverIP = "127.0.0.1";
 						int peerPort = 2901;
 						client.joinSessionP2P(serverIP, peerPort);
@@ -63,7 +77,7 @@ public class TwoClientTest {
 					}
 				}
 				);
-		thread2.start();
+		joiner.start();
 
 	}
 }

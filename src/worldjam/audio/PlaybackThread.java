@@ -103,10 +103,18 @@ public class PlaybackThread extends Thread implements PlaybackChannel{
 		if(destPos < 0)
 			destPos += buffer.length;
 		if(filter != null){
-			sample.sampleData = filter.process(sample.sampleData, inputFormat);
+			try{
+				sample.sampleData = filter.process(sample.sampleData, inputFormat);
+			} catch (Exception e){
+				e.printStackTrace();
+			}
 		} 
 		if(recorder != null)
-			recorder.sampleReceived(sample);
+			try{
+				recorder.sampleReceived(sample);
+			} catch (Exception e){
+				e.printStackTrace();
+			}
 		
 		if(convertToStereo){
 			sample.sampleData = stereoConvert(sample.sampleData);

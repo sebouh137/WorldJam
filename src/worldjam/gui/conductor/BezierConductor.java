@@ -2,6 +2,7 @@ package worldjam.gui.conductor;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
@@ -10,6 +11,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -55,17 +57,21 @@ public class BezierConductor extends VisualMetronome{
 		return pattern;
 	}
 	protected List<Segment> segments;
+	private Font measureNumFont = new Font(Font.SANS_SERIF, Font.PLAIN, 24);
 	
 
 	public BezierConductor(BeatClock clock) {
 		this(clock, DefaultConductingPatternProvider.getInstance().getDefaultPattern(clock != null ? clock.beatsPerMeasure : 4));
+		//this.setBackground(Color.BLACK);
 	}
 	
 	
 
 	
-	public void paint(Graphics g){
-		double t = ((System.currentTimeMillis() - clock.startTime)
+	public void paint(Graphics2D g2, long time){
+		
+		
+		double t = ((time - clock.startTime)
 				%(clock.msPerBeat*clock.beatsPerMeasure))
 				/(double)clock.msPerBeat;
 
@@ -74,38 +80,27 @@ public class BezierConductor extends VisualMetronome{
 		double x =  segment.interpolateX(u);
 		double y =  segment.interpolateY(u);
 
-		Graphics2D g2 = (Graphics2D)g;
+		
+		//Graphics2D g2 = (Graphics2D)g;
 		
 		g2.setStroke(stroke);
 		
-		g.drawLine(
+		g2.drawLine(
 				(int)(getWidth()*(.1+.8*x)), 
 				(int)(getHeight()*(.1+.8*y)), 
 				(int)(getWidth()*(.1+.4*x)), 
 				(int)(getHeight()*(.25+.4*y))
 				);
 		
-		/*
-		//try shading the baton lighter towards the back, to make it more 3d looking
-		Color darkGrey = new Color(30, 30, 30);
-		g.setColor(darkGrey);
-		
-		double x1 = getWidth()*(.1+.8*x);
-		double y1 = getHeight()*(.1+.8*y);
-		double x2 = getWidth()*(.1+.4*x);
-		double y2 = getHeight()*(.25+.4*y);
-		g.drawLine(
-				(int)x1, 
-				(int)y1, 
-				(int)x2, 
-				(int)y2
-				);
-		g.setColor(Color.black);
-		g.drawLine(
-				(int)((2*x2+x1)/3), (int)((2*y2+y1)/3), (int)x1, (int)y1);*/
-		
+		g2.setFont(measureNumFont );
+		g2.drawString(String.format("measure %d", clock.getCurrentMeasure()), 10, getHeight()-10);
+		this.paintExtras(g2);
 		
 	}
+	void paintExtras(Graphics g){
+		
+	}
+	
 	
 	public static void main(String arg[]){
 		JFrame frame = new JFrame();
@@ -133,4 +128,6 @@ public class BezierConductor extends VisualMetronome{
 	public void setStroke(Stroke stroke){
 		this.stroke = stroke;
 	}
+
+	
 }

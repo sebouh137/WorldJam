@@ -23,6 +23,7 @@ import worldjam.gui.conductor.BezierConductor;
 import javax.swing.SpinnerNumberModel;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
@@ -114,11 +115,12 @@ public class ConductingPatternEditor extends JFrame{
 		private boolean showPath;
 		private boolean showBatton = true;
 		private boolean showBeatNumbers = false;
-		public void paint(Graphics g){
+		public void paintExtras(Graphics g){
+			g.setColor(Color.RED);
 			//System.out.println(clock.msPerBeat);
-			if(showBatton){
+			/*if(showBatton){
 				super.paint(g);
-			}
+			}*/
 			if(showBeatNumbers){
 				for(int i = 0; i<segments.size(); i++){
 					

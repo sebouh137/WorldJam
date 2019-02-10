@@ -1,5 +1,7 @@
 package worldjam.gui.conductor;
 
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.util.Scanner;
 
 import javax.swing.JFrame;
@@ -81,5 +83,11 @@ public class DefaultConductor extends Conductor{
 		}
 		x[N-1] = .5;
 		y[N-1] = 1;
+	}
+
+	@Override
+	public void paint(Graphics2D g, long time) {
+		// TODO Auto-generated method stub
+		
 	}
 }

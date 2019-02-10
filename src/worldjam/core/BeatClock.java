@@ -16,6 +16,10 @@ public class BeatClock {
 		return 60000./msPerBeat; 
 	}
 	
+	public int getCurrentMeasure(){
+		return ((int)(System.currentTimeMillis()-startTime))/(msPerBeat*beatsPerMeasure);
+	}
+	
 	public BeatClock(int msPerBeat, int beatsPerMeasure, int beatDenominator){
 		this(msPerBeat, beatsPerMeasure, beatDenominator, (System.currentTimeMillis()/10)*10);
 	}

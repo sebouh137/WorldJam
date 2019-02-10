@@ -46,7 +46,7 @@ public abstract class Conductor extends VisualMetronome{
 				(int)(getHeight()*(.25+.4*y1))
 				);
 		
-
+		g.drawString(String.format("measure %d", clock.getCurrentMeasure()), 10, getHeight()-10);
 		//apparently this is supposed to make things render smoother
 		g.drawImage(img, 0, 0, null);
 		prev = img;

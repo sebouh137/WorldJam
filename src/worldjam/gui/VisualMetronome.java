@@ -1,19 +1,23 @@
 package worldjam.gui;
 
 import java.awt.Canvas;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 
 import javax.swing.JFrame;
 
 import worldjam.core.BeatClock;
 
-public class VisualMetronome extends Canvas {
+public abstract class VisualMetronome extends Canvas {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -9058766362349172334L;
 	protected BeatClock clock;
 
-	int MS_PER_FRAME= 40;
+	//int MS_PER_FRAME= 40;
+	int MS_PER_FRAME= 16;
 	public VisualMetronome(BeatClock clock){
 		setClock(clock);
 		Thread th = new Thread(){
@@ -48,4 +52,24 @@ public class VisualMetronome extends Canvas {
 	public BeatClock getClock() {
 		return clock;
 	}
+	boolean useBufferedImage = false;
+	public void paint(Graphics g){
+		//super.paint(g);
+		if(useBufferedImage){
+			super.paint(g);
+			if(prev != null)
+				g.drawImage(prev, 0, 0, null);
+			BufferedImage img = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+			Graphics2D g2 = (Graphics2D)img.createGraphics();
+			this.paint(g2, System.currentTimeMillis());
+			g.drawImage(img, 0, 0, null);
+
+			prev = img;
+		}
+		else paint((Graphics2D)g, System.currentTimeMillis());
+	}
+
+	BufferedImage prev = null;
+
+	public abstract void paint(Graphics2D g, long time); 
 }

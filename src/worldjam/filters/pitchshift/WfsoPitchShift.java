@@ -138,7 +138,12 @@ public class WfsoPitchShift extends AudioFilter{
 				for(int j = 0; j<overlapLength; j++){
 					int index1 = i*stretchedSegmentLength+j-k;
 					int index2 = i*stretchedSegmentLength+j + (outSegmentLength - stretchedSegmentLength)+prevOffset;
-					corr += stretched[index1+headroom]*stretched[index2+headroom];
+					if(index2+headroom>=stretched.length)
+						break;
+					double sample1 = stretched[index1+headroom];
+					double sample2 = stretched[index2+headroom];
+					
+					corr += sample1*sample2;
 				}
 				if(corr > corrBest){
 					kBest = k;

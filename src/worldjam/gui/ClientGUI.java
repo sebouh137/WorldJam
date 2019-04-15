@@ -54,7 +54,7 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 				}
 			}
 		});
-		setTitle("World Jam");
+		setTitle("World Jam: " + client.getUserName());
 		
 		this.client = client;
 		this.setClock(client.getBeatClock());
@@ -180,6 +180,7 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		client.getPlaybackManager().addChannelChangeListener(this);
 		client.getPlaybackManager().updateChannels();
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		channelsChanged();
 	}
 	JList<ClientListItem> clientList;
 	DefaultListModel<ClientListItem> clientListModel;

@@ -94,12 +94,15 @@ public class Client {
 			e.printStackTrace();
 		}
 		connections.put(peer.clientID, new Connection(socket, dis, dos, peer, isServer));
+		if(gui != null)
+			gui.channelsChanged();
 	}
 
 	private void removeConnection(long id){
 		connections.remove(id);
 		playback.removeChannel(id);
-		gui.channelsChanged();
+		if(gui != null)
+			gui.channelsChanged();
 	}
 
 	private BeatClock beatClock;

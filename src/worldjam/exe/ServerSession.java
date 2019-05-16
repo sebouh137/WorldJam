@@ -7,17 +7,18 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Date;
-import worldjam.core.BeatClock;
+
 import worldjam.net.NetworkUtils;
 import worldjam.net.WJConstants;
+import worldjam.time.ClockSetting;
 
 public class ServerSession {
-	private  BeatClock beatClock;
+	private  ClockSetting beatClock;
 	private  String localIP;
 	private String sessionName;
 
 
-	ServerSession(BeatClock beatClock, String sessionName){
+	ServerSession(ClockSetting beatClock, String sessionName){
 		this.beatClock = beatClock;
 		this.sessionName = sessionName;
 		localIP = NetworkUtils.getLocalIP();

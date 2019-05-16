@@ -5,9 +5,10 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import worldjam.core.BeatClock;
+
 import worldjam.net.NetworkUtils;
 import worldjam.net.WJConstants;
+import worldjam.time.ClockSetting;
 
 /**
  * @author spaul
@@ -64,7 +65,7 @@ public class ClientConnectionManager {
 
 	}
 	
-	public void startNewSession(BeatClock beatClock) throws IOException{
+	public void startNewSession(ClockSetting beatClock) throws IOException{
 		
 		synchronized (outServer){
 			outServer.writeByte(WJConstants.COMMAND_CREATE_NEW_SESSION);

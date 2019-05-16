@@ -3,12 +3,12 @@ package worldjam.test.generators;
 import javax.sound.sampled.AudioFormat;
 
 import worldjam.audio.AudioUtils;
-import worldjam.core.BeatClock;
+import worldjam.time.ClockSetting;
 
 public class MetronomeThread extends LoopThread{
 	private double freq;
 	private double amp;
-	public MetronomeThread(BeatClock clock, AudioFormat format, double freq, double amp){
+	public MetronomeThread(ClockSetting clock, AudioFormat format, double freq, double amp){
 		super(clock, format);
 		this.freq = freq;
 		this.amp = amp;

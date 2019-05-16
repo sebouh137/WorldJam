@@ -27,9 +27,9 @@ public class DefaultConductingPatternProvider implements ConductingPatternProvid
 		return list;
 	}
 	private ConductingPattern createConductingPattern(int beats) {
-		List<Segment> segments = new ArrayList();
+		List<BezierSegment> segments = new ArrayList();
 		for(int i = 0; i<beats; i++){
-			Segment segment = new Segment();
+			BezierSegment segment = new BezierSegment();
 			segment.type = 3;
 			for(int j = 0;j<4; j++){
 				//Initialize to a star 

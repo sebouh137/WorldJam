@@ -18,8 +18,9 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JSpinner;
 
-import worldjam.core.BeatClock;
 import worldjam.gui.conductor.BezierConductor;
+import worldjam.time.ClockSetting;
+
 import javax.swing.SpinnerNumberModel;
 
 import java.awt.BorderLayout;
@@ -35,7 +36,7 @@ import javax.swing.JFileChooser;
 
 public class ConductingPatternEditor extends JFrame{
 	class EditorConductor extends BezierConductor{
-		public EditorConductor(BeatClock clock, ConductingPattern pattern) {
+		public EditorConductor(ClockSetting clock, ConductingPattern pattern) {
 			super(clock, pattern);
 			this.addMouseMotionListener(mouseAdapter);
 			this.addMouseListener(mouseAdapter);
@@ -68,7 +69,7 @@ public class ConductingPatternEditor extends JFrame{
 				if(segNum == -1 || anchor == -1){
 					return;
 				}
-				Segment sel = segments.get(segNum);
+				BezierSegment sel = segments.get(segNum);
 				sel.x[anchor]+= (e.getPoint().x - tipCoordX(sel.x[anchor]))/(.8*getWidth());
 				sel.y[anchor]+= (e.getPoint().y - tipCoordY(sel.y[anchor]))/(.8*getHeight());
 				//boundaries
@@ -78,7 +79,7 @@ public class ConductingPatternEditor extends JFrame{
 				if(sel.y[anchor]>1) sel.y[anchor] = 1;
 
 				if(anchor == 0){
-					Segment prev = segments.get((selectedSegment+segments.size()-1)%segments.size());
+					BezierSegment prev = segments.get((selectedSegment+segments.size()-1)%segments.size());
 					prev.x[prev.type] = sel.x[0];
 					prev.y[prev.type] = sel.y[0];
 				}
@@ -89,7 +90,7 @@ public class ConductingPatternEditor extends JFrame{
 			@Override
 			public void mousePressed(MouseEvent e) {
 				for(int j = 0; j< segments.size(); j++){
-					Segment segment = segments.get(j);
+					BezierSegment segment = segments.get(j);
 					for(int i = 0; i<segment.type; i++)
 						if(Math.abs(e.getPoint().x - tipCoordX(segment.x[i])) <= 5
 						&& Math.abs(e.getPoint().y - tipCoordY(segment.y[i])) <= 5){
@@ -126,11 +127,15 @@ public class ConductingPatternEditor extends JFrame{
 					
 					int x = tipCoordX(segments.get(i).x[0]);
 					int y = tipCoordY(segments.get(i).y[0]);
-					String text = Integer.toString(i+1);
+					String text;
+					if (segments.get(i).t1 % 1 == 0)
+						text = Integer.toString((int)(segments.get(i).t1) + 1);
+					else 
+						text = "+";
 					x-= g.getFontMetrics().stringWidth(text)/2;
 					y+= g.getFontMetrics().getAscent()/2;
 					
-					Segment prev = segments.get((i+segments.size()-1)%segments.size());
+					BezierSegment prev = segments.get((i+segments.size()-1)%segments.size());
 					
 					//now create another offset, based on the previous segment's tangent line
 					double dx = prev.x[prev.type]-prev.x[prev.type-1];
@@ -149,7 +154,7 @@ public class ConductingPatternEditor extends JFrame{
 			Graphics2D g2 = (Graphics2D)g;
 			if(showGuides){
 				g2.setStroke(stroke2);
-				for(Segment segment : segments){
+				for(BezierSegment segment : segments){
 					switch(segment.type){
 					case 3:
 						g2.drawLine(
@@ -177,7 +182,7 @@ public class ConductingPatternEditor extends JFrame{
 			}
 			if(showPath){
 				g2.setStroke(stroke3 );
-				for(Segment segment : segments){
+				for(BezierSegment segment : segments){
 					int subsegments = 20;
 					for(int i = 0; i<subsegments; i+=2){
 						double u = i/(double)subsegments;
@@ -351,7 +356,7 @@ public class ConductingPatternEditor extends JFrame{
 		spinner.addChangeListener(
 				e -> {
 					int val = (int)spinner.getValue();
-					conductor.setClock(conductor.getClock().createWithDifferentTempo(val));
+					conductor.changeClockSettingsNow(conductor.getClock().createWithDifferentTempo(val));
 					labelBPM.setText(String.format("%.2f BPM", 60000./val));
 				}
 		);
@@ -380,14 +385,14 @@ public class ConductingPatternEditor extends JFrame{
 		this.setTitle(file.getPath());
 		int nBeats = pattern.getBeatsPerMeasure();
 		if(conductor == null){
-			conductor = new EditorConductor(new BeatClock(500, nBeats, 4), pattern);
+			conductor = new EditorConductor(new ClockSetting(500, nBeats, 4), pattern);
 			getContentPane().add(conductor, BorderLayout.CENTER);
 		}
 		if(pattern.getBeatsPerMeasure() >= conductor.getClock().beatsPerMeasure){
 			conductor.setPattern(pattern);
-			conductor.setClock(new BeatClock(500, nBeats, 4));
+			conductor.changeClockSettingsNow(new ClockSetting(500, nBeats, 4));
 		} else {
-			conductor.setClock(new BeatClock(500, nBeats, 4));
+			conductor.changeClockSettingsNow(new ClockSetting(500, nBeats, 4));
 			conductor.setPattern(pattern);
 		}
 	}
@@ -396,14 +401,14 @@ public class ConductingPatternEditor extends JFrame{
 		ConductingPattern pattern = DefaultConductingPatternProvider.getInstance().getDefaultPattern(nBeats);
 
 		if(conductor == null){
-			conductor = new EditorConductor(new BeatClock(500, nBeats, 4), pattern);
+			conductor = new EditorConductor(new ClockSetting(500, nBeats, 4), pattern);
 			getContentPane().add(conductor, BorderLayout.CENTER);
 		}
 		if(pattern.getBeatsPerMeasure() >= conductor.getClock().beatsPerMeasure){
 			conductor.setPattern(pattern);
-			conductor.setClock(new BeatClock(500, nBeats, 4));
+			conductor.changeClockSettingsNow(new ClockSetting(500, nBeats, 4));
 		} else {
-			conductor.setClock(new BeatClock(500, nBeats, 4));
+			conductor.changeClockSettingsNow(new ClockSetting(500, nBeats, 4));
 			conductor.setPattern(pattern);
 		}
 		openedFile = null;
@@ -413,8 +418,15 @@ public class ConductingPatternEditor extends JFrame{
 
 	public static void main(String arg[]){
 		ConductingPatternEditor editor = new ConductingPatternEditor();
+		
 		editor.setVisible(true);
-
+		if(arg.length == 1)
+			try {
+				editor.open(new File(arg[0]));
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		editor.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 }

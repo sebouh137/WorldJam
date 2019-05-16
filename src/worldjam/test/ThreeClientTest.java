@@ -8,15 +8,15 @@ import javax.swing.JFrame;
 
 import worldjam.audio.InputThread;
 import worldjam.audio.PlaybackManager;
-import worldjam.core.BeatClock;
 import worldjam.exe.Client;
+import worldjam.time.ClockSetting;
 import worldjam.util.DefaultObjects;
 
 public class ThreeClientTest {
 	public static void main(String arg[]){
 		boolean joinerHasMicrophone = false;
 		int msPerBeat = 750, num = 2, denom = 4;
-		BeatClock clock = new BeatClock(msPerBeat, num, denom);
+		ClockSetting clock = new ClockSetting(msPerBeat, num, denom);
 		
 		Thread thread1 = new Thread(
 				()->{
@@ -58,7 +58,7 @@ public class ThreeClientTest {
 						Mixer inputMixer = DefaultObjects.getInputMixer();
 						Mixer outputMixer = DefaultObjects.getOutputMixer();
 						String displayName = "joiner";
-						BeatClock defaultClock = DefaultObjects.bc0;
+						ClockSetting defaultClock = DefaultObjects.bc0;
 						InputThread input;
 						//if(joinerHasMicrophone)
 							input = new InputThread(inputMixer, DefaultObjects.defaultFormat, defaultClock);
@@ -90,7 +90,7 @@ public class ThreeClientTest {
 						Mixer inputMixer = DefaultObjects.getInputMixer();
 						Mixer outputMixer = DefaultObjects.getOutputMixer();
 						String displayName = "joiner2";
-						BeatClock defaultClock = DefaultObjects.bc0;
+						ClockSetting defaultClock = DefaultObjects.bc0;
 						InputThread input;
 						//if(joinerHasMicrophone)
 							input = new InputThread(inputMixer, DefaultObjects.defaultFormat, defaultClock);

@@ -11,10 +11,11 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.Mixer;
 import javax.sound.sampled.TargetDataLine;
 
-import worldjam.core.BeatClock;
+import worldjam.time.ClockSetting;
+import worldjam.time.ClockSubscriber;
 import worldjam.util.DigitalAnalogConverter;
 
-public class InputThread extends Thread implements RMS{
+public class InputThread extends Thread implements RMS, ClockSubscriber{
 	static Random random = new Random();
 	private long lineID = random.nextLong();
 	private TargetDataLine tdl;
@@ -24,7 +25,7 @@ public class InputThread extends Thread implements RMS{
 	private ArrayList<AudioSubscriber> subscribers = new ArrayList();
 	private AudioFormat format;
 	
-	public InputThread(Mixer mixer, AudioFormat format, BeatClock clock) throws LineUnavailableException{
+	public InputThread(Mixer mixer, AudioFormat format, ClockSetting clock) throws LineUnavailableException{
 		this.format = format;
 		this.mixer = mixer;
 		this.clock = clock;
@@ -39,7 +40,7 @@ public class InputThread extends Thread implements RMS{
 	//status flags
 	private boolean alive = true, paused = false;
 	private Mixer mixer;
-	private BeatClock clock;
+	private ClockSetting clock;
 	
 	private long timestamp;
 	public void run(){
@@ -78,7 +79,7 @@ public class InputThread extends Thread implements RMS{
 	public Mixer getMixer() {
 		return mixer;
 	}
-	public void setClock(BeatClock beatClock) {
+	public void changeClockSettingsNow(ClockSetting beatClock) {
 		this.clock = beatClock;
 	}
 	public double getRMS(double windowInMS){

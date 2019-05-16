@@ -10,7 +10,7 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.Mixer;
 import javax.sound.sampled.SourceDataLine;
 
-import worldjam.core.BeatClock;
+import worldjam.time.ClockSetting;
 import worldjam.util.DigitalAnalogConverter;
 
 public class PlaybackThread extends Thread implements PlaybackChannel{
@@ -22,13 +22,13 @@ public class PlaybackThread extends Thread implements PlaybackChannel{
 	 * and so that the delay time can be set as an integer number of beats or measures in the 
 	 * {@link #setReplayOffsetInBeats} and {@link #setReplayOffsetInMeasures} methods
 	 */
-	private BeatClock clock;
+	private ClockSetting clock;
 	private AudioFormat playbackFormat;
 	private AudioFormat inputFormat;
 	private Mixer mixer;
 	private String sourceName;
 	private long senderID;
-	public PlaybackThread(Mixer mixer, AudioFormat inputFormat, BeatClock clock, String sourceName, long senderID) throws LineUnavailableException{
+	public PlaybackThread(Mixer mixer, AudioFormat inputFormat, ClockSetting clock, String sourceName, long senderID) throws LineUnavailableException{
 		this.sourceName = sourceName;
 		this.senderID = senderID;
 		this.inputFormat = inputFormat;
@@ -199,7 +199,7 @@ public class PlaybackThread extends Thread implements PlaybackChannel{
 		return inputFormat;
 	}
 
-	public void setClock(BeatClock clock) {
+	public void changeClockSettingsNow(ClockSetting clock) {
 		this.clock = clock;
 		this.setReplayOffset(offsetMeasures, offsetBeats, offset_ms);
 	}
@@ -239,7 +239,7 @@ public class PlaybackThread extends Thread implements PlaybackChannel{
 		return total_offset_ms;
 	}
 
-	public BeatClock getClock() {
+	public ClockSetting getClock() {
 		return clock;
 	}
 

@@ -6,13 +6,14 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.Line;
 import javax.sound.sampled.Mixer;
 
-import worldjam.core.BeatClock;
+import worldjam.time.ClockSetting;
+import worldjam.time.ClockSubscriber;
 
-public interface PlaybackChannel extends RMS, AudioSubscriber{
+public interface PlaybackChannel extends RMS, AudioSubscriber, ClockSubscriber{
 	public void setReplayOffset(int nMeasures, int nBeats, int n_ms);
 	public void close();
-	public void setClock(BeatClock beatClock);
-	public BeatClock getClock();
+	public void changeClockSettingsNow(ClockSetting beatClock);
+	public ClockSetting getClock();
 	public Line getLine();
 	public Mixer getMixer();
 	public int getAddDelayMeasures();

@@ -3,9 +3,9 @@ package worldjam.test.generators;
 import javax.sound.sampled.AudioFormat;
 
 import worldjam.audio.PlaybackThread;
+import worldjam.time.ClockSetting;
 import worldjam.audio.AudioSample;
 import worldjam.audio.AudioSubscriber;
-import worldjam.core.BeatClock;
 
 public class DroneThread extends LoopThread {
 	private double freq;
@@ -13,7 +13,7 @@ public class DroneThread extends LoopThread {
 	/*private AudioFormat format;
 	private BeatClock clock;
 	private SampleReceiver rec;*/
-	public DroneThread(BeatClock clock, AudioFormat format, double freq, double amp){
+	public DroneThread(ClockSetting clock, AudioFormat format, double freq, double amp){
 		super(clock, format); 
 		this.freq = freq;
 		this.amp = amp;

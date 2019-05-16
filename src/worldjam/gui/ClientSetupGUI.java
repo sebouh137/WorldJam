@@ -23,9 +23,9 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import worldjam.core.BeatClock;
 import worldjam.exe.Client;
 import worldjam.gui.conductor.BezierConductor;
+import worldjam.time.ClockSetting;
 import worldjam.util.DefaultObjects;
 
 import javax.swing.JSpinner;
@@ -243,8 +243,8 @@ public class ClientSetupGUI extends JFrame{
 
 			@Override
 			public void stateChanged(ChangeEvent e) {
-				BeatClock clock = previewConductor.getClock().createWithDifferentBeatCount((int)spinner.getValue());
-				previewConductor.setClock(clock);
+				ClockSetting clock = previewConductor.getClock().createWithDifferentBeatCount((int)spinner.getValue());
+				previewConductor.changeClockSettingsNow(clock);
 			}
 		};
 		spinner.addChangeListener(changeTimeSignature);
@@ -294,7 +294,7 @@ public class ClientSetupGUI extends JFrame{
 				val = val-(val%10);
 				spinner_msPerBeat.setValue(val);
 				txtBPM.setText(String.format("%.2f", 60000./val));
-				previewConductor.setClock(previewConductor.getClock().createWithDifferentTempo(val));
+				previewConductor.changeClockSettingsNow(previewConductor.getClock().createWithDifferentTempo(val));
 			}
 			
 		});
@@ -330,13 +330,13 @@ public class ClientSetupGUI extends JFrame{
 				val = val-(val%10);
 				spinner_msPerBeat.setValue(val);
 				txtBPM.setText(String.format("%.2f", 60000./val));
-				previewConductor.setClock(previewConductor.getClock().createWithDifferentTempo(val));
+				previewConductor.changeClockSettingsNow(previewConductor.getClock().createWithDifferentTempo(val));
 			}
 			
 		});
 		
 		previewConductor = new BezierConductor(
-				new BeatClock(
+				new ClockSetting(
 						(int)spinner_msPerBeat.getValue(),
 						(int)spinner.getValue(),
 						(int)spinner_1.getValue()));
@@ -465,7 +465,7 @@ public class ClientSetupGUI extends JFrame{
 				if(join){
 					client.joinSession();
 				} else{
-					BeatClock clock = new BeatClock(msPerBeat, num, denom);
+					ClockSetting clock = new ClockSetting(msPerBeat, num, denom);
 					/*clock.beatsPerMeasure = num;
 					clock.beatDenominator = denom;
 					clock.msPerBeat = msPerBeat;*/

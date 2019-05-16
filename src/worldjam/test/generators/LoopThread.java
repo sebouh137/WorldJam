@@ -5,16 +5,16 @@ import java.util.Random;
 import javax.sound.sampled.AudioFormat;
 
 import worldjam.audio.AudioUtils;
+import worldjam.time.ClockSetting;
 import worldjam.audio.AudioSample;
 import worldjam.audio.AudioSubscriber;
-import worldjam.core.BeatClock;
 
 public abstract class LoopThread extends Thread {
 	
 	protected AudioFormat format;
-	protected BeatClock clock;
+	protected ClockSetting clock;
 	private AudioSubscriber rec;
-	public LoopThread(BeatClock clock, AudioFormat format){
+	public LoopThread(ClockSetting clock, AudioFormat format){
 		this.format = format;
 		this.clock = clock;
 	}

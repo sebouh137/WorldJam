@@ -1,10 +1,14 @@
 package worldjam.gui.conductor;
 
-public class Segment {
-	int type;
+public class BezierSegment {
+	// 1 = linear, 2 = quadratic, 3 = cubic
+	int type = 3;
+	//handles of the bezier curve
 	double x[] = {0,0,0,0};
 	double y[] = {0,0,0,0};
-	
+	//start and end time of the segment (in beats).
+	//The segment for the first beat has t1=0 and t2=1, etc.  
+	double t1, t2;
 	double interpolate(double u, double z[]){
 		switch(type){
 		case 1:

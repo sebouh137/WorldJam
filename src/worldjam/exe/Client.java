@@ -20,14 +20,15 @@ import worldjam.audio.InputThread;
 import worldjam.audio.PlaybackManager;
 import worldjam.audio.AudioSample;
 import worldjam.audio.AudioSubscriber;
-import worldjam.core.BeatClock;
 import worldjam.gui.ClientGUI;
 import worldjam.gui.ClientSetupGUI;
 import worldjam.gui.ClientSetupGUI_P2P;
 import worldjam.net.WJConstants;
+import worldjam.time.ClockSetting;
+import worldjam.time.ClockSubscriber;
 import worldjam.util.DefaultObjects;
 
-public class Client {
+public class Client implements ClockSubscriber{
 
 	private ClientConnectionManager base;
 	public static void main(String arg[]) throws LineUnavailableException, UnknownHostException, IOException{
@@ -54,7 +55,7 @@ public class Client {
 		this.outputMixer = outputMixer;
 	}
 
-	public Client(int listeningPort, String displayName, InputThread input, PlaybackManager playback, BeatClock clock) 
+	public Client(int listeningPort, String displayName, InputThread input, PlaybackManager playback, ClockSetting clock) 
 			throws LineUnavailableException, UnknownHostException, IOException{
 		this.selfDescriptor = new ClientDescriptor(displayName, displayName.hashCode());
 		this.displayName = displayName;
@@ -82,7 +83,7 @@ public class Client {
 		listenForConnectionsRequestThread.start();
 		this.checkForTimeoutThread = new CheckForTimeoutThread();
 		checkForTimeoutThread.start();
-		this.setBeatClock(clock);
+		this.changeClockSettingsNow(clock);
 	}
 
 	Map<Long,Connection> connections = new HashMap<Long,Connection>();
@@ -104,8 +105,18 @@ public class Client {
 		if(gui != null)
 			gui.channelsChanged();
 	}
+	
+	public void sendChatMessage(String message){
+		
+	}
+	
+	public void chatMessageReceived(String sender, String message){
+		if(gui != null){
+			//gui.getChat().
+		}
+	}
 
-	private BeatClock beatClock;
+	private ClockSetting beatClock;
 
 	private ClientGUI gui;
 
@@ -133,11 +144,11 @@ public class Client {
 
 
 
-	public BeatClock getBeatClock(){
+	public ClockSetting getBeatClock(){
 		return beatClock;
 	}
 
-	public void setBeatClock(BeatClock clock){
+	public void changeClockSettingsNow(ClockSetting clock){
 		if(clock == null)
 			throw new NullPointerException();
 		this.beatClock = clock;
@@ -147,7 +158,7 @@ public class Client {
 			//System.out.println("playback initialized");
 		}
 		else{
-			playback.setClock(beatClock);
+			playback.changeClockSettingsNow(beatClock);
 		}
 		if(input == null && inputMixer != null){
 			try {
@@ -164,13 +175,13 @@ public class Client {
 			}
 			input.addSubscriber(playback);
 		}else{
-			if(input != null) input.setClock(beatClock);
+			if(input != null) input.changeClockSettingsNow(beatClock);
 		}
 		if(gui == null){
 			gui = new ClientGUI(this);
 			gui.setVisible(true);
 		}
-		gui.setClock(clock);
+		gui.changeClockSettingsNow(clock);
 	}
 
 	public PlaybackManager getPlaybackManager(){
@@ -230,9 +241,9 @@ public class Client {
 								processClientList(clientList);
 							} else if(code == WJConstants.TIME_CHANGED){
 								//dis.readInt();
-								BeatClock beatClock = BeatClock.readFromStream(dis);
+								ClockSetting beatClock = ClockSetting.readFromStream(dis);
 								System.out.println(displayName + ": received clock " + beatClock);
-								setBeatClock(beatClock);
+								changeClockSettingsNow(beatClock);
 							} else throw new Exception("unrecognized code");
 
 						}
@@ -298,8 +309,8 @@ public class Client {
 		this.base.joinSession();
 	}
 
-	public void startNewSession(BeatClock clock) throws IOException{
-		this.setBeatClock(clock);
+	public void startNewSession(ClockSetting clock) throws IOException{
+		this.changeClockSettingsNow(clock);
 		this.base.startNewSession(clock);
 	}
 

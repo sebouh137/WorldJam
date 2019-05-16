@@ -6,9 +6,9 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.Mixer;
 
-import worldjam.core.BeatClock;
 import worldjam.exe.Client;
 import worldjam.exe.Server;
+import worldjam.time.ClockSetting;
 
 public class ServerClientSingleJVM {
 	static Mixer getMixer(String regex){
@@ -56,7 +56,7 @@ public class ServerClientSingleJVM {
 
 		new Thread(()->{try {
 			Client client1 = new Client("127.0.0.1", port, sessionName, "user1", inputMixer, outputMixer);
-			BeatClock clock = new BeatClock(500, 3, 4);
+			ClockSetting clock = new ClockSetting(500, 3, 4);
 			client1.setDebug(true);
 			client1.startNewSession(clock);
 

@@ -23,9 +23,9 @@ import javax.swing.event.ChangeListener;
 
 import worldjam.audio.InputThread;
 import worldjam.audio.PlaybackManager;
-import worldjam.core.BeatClock;
 import worldjam.exe.Client;
 import worldjam.gui.conductor.BezierConductor;
+import worldjam.time.ClockSetting;
 import worldjam.util.DefaultObjects;
 import worldjam.util.WJUtil;
 
@@ -93,8 +93,8 @@ public class ClientSetupGUI_P2P extends JFrame{
 
 			@Override
 			public void stateChanged(ChangeEvent e) {
-				BeatClock clock = previewConductor.getClock().createWithDifferentBeatCount((int)spinner.getValue());
-				previewConductor.setClock(clock);
+				ClockSetting clock = previewConductor.getClock().createWithDifferentBeatCount((int)spinner.getValue());
+				previewConductor.changeClockSettingsNow(clock);
 			}
 		};
 		tabs.addTab("General", mainPanel);
@@ -303,7 +303,7 @@ public class ClientSetupGUI_P2P extends JFrame{
 		 				val = val-(val%10);
 		 				spinner_msPerBeat.setValue(val);
 		 				txtBPM.setText(String.format("%.2f", 60000./val));
-		 				previewConductor.setClock(previewConductor.getClock().createWithDifferentTempo(val));
+		 				previewConductor.changeClockSettingsNow(previewConductor.getClock().createWithDifferentTempo(val));
 		 			}
 		 			
 		 		});
@@ -315,7 +315,7 @@ public class ClientSetupGUI_P2P extends JFrame{
 		 		gbc_panel.gridy = 1;
 		 		
 		 		previewConductor = new BezierConductor(
-						new BeatClock(
+						new ClockSetting(
 								(int)spinner_msPerBeat.getValue(),
 								(int)spinner.getValue(),
 								(int)spinner_1.getValue()));
@@ -353,7 +353,7 @@ public class ClientSetupGUI_P2P extends JFrame{
 		 				val = val-(val%10);
 		 				spinner_msPerBeat.setValue(val);
 		 				txtBPM.setText(String.format("%.2f", 60000./val));
-		 				previewConductor.setClock(previewConductor.getClock().createWithDifferentTempo(val));
+		 				previewConductor.changeClockSettingsNow(previewConductor.getClock().createWithDifferentTempo(val));
 		 			}
 		 			
 		 		});
@@ -477,12 +477,12 @@ public class ClientSetupGUI_P2P extends JFrame{
 			try {
 				if(join){
 					InputThread input = new InputThread(inputMixer, DefaultObjects.defaultFormat, DefaultObjects.bc0);
-					BeatClock clock = DefaultObjects.bc0;
+					ClockSetting clock = DefaultObjects.bc0;
 					PlaybackManager playback = new PlaybackManager(outputMixer, clock, DefaultObjects.defaultFormat);
 					client = new Client(localPort, displayName, input, playback, clock);
 					client.joinSessionP2P(serverIP, peerPort);
 				} else{
-					BeatClock clock = new BeatClock(msPerBeat, num, denom);
+					ClockSetting clock = new ClockSetting(msPerBeat, num, denom);
 					InputThread input = new InputThread(inputMixer, DefaultObjects.defaultFormat, clock);
 					PlaybackManager playback = new PlaybackManager(outputMixer, clock, DefaultObjects.defaultFormat);
 					System.out.println("user name is " + displayName);

@@ -1,10 +1,10 @@
-package worldjam.core;
+package worldjam.time;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class BeatClock {
+public class ClockSetting {
 	//should be divisible by 10
 	public final long startTime;
 	//should be divisible by 10, so that at 44100 samples per second, 
@@ -20,11 +20,11 @@ public class BeatClock {
 		return ((int)(System.currentTimeMillis()-startTime))/(msPerBeat*beatsPerMeasure);
 	}
 	
-	public BeatClock(int msPerBeat, int beatsPerMeasure, int beatDenominator){
+	public ClockSetting(int msPerBeat, int beatsPerMeasure, int beatDenominator){
 		this(msPerBeat, beatsPerMeasure, beatDenominator, (System.currentTimeMillis()/10)*10);
 	}
 	
-	public BeatClock(int msPerBeat, int beatsPerMeasure, int beatDenominator, long startTime){
+	public ClockSetting(int msPerBeat, int beatsPerMeasure, int beatDenominator, long startTime){
 		this.msPerBeat = msPerBeat;
 		this.beatsPerMeasure = beatsPerMeasure;
 		this.beatDenominator = beatDenominator;
@@ -37,11 +37,11 @@ public class BeatClock {
 	 * @param newMsPerBeat
 	 * @return another instance of BeatClock with a different tempo
 	 */
-	public BeatClock createWithDifferentTempo(int newMsPerBeat){
+	public ClockSetting createWithDifferentTempo(int newMsPerBeat, long whenEffective){
 		long t = System.currentTimeMillis();
-		long newStartTime = t - (long)((newMsPerBeat/(double)msPerBeat*(t- this.startTime)));
+		long newStartTime = whenEffective - (long)((newMsPerBeat/(double)msPerBeat*(whenEffective- this.startTime)));
 		newStartTime = (newStartTime/10)*10;
-		return new BeatClock(newMsPerBeat, beatsPerMeasure, beatDenominator, newStartTime);
+		return new ClockSetting(newMsPerBeat, beatsPerMeasure, beatDenominator, newStartTime);
 	}
 	
 	/**
@@ -50,8 +50,18 @@ public class BeatClock {
 	 * @param newMsPerBeat
 	 * @return another instance of BeatClock with a different tempo
 	 */
-	public BeatClock createWithDifferentBeatCount(int newBeatCount){
-		return new BeatClock(msPerBeat, newBeatCount, beatDenominator, startTime);
+	public ClockSetting createWithDifferentTempo(int newMsPerBeat){
+		return createWithDifferentTempo(newMsPerBeat, System.currentTimeMillis());
+	}
+	
+	/**
+	 * creates another instance of BeatClock with the same time signature,
+	 * but a different tempo.  At the time that the create Both the original and the created 
+	 * @param newMsPerBeat
+	 * @return another instance of BeatClock with a different tempo
+	 */
+	public ClockSetting createWithDifferentBeatCount(int newBeatCount){
+		return new ClockSetting(msPerBeat, newBeatCount, beatDenominator, startTime);
 	}
 	
 	
@@ -66,12 +76,12 @@ public class BeatClock {
 		dos.writeLong(startTime);
 	}
 	
-	public static BeatClock readFromStream(DataInputStream dis) throws IOException{
+	public static ClockSetting readFromStream(DataInputStream dis) throws IOException{
 		int msPerBeat = dis.readInt();
 		int beatsPerMeasure = dis.readInt();
 		int beatDenominator = dis.readInt();
 		long startTime = dis.readLong();
-		return new BeatClock(msPerBeat, beatsPerMeasure, beatDenominator, startTime);
+		return new ClockSetting(msPerBeat, beatsPerMeasure, beatDenominator, startTime);
 			
 	}
 	public String toString(){

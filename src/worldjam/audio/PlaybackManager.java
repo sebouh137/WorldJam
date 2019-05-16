@@ -14,18 +14,19 @@ import javax.sound.sampled.Line;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.Mixer;
 
-import worldjam.core.BeatClock;
+import worldjam.time.ClockSetting;
+import worldjam.time.ClockSubscriber;
 
-public class PlaybackManager implements AudioSubscriber{
+public class PlaybackManager implements AudioSubscriber, ClockSubscriber{
 	
-	public PlaybackManager(Mixer mixer, BeatClock clock, AudioFormat format) {
+	public PlaybackManager(Mixer mixer, ClockSetting clock, AudioFormat format) {
 		super();
 		this.mixer = mixer;
 		this.clock = clock;
 		this.format = format;
 	}
 	Mixer mixer;
-	BeatClock clock;
+	ClockSetting clock;
 	AudioFormat format;
 	Map<Long, PlaybackChannel> channels = new HashMap<Long, PlaybackChannel>();
 	private Map<Long, String> channelNames = new HashMap();
@@ -102,10 +103,10 @@ public class PlaybackManager implements AudioSubscriber{
 	public PlaybackChannel getChannel(Long id) {
 		return channels.get(id);
 	}
-	public void setClock(BeatClock beatClock) {
+	public void changeClockSettingsNow(ClockSetting beatClock) {
 		this.clock = beatClock;
 		for(PlaybackChannel channel : channels.values()){
-			channel.setClock(clock);
+			channel.changeClockSettingsNow(clock);
 		}
 	}
 	public void startRecording(File directory, String ext) throws FileNotFoundException{

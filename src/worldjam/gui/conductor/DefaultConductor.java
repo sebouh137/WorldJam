@@ -6,7 +6,7 @@ import java.util.Scanner;
 
 import javax.swing.JFrame;
 
-import worldjam.core.BeatClock;
+import worldjam.time.ClockSetting;
 /**
  * Mimics a conductor's baton.
  * @author spaul
@@ -20,7 +20,7 @@ public class DefaultConductor extends Conductor{
 	private static final long serialVersionUID = -9144008189374506436L;
 	private double x[];
 	private double y[];
-	public DefaultConductor(BeatClock clock) {
+	public DefaultConductor(ClockSetting clock) {
 		super(clock);	
 	}
 
@@ -32,7 +32,7 @@ public class DefaultConductor extends Conductor{
 		int num = scanner.nextInt();
 		int denominator = scanner.nextInt();
 		scanner.close();
-		BeatClock clock = new BeatClock(msPerBeat, num, denominator);
+		ClockSetting clock = new ClockSetting(msPerBeat, num, denominator);
 
 		JFrame frame = new DefaultConductor(clock).showInFrame();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -70,8 +70,8 @@ public class DefaultConductor extends Conductor{
 	}
 	
 	@Override
-	public void setClock(BeatClock clock) {
-		super.setClock(clock);
+	public void changeClockSettingsNow(ClockSetting clock) {
+		super.changeClockSettingsNow(clock);
 		int N = clock.beatsPerMeasure;
 		x = new double[N];
 		y = new double[N];

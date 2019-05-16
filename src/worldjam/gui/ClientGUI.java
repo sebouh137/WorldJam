@@ -8,8 +8,9 @@ import javax.swing.JMenuItem;
 
 import worldjam.exe.Client;
 import worldjam.gui.conductor.BezierConductor;
+import worldjam.time.ClockSetting;
+import worldjam.time.ClockSubscriber;
 import worldjam.audio.*;
-import worldjam.core.BeatClock;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -33,7 +34,7 @@ import java.awt.event.WindowEvent;
 import java.io.IOException;
 import javax.swing.JButton;
 
-public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeListener {
+public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeListener, ClockSubscriber {
 	/**
 	 * 
 	 */
@@ -57,7 +58,7 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		setTitle("World Jam: " + client.getUserName());
 		
 		this.client = client;
-		this.setClock(client.getBeatClock());
+		this.changeClockSettingsNow(client.getBeatClock());
 		
 		this.setSize(559, 400);
 		
@@ -82,6 +83,12 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		
 		JMenuItem mntmInputMonitor = new JMenuItem("Input Monitor...");
 		mnInput.add(mntmInputMonitor);
+		
+		JMenu mnOtherSettings = new JMenu("Other Settings");
+		menuBar.add(mnOtherSettings);
+		
+		JMenuItem mntmTempo = new JMenuItem("Tempo ...");
+		mnOtherSettings.add(mntmTempo);
 		
 		/*JButton btnClose = new JButton("Close");
 		btnClose.addActionListener(new ActionListener() {
@@ -175,6 +182,9 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		clientList.validate();
 		getContentPane().add(clientList, BorderLayout.EAST);
 		
+		//chat = new ChatPanel();
+		//getContentPane().add(chat, BorderLayout.WEST);
+		
 		
 		
 		client.getPlaybackManager().addChannelChangeListener(this);
@@ -189,7 +199,7 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		JPanel panel = new JPanel();
 		panel.setLayout(new BorderLayout());
 		
-		BeatClock clock = client.getBeatClock();
+		ClockSetting clock = client.getBeatClock();
 		
 		lblTimeSig = new JLabel(String.format("%d/%d", clock.beatsPerMeasure, clock.beatDenominator));
 		lblTimeSig.setFont(infoFont);
@@ -257,9 +267,9 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 			clientList.repaint();
 		}
 	}
-	public void setClock(BeatClock clock){
+	public void changeClockSettingsNow(ClockSetting clock){
 		if(this.conductor != null)
-			this.conductor.setClock(clock);
+			this.conductor.changeClockSettingsNow(clock);
 		if(lblTimeSig != null)
 			lblTimeSig.setText(String.format("%d/%d", clock.beatsPerMeasure, clock.beatDenominator));
 		if(lblBPM != null)
@@ -267,5 +277,8 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		if(lblMS != null)
 			lblMS.setText(String.format("(%d ms per beat)", clock.msPerBeat));
 	}
-	
+	ChatPanel chat = null;
+	void getChat(){
+		
+	}
 }

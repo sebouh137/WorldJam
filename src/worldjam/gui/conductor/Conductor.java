@@ -5,21 +5,22 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
-import worldjam.core.BeatClock;
 import worldjam.gui.VisualMetronome;
+import worldjam.time.ClockSetting;
+import worldjam.time.ClockSubscriber;
 /**
  * Mimics a conductor's baton.
  * @author spaul
  *
  */
-public abstract class Conductor extends VisualMetronome{
+public abstract class Conductor extends VisualMetronome implements ClockSubscriber{
 
 	
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -8162896956489786921L;
-	public Conductor(BeatClock clock) {
+	public Conductor(ClockSetting clock) {
 		super(clock);
 	}
 
@@ -66,5 +67,5 @@ public abstract class Conductor extends VisualMetronome{
 	 * @return x coordinate of the end of the baton, between 0 and 1
 	 */
 	protected abstract double y(double t);
-
+	
 }

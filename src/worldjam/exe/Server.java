@@ -9,9 +9,9 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.sound.sampled.LineUnavailableException;
 
-import worldjam.core.BeatClock;
 import worldjam.net.NetworkUtils;
 import worldjam.net.WJConstants;
+import worldjam.time.ClockSetting;
 import worldjam.util.DefaultObjects;
 
 public class Server {
@@ -57,7 +57,7 @@ public class Server {
 					//int beatsPerMeasure = dis.readInt();
 					//int denom = dis.readInt();
 					//long startTime = dis.readLong();
-					BeatClock beatClock = BeatClock.readFromStream(dis);//new BeatClock(msPerBeat, beatsPerMeasure, denom, startTime);
+					ClockSetting beatClock = ClockSetting.readFromStream(dis);//new BeatClock(msPerBeat, beatsPerMeasure, denom, startTime);
 
 					ServerSession session = new ServerSession(beatClock, sessionName);
 

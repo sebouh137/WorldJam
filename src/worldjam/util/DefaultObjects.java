@@ -13,7 +13,7 @@ import javax.sound.sampled.AudioFormat.Encoding;
 import worldjam.time.ClockSetting;
 
 public class DefaultObjects {
-	public static ClockSetting bc0 = new ClockSetting(500, 4, 4);
+	public static ClockSetting bc0 = new ClockSetting(500, 4, 4, System.currentTimeMillis());
 	public static AudioFormat defaultFormat = new AudioFormat(44100, 16, 1, true, true);
 	public static AudioFormat playbackFormat = new AudioFormat(44100, 16, 2, true, true);
 	//public static AudioFormat defaultFormat = new AudioFormat(Encoding.ALAW, 44100, 8, 1, 1, 44100, false);

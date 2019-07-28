@@ -5,11 +5,14 @@ import java.util.List;
 
 @SuppressWarnings("rawtypes")
 public class MutableClock {
-	ArrayList<ClockSubscriber> subscribers = new ArrayList();
+	private ArrayList<ClockSubscriber> subscribers = new ArrayList();
 	public void changeSettingsNow(ClockSetting settings){
 		for(ClockSubscriber subscriber : subscribers){
 			subscriber.changeClockSettingsNow(settings);
 		}
+	}
+	public void addChangeSubscriber(ClockSubscriber subs){
+		this.subscribers.add(subs);
 	}
 	ClockSetting settings;
 	public MutableClock(ClockSetting settings){

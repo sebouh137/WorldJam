@@ -132,29 +132,26 @@
 			</plugin>
 		</plugins>
 	</build>
-	<dependencies><!-- 
+	<dependencies>
 		<dependency>
-			<groupId>de.javawi.jstun</groupId>
-			<artifactId>jstun</artifactId>
-			<version>0.7.4</version>
+			<groupId>org.la4j</groupId>
+			<artifactId>la4j</artifactId>
+			<version>0.6.0</version>
 		</dependency>
-		<dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.5</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-jdk14</artifactId>
-            <version>1.7.5</version>
-            <scope>runtime</scope>
-            <optional>true</optional>
-        </dependency>
-		 -->
+		<!-- <dependency> <groupId>de.javawi.jstun</groupId> <artifactId>jstun</artifactId> 
+			<version>0.7.4</version> </dependency> <dependency> <groupId>org.slf4j</groupId> 
+			<artifactId>slf4j-api</artifactId> <version>1.7.5</version> </dependency> 
+			<dependency> <groupId>org.slf4j</groupId> <artifactId>slf4j-jdk14</artifactId> 
+			<version>1.7.5</version> <scope>runtime</scope> <optional>true</optional> 
+			</dependency> -->
 		<!-- https://mvnrepository.com/artifact/javax.sdp/nist-sdp -->
 		<!-- <dependency> <groupId>javax.sdp</groupId> <artifactId>nist-sdp</artifactId> 
 			<version>1.0</version> </dependency> -->
-
+		<dependency>
+			<groupId>com.github.sarxos</groupId>
+			<artifactId>webcam-capture</artifactId>
+			<version>0.3.12</version>
+		</dependency>
 
 
 	</dependencies>

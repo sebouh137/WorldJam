@@ -31,6 +31,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.JList;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import javax.swing.JButton;
 
@@ -279,6 +280,9 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 	}
 	ChatPanel chat = null;
 	void getChat(){
+		
+	}
+	public void videoFrameReceived(long senderID, long timestamp, BufferedImage image) {
 		
 	}
 }

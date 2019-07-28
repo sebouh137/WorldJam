@@ -1,5 +1,6 @@
 package worldjam.exe;
 
+import java.awt.image.BufferedImage;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.FilterInputStream;
@@ -13,6 +14,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.imageio.ImageIO;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.Mixer;
 
@@ -27,8 +29,9 @@ import worldjam.net.WJConstants;
 import worldjam.time.ClockSetting;
 import worldjam.time.ClockSubscriber;
 import worldjam.util.DefaultObjects;
+import worldjam.video.WebcamThread;
 
-public class Client implements ClockSubscriber{
+public class Client implements ClockSubscriber {
 
 	private ClientConnectionManager base;
 	public static void main(String arg[]) throws LineUnavailableException, UnknownHostException, IOException{
@@ -225,7 +228,12 @@ public class Client implements ClockSubscriber{
 						synchronized(dis){
 							byte code;
 							code = dis.readByte();
-							if(code == WJConstants.AUDIO_SAMPLE){								
+							if(code == WJConstants.VIDEO_FRAME){
+								long senderID = dis.readLong();
+								long timestamp = dis.readLong();
+								BufferedImage image = ImageIO.read(dis);
+								gui.videoFrameReceived(senderID,timestamp,image);
+							} else if(code == WJConstants.AUDIO_SAMPLE){								
 								AudioSample sample = AudioSample.readFromStream(dis);
 								for(AudioSubscriber reactor: reactors){
 									reactor.sampleReceived(sample);
@@ -286,11 +294,28 @@ public class Client implements ClockSubscriber{
 			}
 		}
 
+		public void sendVideoFrame(BufferedImage image, long timestamp) {
+			synchronized(dos){
+				try {
+					dos.write(WJConstants.VIDEO_FRAME);
+					dos.writeLong(selfDescriptor.clientID);
+					dos.writeLong(timestamp);
+					ImageIO.write(image, "bmp", dos);
+				} catch (SocketException e) {
+					System.out.println("closing connection");
+					removeConnection(peer.clientID);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
 		public void close() throws IOException {
 			socket.close();
 			this.alive = false;
 		}
 		ClientDescriptor peer;
+		
 	}
 	//list of objects that react to new audio samples received
 	ArrayList<AudioSubscriber> reactors = new ArrayList();
@@ -457,6 +482,16 @@ public class Client implements ClockSubscriber{
 		System.out.println("post: "+  Thread.activeCount() + " active thread");
 		for (Thread t : Thread.getAllStackTraces().keySet()){
 			System.out.println(t.getClass());
+		}
+	}
+	public void attachWebcam(WebcamThread webcamThread){
+		webcamThread.addSubscriber((image,timestamp)->{
+			sendVideoFrame(image,timestamp);
+		});
+	}
+	private void sendVideoFrame(BufferedImage image, long timestamp){
+		for (Connection con : connections.values()){
+			con.sendVideoFrame(image,timestamp);
 		}
 	}
 }

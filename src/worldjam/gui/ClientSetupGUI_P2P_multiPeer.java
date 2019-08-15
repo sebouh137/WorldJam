@@ -11,6 +11,8 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.JRadioButton;
@@ -21,6 +23,8 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import com.github.sarxos.webcam.Webcam;
+
 import worldjam.audio.InputThread;
 import worldjam.audio.PlaybackManager;
 import worldjam.exe.Client;
@@ -28,6 +32,7 @@ import worldjam.gui.conductor.BezierConductor;
 import worldjam.time.ClockSetting;
 import worldjam.util.DefaultObjects;
 import worldjam.util.WJUtil;
+import worldjam.video.WebcamThread;
 
 import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
@@ -41,7 +46,8 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.SwingConstants;
 import javax.swing.JComboBox;
-import javax.swing.JPanel;;
+import javax.swing.JPanel;
+import javax.swing.JCheckBox;;
 
 public class ClientSetupGUI_P2P_multiPeer extends JFrame{
 	/**
@@ -70,6 +76,9 @@ public class ClientSetupGUI_P2P_multiPeer extends JFrame{
 	private JLabel lblServerIpAddress;
 	private JLabel lblLocalPort;
 	private JTextField jtfLocalPort;
+	private JLabel lblVideoInput;
+	private JCheckBox chckbxUsedDefault;
+	private JComboBox comboBoxWebcams;
 
 
 	public ClientSetupGUI_P2P_multiPeer() {
@@ -342,15 +351,15 @@ public class ClientSetupGUI_P2P_multiPeer extends JFrame{
 		mainPanel.add(btnStart, gbc_btnStart);
 
 		JPanel tabAudioIO = new JPanel(); 
-		tabs.addTab("Audio IO", tabAudioIO);
+		tabs.addTab("Audio/Video IO", tabAudioIO);
 		GridBagLayout gbl_tabAudioIO = new GridBagLayout();
 		gbl_tabAudioIO.columnWidths = new int[]{122, 44, 0};
-		gbl_tabAudioIO.rowHeights = new int[]{27, 0, 0};
+		gbl_tabAudioIO.rowHeights = new int[]{27, 0, 0, 0, 0};
 		gbl_tabAudioIO.columnWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
-		gbl_tabAudioIO.rowWeights = new double[]{0.0, 0.0, Double.MIN_VALUE};
+		gbl_tabAudioIO.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		tabAudioIO.setLayout(gbl_tabAudioIO);
 
-		lblInput = new JLabel("Input");
+		lblInput = new JLabel("Audio Input");
 		GridBagConstraints gbc_lblInput = new GridBagConstraints();
 		gbc_lblInput.anchor = GridBagConstraints.WEST;
 		gbc_lblInput.insets = new Insets(0, 0, 5, 5);
@@ -368,10 +377,10 @@ public class ClientSetupGUI_P2P_multiPeer extends JFrame{
 		gbc_comboBox.gridy = 0;
 		tabAudioIO.add(comboBox, gbc_comboBox);
 
-		lblOutput = new JLabel("Output");
+		lblOutput = new JLabel("Audio Output");
 		GridBagConstraints gbc_lblOutput = new GridBagConstraints();
 		gbc_lblOutput.anchor = GridBagConstraints.WEST;
-		gbc_lblOutput.insets = new Insets(0, 0, 0, 5);
+		gbc_lblOutput.insets = new Insets(0, 0, 5, 5);
 		gbc_lblOutput.gridx = 0;
 		gbc_lblOutput.gridy = 1;
 		tabAudioIO.add(lblOutput, gbc_lblOutput);
@@ -379,13 +388,41 @@ public class ClientSetupGUI_P2P_multiPeer extends JFrame{
 		comboBox_1 = new JComboBox();
 		comboBox_1.setModel(getComboBoxModel(getMixers(SourceDataLine.class)));
 		GridBagConstraints gbc_comboBox_1 = new GridBagConstraints();
+		gbc_comboBox_1.insets = new Insets(0, 0, 5, 0);
 		gbc_comboBox_1.anchor = GridBagConstraints.NORTHWEST;
 		gbc_comboBox_1.fill = GridBagConstraints.HORIZONTAL;
 		gbc_comboBox_1.gridx = 1;
 		gbc_comboBox_1.gridy = 1;
 		tabAudioIO.add(comboBox_1, gbc_comboBox_1);
-
-
+		
+		lblVideoInput = new JLabel("Video Input");
+		GridBagConstraints gbc_lblVideoInput = new GridBagConstraints();
+		gbc_lblVideoInput.anchor = GridBagConstraints.EAST;
+		gbc_lblVideoInput.insets = new Insets(0, 0, 0, 5);
+		gbc_lblVideoInput.gridx = 0;
+		gbc_lblVideoInput.gridy = 3;
+		tabAudioIO.add(lblVideoInput, gbc_lblVideoInput);
+		
+		List<Webcam> webcams = Webcam.getWebcams();
+		List<String> webcamNames = new ArrayList();
+		webcamNames.add("[none]");
+		for(Webcam webcam : webcams){
+			webcamNames.add(webcam.getName());
+		}
+		
+		comboBoxWebcams = new JComboBox();
+		comboBoxWebcams.setModel(new DefaultComboBoxModel(webcamNames.toArray()));
+		GridBagConstraints gbc_comboBox_2 = new GridBagConstraints();
+		gbc_comboBox_2.fill = GridBagConstraints.HORIZONTAL;
+		gbc_comboBox_2.gridx = 1;
+		gbc_comboBox_2.gridy = 3;
+		tabAudioIO.add(comboBoxWebcams, gbc_comboBox_2);
+		
+		
+		
+		
+		
+		
 	}
 
 	class MixerWrapper {
@@ -448,11 +485,15 @@ public class ClientSetupGUI_P2P_multiPeer extends JFrame{
 				gui.dispose();
 				Client client;
 				try {
+					Webcam webcam = Webcam.getDefault();//Webcam.getWebcamByName((String)gui.comboBoxWebcams.getSelectedItem());
+					if(webcam != null)
+						webcam.open();
+					WebcamThread webcamThread = webcam != null ? new WebcamThread(webcam) : null;
 					if(join){
 						InputThread input = new InputThread(inputMixer, DefaultObjects.defaultFormat, DefaultObjects.bc0);
 						ClockSetting clock = DefaultObjects.bc0;
 						PlaybackManager playback = new PlaybackManager(outputMixer, clock, DefaultObjects.defaultFormat);
-						client = new Client(localPort, displayName, input, playback, clock);
+						client = new Client(localPort, displayName, input, playback, clock,webcamThread);
 						String[] entries = gui.textFieldPort.getText().trim().split(",[ \t]*");
 
 						for(String entry : entries){
@@ -465,7 +506,7 @@ public class ClientSetupGUI_P2P_multiPeer extends JFrame{
 						InputThread input = new InputThread(inputMixer, DefaultObjects.defaultFormat, clock);
 						PlaybackManager playback = new PlaybackManager(outputMixer, clock, DefaultObjects.defaultFormat);
 						System.out.println("user name is " + displayName);
-						client = new Client(localPort, displayName, input, playback, clock);
+						client = new Client(localPort, displayName, input, playback, clock, webcamThread);
 						/*clock.beatsPerMeasure = num;
 					clock.beatDenominator = denom;
 					clock.msPerBeat = msPerBeat;*/

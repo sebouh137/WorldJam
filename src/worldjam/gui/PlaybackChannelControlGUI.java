@@ -209,7 +209,7 @@ public class PlaybackChannelControlGUI extends JFrame {
 		gbc_lblTotal.gridy = 4;
 		delayPanel.add(lblTotal, gbc_lblTotal);
 
-		JLabel lblSum = new JLabel(Integer.toString(channel.getDelayInMS()));
+		JLabel lblSum = new JLabel(Integer.toString(channel.getTotalDelayInMS()));
 		GridBagConstraints gbc_lblSum = new GridBagConstraints();
 		gbc_lblSum.anchor = GridBagConstraints.EAST;
 		gbc_lblSum.insets = new Insets(0, 0, 5, 5);

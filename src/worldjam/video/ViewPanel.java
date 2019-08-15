@@ -1,18 +1,17 @@
 package worldjam.video;
 
-import java.awt.Canvas;
+import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.LinkedList;
 
-import javax.imageio.ImageIO;
+import javax.swing.JComponent;
 
-public class ViewPanel extends Canvas implements VideoSubscriber{
+public class ViewPanel extends JComponent implements VideoSubscriber{
 	private DataInputStream inputStream;
-	int delayMS = 500;
+	int delayMS = 2000;
 	/**
 	 * sets the delay
 	 * @param delay in ms
@@ -39,7 +38,7 @@ public class ViewPanel extends Canvas implements VideoSubscriber{
 	
 	public void imageReceived(BufferedImage image, long timestamp){
 		ImageAndTimestamp entry = new ImageAndTimestamp(image,timestamp);
-		System.out.println("received image");
+		//System.out.println("received image");
 		if(image != null){
 			synchronized(ViewPanel.this){
 				images.add(entry);
@@ -49,19 +48,21 @@ public class ViewPanel extends Canvas implements VideoSubscriber{
 	}
 	
 
+	private BufferedImage currentImage = null;
+	
 	private Thread refreshThread = new Thread(()->{
+		BufferedImage prevImage = null;
 		while(true){
 			while(images.size()==0){
 				try {
-					Thread.sleep(30);
+					Thread.sleep(10);
 					//System.out.println("waiting for images buffer");
 				} catch (InterruptedException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 			}
-			synchronized(ViewPanel.this){
-
+			//synchronized(ViewPanel.this){
 				ImageAndTimestamp entry = images.removeFirst();
 				try {
 					Thread.sleep(Math.max(0,entry.timestamp + delayMS - System.currentTimeMillis()));
@@ -69,24 +70,32 @@ public class ViewPanel extends Canvas implements VideoSubscriber{
 					e.printStackTrace();
 				}
 				currentImage = entry.bufferedImage;
+				
 				repaint();
+				if(prevImage != null)
+					prevImage.flush();
 
-			}
+			//}
+			prevImage = currentImage;
 		}
 
 	});
 
 
-	private BufferedImage currentImage;
-	public void paint(Graphics g){
-
+	public void paintComponent(Graphics g){
+		Graphics2D g2 = (Graphics2D)g;
+		super.paintComponent(g);
 		if(currentImage != null)
 		{
 			//System.out.println("painting image");
-			g.drawImage(currentImage, 0, 0,null);
+			g2.drawImage(currentImage, 0, 0, getWidth(),getHeight(),null);
 		}
 		else{
-			System.out.println("buffered image to be painted is null");
+			g.setColor(Color.black);
+			g.fillRect(0, 0, getWidth(),getHeight());
+			g.setColor(Color.WHITE);
+			g.drawString("Visuals not available", getWidth()/4, getHeight()/2);
+			//System.out.println("buffered image to be painted is null");
 		}
 	}
 }

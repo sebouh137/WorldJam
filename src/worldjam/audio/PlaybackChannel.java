@@ -19,7 +19,7 @@ public interface PlaybackChannel extends RMS, AudioSubscriber, ClockSubscriber{
 	public int getAddDelayMeasures();
 	public int getAddDelayBeats();
 	public int getAddDelayMS();
-	public int getDelayInMS();
+	public int getTotalDelayInMS();
 	public void setFilter(AudioFilter filter);
 	public AudioFormat getInputFormat();
 	public AudioFormat getPlaybackFormat();

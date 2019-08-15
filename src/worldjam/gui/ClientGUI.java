@@ -10,6 +10,7 @@ import worldjam.exe.Client;
 import worldjam.gui.conductor.BezierConductor;
 import worldjam.time.ClockSetting;
 import worldjam.time.ClockSubscriber;
+import worldjam.video.ViewPanel;
 import worldjam.audio.*;
 
 import java.awt.BorderLayout;
@@ -24,6 +25,9 @@ import java.awt.Font;
 import javax.swing.SwingConstants;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+
+import com.github.sarxos.webcam.WebcamViewer;
+
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.ListModel;
@@ -33,16 +37,21 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.HashMap;
+
 import javax.swing.JButton;
 
 public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeListener, ClockSubscriber {
 	/**
 	 * 
 	 */
+	
+	ConductorAndWebcamViewer viewManager;
 	private static final long serialVersionUID = -6893387160409587544L;
 	private Client client;
 	private JMenu mnChannels;
 	private BezierConductor conductor;
+	//private ViewPanel webcamViewer;
 	public ClientGUI(Client client) {
 		addWindowListener(new WindowAdapter() {
 			@Override
@@ -118,7 +127,10 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		
 		
 		this.conductor = new BezierConductor(client.getBeatClock());
-		getContentPane().add(conductor, BorderLayout.CENTER);
+		ViewPanel webcamViewer = new ViewPanel();
+		viewManager = new ConductorAndWebcamViewer(conductor, webcamViewer);
+		
+		getContentPane().add(viewManager, BorderLayout.CENTER);
 		
 		getContentPane().add(createTimeInfoPanel(), BorderLayout.SOUTH);;
 		
@@ -267,6 +279,12 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 			clientList.validate();
 			clientList.repaint();
 		}
+		
+		HashMap<Long,Integer> idsAndDelays = new HashMap();
+		for(long id : client.getPlaybackManager().getIDs()){
+			idsAndDelays.put(id, client.getPlaybackManager().getChannel(id).getTotalDelayInMS());
+		}
+		viewManager.updateChannels(idsAndDelays);
 	}
 	public void changeClockSettingsNow(ClockSetting clock){
 		if(this.conductor != null)
@@ -284,5 +302,6 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 	}
 	public void videoFrameReceived(long senderID, long timestamp, BufferedImage image) {
 		
+		viewManager.imageReceived(senderID, image, timestamp);
 	}
 }

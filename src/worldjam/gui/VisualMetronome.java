@@ -1,17 +1,19 @@
 package worldjam.gui;
 
 import java.awt.Canvas;
+import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
 
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 
 import worldjam.time.ClockSetting;
 
-public abstract class VisualMetronome extends Canvas {
+public abstract class VisualMetronome extends JComponent {
 	/**
 	 * 
 	 */
@@ -81,24 +83,9 @@ public abstract class VisualMetronome extends Canvas {
 	public ClockSetting getClock() {
 		return clock;
 	}
-	boolean useBufferedImage = false;
 	public void paint(Graphics g){
-		//super.paint(g);
-		if(useBufferedImage){
-			super.paint(g);
-			if(prev != null)
-				g.drawImage(prev, 0, 0, null);
-			BufferedImage img = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_3BYTE_BGR);
-			Graphics2D g2 = (Graphics2D)img.createGraphics();
-			this.paint(g2, System.currentTimeMillis());
-			g.drawImage(img, 0, 0, null);
-
-			prev = img;
-		}
-		else paint((Graphics2D)g, System.currentTimeMillis());
+		paint((Graphics2D)g.create(), System.currentTimeMillis());
 	}
-
-	BufferedImage prev = null;
 
 	public abstract void paint(Graphics2D g, long time); 
 }

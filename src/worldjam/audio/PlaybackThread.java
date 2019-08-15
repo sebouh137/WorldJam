@@ -235,7 +235,7 @@ public class PlaybackThread extends Thread implements PlaybackChannel{
 		return offset_ms;
 	}
 	
-	public int getDelayInMS() {
+	public int getTotalDelayInMS() {
 		return total_offset_ms;
 	}
 

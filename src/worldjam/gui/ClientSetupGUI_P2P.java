@@ -479,14 +479,14 @@ public class ClientSetupGUI_P2P extends JFrame{
 					InputThread input = new InputThread(inputMixer, DefaultObjects.defaultFormat, DefaultObjects.bc0);
 					ClockSetting clock = DefaultObjects.bc0;
 					PlaybackManager playback = new PlaybackManager(outputMixer, clock, DefaultObjects.defaultFormat);
-					client = new Client(localPort, displayName, input, playback, clock);
+					client = new Client(localPort, displayName, input, playback, clock, null);
 					client.joinSessionP2P(serverIP, peerPort);
 				} else{
 					ClockSetting clock = new ClockSetting(msPerBeat, num, denom);
 					InputThread input = new InputThread(inputMixer, DefaultObjects.defaultFormat, clock);
 					PlaybackManager playback = new PlaybackManager(outputMixer, clock, DefaultObjects.defaultFormat);
 					System.out.println("user name is " + displayName);
-					client = new Client(localPort, displayName, input, playback, clock);
+					client = new Client(localPort, displayName, input, playback, clock, null);
 					/*clock.beatsPerMeasure = num;
 					clock.beatDenominator = denom;
 					clock.msPerBeat = msPerBeat;*/

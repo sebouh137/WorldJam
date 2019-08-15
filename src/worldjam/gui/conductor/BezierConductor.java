@@ -64,10 +64,11 @@ public class BezierConductor extends VisualMetronome implements ClockSubscriber{
 	public BezierConductor(ClockSetting clock) {
 		this(clock, DefaultConductingPatternProvider.getInstance().getDefaultPattern(clock != null ? clock.beatsPerMeasure : 4));
 		//this.setBackground(Color.BLACK);
+		this.setOpaque(false);
 	}
 	
 	
-
+	
 	
 	public void paint(Graphics2D g2, long time){
 		
@@ -92,6 +93,7 @@ public class BezierConductor extends VisualMetronome implements ClockSubscriber{
 		
 
 		//draw the baton
+		g2.setColor(battonColor);
 		g2.setStroke(stroke);
 		g2.drawLine(
 				(int)(getWidth()*(.1+.8*x)), 
@@ -135,6 +137,7 @@ public class BezierConductor extends VisualMetronome implements ClockSubscriber{
 	}
 	private Stroke stroke = new BasicStroke(3);
 	private boolean showMeasureNumber;
+	private Color battonColor = Color.BLACK;
 	public void setStroke(Stroke stroke){
 		this.stroke = stroke;
 	}
@@ -143,5 +146,7 @@ public class BezierConductor extends VisualMetronome implements ClockSubscriber{
 		this.showMeasureNumber=false;
 	}
 
-	
+	public void setBattonColor(Color color){
+		this.battonColor  = color;
+	}
 }

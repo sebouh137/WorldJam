@@ -15,6 +15,7 @@ public class WebcamThread extends Thread{
 	private Webcam webcam;
 	public WebcamThread(Webcam webcam){
 		this.webcam = webcam;
+		//this.webcam.addWebcamListener(new WebcamListener());
 	}
 	public void run(){
 		try{
@@ -22,10 +23,13 @@ public class WebcamThread extends Thread{
 			while(true){
 				long timestamp = System.currentTimeMillis();
 				BufferedImage image = webcam.getImage();
-				System.out.println("created image");
-				if(image == null)
-					System.out.println("image from webcam is null");
+				
+				if(image == null){
+					//System.out.println("image from webcam is null");
+				}
 				else {
+
+					//System.out.println("created image");
 					for(VideoSubscriber sub : subscribers){
 						sub.imageReceived(image, timestamp);
 					}

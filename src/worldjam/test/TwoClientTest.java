@@ -36,7 +36,7 @@ public class TwoClientTest {
 						
 						PlaybackManager playback = new PlaybackManager(outputMixer, clock, DefaultObjects.defaultFormat);
 						System.out.println("user name is " + displayName);
-						Client client = new Client(localPort, displayName, input, playback, clock);
+						Client client = new Client(localPort, displayName, input, playback, clock,null);
 						client.getGUI().setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 					} catch(LineUnavailableException | IOException e){
 						e.printStackTrace();
@@ -67,7 +67,7 @@ public class TwoClientTest {
 						PlaybackManager playback = new PlaybackManager(outputMixer, defaultClock, DefaultObjects.defaultFormat);
 						Client client;
 
-						client = new Client(localPort, displayName, input, playback, defaultClock);
+						client = new Client(localPort, displayName, input, playback, defaultClock,null);
 						String serverIP = "127.0.0.1";
 						int peerPort = 2901;
 						client.joinSessionP2P(serverIP, peerPort);

@@ -24,7 +24,7 @@ import worldjam.audio.AudioSample;
 import worldjam.audio.AudioSubscriber;
 import worldjam.gui.ClientGUI;
 import worldjam.gui.ClientSetupGUI;
-import worldjam.gui.ClientSetupGUI_P2P;
+import worldjam.gui.ClientSetupGUI_P2P_multiPeer;
 import worldjam.net.WJConstants;
 import worldjam.time.ClockSetting;
 import worldjam.time.ClockSubscriber;
@@ -37,7 +37,7 @@ public class Client implements ClockSubscriber {
 	public static void main(String arg[]) throws LineUnavailableException, UnknownHostException, IOException{
 
 		//if(arg.length >= 1 && arg[0].equals("-g")){
-		ClientSetupGUI_P2P.main(arg);
+		ClientSetupGUI_P2P_multiPeer.main(arg);
 
 	}
 
@@ -58,7 +58,7 @@ public class Client implements ClockSubscriber {
 		this.outputMixer = outputMixer;
 	}
 
-	public Client(int listeningPort, String displayName, InputThread input, PlaybackManager playback, ClockSetting clock) 
+	public Client(int listeningPort, String displayName, InputThread input, PlaybackManager playback, ClockSetting clock,WebcamThread webcamThread) 
 			throws LineUnavailableException, UnknownHostException, IOException{
 		this.selfDescriptor = new ClientDescriptor(displayName, displayName.hashCode());
 		this.displayName = displayName;
@@ -87,6 +87,9 @@ public class Client implements ClockSubscriber {
 		this.checkForTimeoutThread = new CheckForTimeoutThread();
 		checkForTimeoutThread.start();
 		this.changeClockSettingsNow(clock);
+		if(webcamThread != null){
+			attachWebcam(webcamThread);
+		}
 	}
 
 	Map<Long,Connection> connections = new HashMap<Long,Connection>();
@@ -229,6 +232,7 @@ public class Client implements ClockSubscriber {
 							byte code;
 							code = dis.readByte();
 							if(code == WJConstants.VIDEO_FRAME){
+								//System.out.println("recevied video frame");
 								long senderID = dis.readLong();
 								long timestamp = dis.readLong();
 								BufferedImage image = ImageIO.read(dis);
@@ -300,6 +304,8 @@ public class Client implements ClockSubscriber {
 					dos.write(WJConstants.VIDEO_FRAME);
 					dos.writeLong(selfDescriptor.clientID);
 					dos.writeLong(timestamp);
+					
+						
 					ImageIO.write(image, "bmp", dos);
 				} catch (SocketException e) {
 					System.out.println("closing connection");
@@ -488,10 +494,15 @@ public class Client implements ClockSubscriber {
 		webcamThread.addSubscriber((image,timestamp)->{
 			sendVideoFrame(image,timestamp);
 		});
+		webcamThread.start();
 	}
 	private void sendVideoFrame(BufferedImage image, long timestamp){
+
+		//System.out.println("subs send frame");
 		for (Connection con : connections.values()){
+			//System.out.println("con send frame");
 			con.sendVideoFrame(image,timestamp);
 		}
+		//gui.videoFrameReceived(0, timestamp, image);
 	}
 }

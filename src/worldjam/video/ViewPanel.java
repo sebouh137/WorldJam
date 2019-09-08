@@ -9,16 +9,15 @@ import java.util.LinkedList;
 
 import javax.swing.JComponent;
 
-public class ViewPanel extends JComponent implements VideoSubscriber{
+import worldjam.time.ClockSetting;
+import worldjam.time.ClockSubscriber;
+import worldjam.time.DelayChangeListener;
+import worldjam.time.DelaySetting;
+
+public class ViewPanel extends JComponent implements VideoSubscriber, DelayChangeListener, ClockSubscriber{
 	private DataInputStream inputStream;
 	int delayMS = 2000;
-	/**
-	 * sets the delay
-	 * @param delay in ms
-	 */
-	public void setDelay(int delay){
-		this.delayMS = delay;
-	}
+
 	private class ImageAndTimestamp{
 		public ImageAndTimestamp(BufferedImage bufferedImage, long timestamp) {
 			super();
@@ -30,13 +29,16 @@ public class ViewPanel extends JComponent implements VideoSubscriber{
 	}
 	private LinkedList<ImageAndTimestamp> images = new LinkedList();
 
-	public ViewPanel(){
-
+	public ViewPanel(ClockSetting clockSetting){
+		this.clockSetting = clockSetting;
+		this.changeDelaySetting(DelaySetting.defaultDelaySetting);
 		refreshThread.start();
+		
 	}
 	
 	
 	public void imageReceived(BufferedImage image, long timestamp){
+		//System.out.println("image received: " + (image != null) + ". timestamp: " + timestamp + ".  delay=" + delayMS);
 		ImageAndTimestamp entry = new ImageAndTimestamp(image,timestamp);
 		//System.out.println("received image");
 		if(image != null){
@@ -97,5 +99,21 @@ public class ViewPanel extends JComponent implements VideoSubscriber{
 			g.drawString("Visuals not available", getWidth()/4, getHeight()/2);
 			//System.out.println("buffered image to be painted is null");
 		}
+	}
+
+
+	ClockSetting clockSetting;
+	DelaySetting delaySetting;
+	@Override
+	public void changeClockSettingsNow(ClockSetting clockSetting) {
+		this.clockSetting = clockSetting;
+		this.delayMS = delaySetting.totalDelayVisual(clockSetting);
+	}
+
+
+	@Override
+	public void changeDelaySetting(DelaySetting newDelaySetting) {
+		this.delaySetting = newDelaySetting;
+		this.delayMS = delaySetting.totalDelayVisual(clockSetting);
 	}
 }

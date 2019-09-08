@@ -111,11 +111,11 @@ public class Client implements ClockSubscriber {
 		if(gui != null)
 			gui.channelsChanged();
 	}
-	
+
 	public void sendChatMessage(String message){
-		
+
 	}
-	
+
 	public void chatMessageReceived(String sender, String message){
 		if(gui != null){
 			//gui.getChat().
@@ -213,7 +213,7 @@ public class Client implements ClockSubscriber {
 			new ReceiverThread().start();
 			//new ImAliveThread().start();
 		}
-		
+
 		boolean alive = true;
 		boolean isToServer;
 		private DataOutputStream dos;
@@ -304,8 +304,8 @@ public class Client implements ClockSubscriber {
 					dos.write(WJConstants.VIDEO_FRAME);
 					dos.writeLong(selfDescriptor.clientID);
 					dos.writeLong(timestamp);
-					
-						
+
+
 					ImageIO.write(image, "bmp", dos);
 				} catch (SocketException e) {
 					System.out.println("closing connection");
@@ -315,13 +315,13 @@ public class Client implements ClockSubscriber {
 				}
 			}
 		}
-		
+
 		public void close() throws IOException {
 			socket.close();
 			this.alive = false;
 		}
 		ClientDescriptor peer;
-		
+
 	}
 	//list of objects that react to new audio samples received
 	ArrayList<AudioSubscriber> reactors = new ArrayList();
@@ -405,6 +405,21 @@ public class Client implements ClockSubscriber {
 		}
 	}
 
+	public void broadcastClockChange(){
+		for(Connection con : connections.values()){
+			DataOutputStream dos = con.dos;
+			synchronized(dos){
+				try {
+					dos.writeByte(WJConstants.TIME_CHANGED);
+					beatClock.writeToStream(dos);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
 	public class ListenForConnectionsRequestThread extends Thread {
 		int port;
 		ListenForConnectionsRequestThread(int port){
@@ -417,7 +432,7 @@ public class Client implements ClockSubscriber {
 				while(!closed){
 					Socket socket = serverSocket.accept();
 					System.out.println("socket accepted");
-					
+
 					DataInputStream dis = new DataInputStream(socket.getInputStream());
 					DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
 					if(dis.readByte() == WJConstants.COMMAND_JOIN){
@@ -466,7 +481,7 @@ public class Client implements ClockSubscriber {
 	}
 	public ClientGUI getGUI() {
 		return gui;
-		
+
 	}
 	public void exit() throws IOException {
 		System.out.println("pre: "+  Thread.activeCount() + " active thread");

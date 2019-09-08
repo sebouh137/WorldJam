@@ -18,50 +18,88 @@ import javax.swing.JPanel;
 import javax.swing.OverlayLayout;
 
 import worldjam.gui.conductor.BezierConductor;
+import worldjam.time.ClockSetting;
+import worldjam.time.ClockSubscriber;
 import worldjam.util.DefaultObjects;
 
 import worldjam.video.ViewPanel;
 import worldjam.video.WebcamThread;
 
-public class ConductorAndWebcamViewer extends JPanel{
+public class ConductorAndWebcamViewer extends JPanel implements ClockSubscriber {
 	BezierConductor conductor;
 	JPanel viewerGrid = new JPanel(); 
 	private Map<Long, ViewPanel> viewers = new HashMap<Long, ViewPanel>();
+	private int nRows;
+	private int nColumns;
 	//= new BezierConductor();
-	public ConductorAndWebcamViewer(BezierConductor conductor, ViewPanel viewer){
+	public ConductorAndWebcamViewer(BezierConductor conductor){
 		conductor.setOpaque(false);
 		conductor.setStroke(new BasicStroke(8));
 		//conductor.setBattonColor(new Color(1.f, 1.f, 1.f, .5f));
 		conductor.setBattonColor(new Color(1.f, 0.f, 0.f, .7f));
+		this.clock = conductor.getClock();
+		
 		
 		this.conductor = conductor;
 		this.setLayout(new OverlayLayout(this));
 		this.add(conductor);
 		this.add(viewerGrid);
-		if(viewer != null) {
-			//viewer.setPreferredSize(new Dimension(500,500));
-			viewers.put(0L, viewer);
-			viewerGrid.setLayout(new GridLayout(3,3));
+		viewerGrid.setBackground(Color.BLACK);
+		viewerGrid.setLayout(new GridLayout(1,1));
+		nRows = 1;
+		nColumns = 1;
+		
+	}
+	
+	public void imageReceived(long senderID, BufferedImage image, long timestamp) {
+		
+		ViewPanel viewer = this.viewers.get(senderID);
+		if(viewer == null){
+			viewer = new ViewPanel(clock);
+			addViewer(viewer,senderID);
+			
+		}
+		viewer.imageReceived(image, timestamp);
+	}
+	private void addViewer(ViewPanel viewer, long id){
+		//this.add(viewer, BorderLayout.CENTER);
+		//viewers.put(id,viewer);
+		//if(1==1)
+		//	return;
+		//this.add(viewer);
+		//this.add(viewer);
+		System.out.println("adding new view panel " + "id = " + id);
+		viewers.put(id, viewer);
+		//this.add(viewer);
+		//if(true) return;
+		if(viewers.size() > nRows*nColumns){
+			int nChannels = viewers.size();
+			nRows = (int)Math.ceil(Math.sqrt((double)nChannels));
+			nColumns = (int)Math.ceil(nChannels/(double)nRows);
+			viewerGrid.removeAll();
+			viewerGrid.setLayout(new GridLayout(nRows,nColumns));
+			int i = 0;
+			for(ViewPanel panel : viewers.values()){
+				viewerGrid.add(panel);
+			}
+		}
+		else {
 			viewerGrid.add(viewer);
 		}
-		//conductor.setBounds(this.getBounds());
-		//viewer.setBounds(this.getBounds());
+
+		viewerGrid.revalidate();
 	}
-	public void imageReceived(long senderID, BufferedImage image, long timestamp) {
-		ViewPanel viewer = this.viewers.get(senderID);
-		if(viewer != null)
-			viewer.imageReceived(image, timestamp);
-	}
-	public void updateChannels(HashMap<Long, Integer> activeIdsAndDelays) {
+	/*public void updateChannels(HashMap<Long, Integer> activeIdsAndDelays) {
 		boolean viewerListChanged = false;
 		//add any new channels
 		for(Long id : activeIdsAndDelays.keySet()){
 			if(!viewers.containsKey(id)){
-				viewers.put(id, new ViewPanel());
+				viewers.put(id, new ViewPanel(clock));
 				viewers.get(id).setDelay(activeIdsAndDelays.get(id));
 				viewerListChanged=true;
 			}
 		}
+		System.out.println("there are " + viewers.size() + " viewers");
 		//remove any inactive channels
 		ArrayList<Long> viewersToRemove = new ArrayList();
 		for(long id : viewers.keySet()){
@@ -80,7 +118,7 @@ public class ConductorAndWebcamViewer extends JPanel{
 			int nRows = (int)Math.ceil(Math.sqrt((double)nChannels));
 			int nCols = (int)Math.ceil(nChannels/(double)nRows);
 			System.out.println(nRows + " " + nCols);
-			viewerGrid.setLayout(new GridLayout(2,2));
+			viewerGrid.setLayout(new GridLayout(nRows,nCols));
 			int i = 0;
 			for(ViewPanel panel : viewers.values()){
 				viewerGrid.add(panel, i);
@@ -88,6 +126,15 @@ public class ConductorAndWebcamViewer extends JPanel{
 			}
 		}
 		System.out.println(viewers.size());
+	}*/
+
+	ClockSetting clock;
+	@Override
+	public void changeClockSettingsNow(ClockSetting clock) {
+		this.clock = clock;
+		for(ViewPanel vp : viewers.values()){
+			vp.changeClockSettingsNow(clock);
+		}
 	}
 
 }

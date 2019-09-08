@@ -6,11 +6,14 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.Mixer;
 import javax.swing.JFrame;
 
+import com.github.sarxos.webcam.Webcam;
+
 import worldjam.audio.InputThread;
 import worldjam.audio.PlaybackManager;
 import worldjam.exe.Client;
 import worldjam.time.ClockSetting;
 import worldjam.util.DefaultObjects;
+import worldjam.video.WebcamThread;
 
 public class TwoClientTest {
 	public static void main(String arg[]){
@@ -67,7 +70,10 @@ public class TwoClientTest {
 						PlaybackManager playback = new PlaybackManager(outputMixer, defaultClock, DefaultObjects.defaultFormat);
 						Client client;
 
-						client = new Client(localPort, displayName, input, playback, defaultClock,null);
+						Webcam webcam = Webcam.getDefault();
+						//webcam.setViewSize(WebcamResolution.VGA.getSize());
+						webcam.open(true);
+						client = new Client(localPort, displayName, input, playback, defaultClock,new WebcamThread(webcam));
 						String serverIP = "127.0.0.1";
 						int peerPort = 2901;
 						client.joinSessionP2P(serverIP, peerPort);

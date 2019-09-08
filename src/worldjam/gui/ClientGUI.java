@@ -10,6 +10,7 @@ import worldjam.exe.Client;
 import worldjam.gui.conductor.BezierConductor;
 import worldjam.time.ClockSetting;
 import worldjam.time.ClockSubscriber;
+import worldjam.time.MutableClock;
 import worldjam.video.ViewPanel;
 import worldjam.audio.*;
 
@@ -100,6 +101,14 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		JMenuItem mntmTempo = new JMenuItem("Tempo ...");
 		mnOtherSettings.add(mntmTempo);
 		
+		mntmTempo.addActionListener(e -> {
+			MutableClock clockManager = new MutableClock(this.client.getBeatClock());
+			ClockSubscriber globalChange = setting->{
+				this.client.changeClockSettingsNow(setting);
+				this.client.broadcastClockChange();
+			};
+			new BPMWindow(clockManager,globalChange).setVisible(true);
+		});
 		/*JButton btnClose = new JButton("Close");
 		btnClose.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -127,8 +136,9 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		
 		
 		this.conductor = new BezierConductor(client.getBeatClock());
-		ViewPanel webcamViewer = new ViewPanel();
-		viewManager = new ConductorAndWebcamViewer(conductor, webcamViewer);
+		//ViewPanel webcamViewer = new ViewPanel();
+		//viewManager = new ConductorAndWebcamViewer(conductor, webcamViewer);
+		viewManager = new ConductorAndWebcamViewer(conductor);
 		
 		getContentPane().add(viewManager, BorderLayout.CENTER);
 		
@@ -279,16 +289,12 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 			clientList.validate();
 			clientList.repaint();
 		}
-		
-		HashMap<Long,Integer> idsAndDelays = new HashMap();
-		for(long id : client.getPlaybackManager().getIDs()){
-			idsAndDelays.put(id, client.getPlaybackManager().getChannel(id).getTotalDelayInMS());
-		}
-		viewManager.updateChannels(idsAndDelays);
 	}
 	public void changeClockSettingsNow(ClockSetting clock){
 		if(this.conductor != null)
 			this.conductor.changeClockSettingsNow(clock);
+		if(this.viewManager != null)
+			this.viewManager.changeClockSettingsNow(clock);
 		if(lblTimeSig != null)
 			lblTimeSig.setText(String.format("%d/%d", clock.beatsPerMeasure, clock.beatDenominator));
 		if(lblBPM != null)

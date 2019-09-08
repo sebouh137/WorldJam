@@ -10,6 +10,7 @@ public class MutableClock {
 		for(ClockSubscriber subscriber : subscribers){
 			subscriber.changeClockSettingsNow(settings);
 		}
+		this.settings = settings;
 	}
 	public void addChangeSubscriber(ClockSubscriber subs){
 		this.subscribers.add(subs);

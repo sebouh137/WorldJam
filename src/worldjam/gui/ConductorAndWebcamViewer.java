@@ -136,5 +136,6 @@ public class ConductorAndWebcamViewer extends JPanel implements ClockSubscriber 
 			vp.changeClockSettingsNow(clock);
 		}
 	}
+	
 
 }

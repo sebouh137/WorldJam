@@ -1,10 +1,19 @@
 package worldjam.time;
 
 public class DelaySetting {
-	public int measures = 1;
-	public int additionalDelayMS_global;
-	public int additionalDelayMS_visual;
-	public int additionalDelayMS_audio;
+	private int measures = 1;
+	public int getAdditionalDelayGlobal() {
+		return additionalDelayMS_global;
+	}
+	public int getAdditionalDelayVisual() {
+		return additionalDelayMS_visual;
+	}
+	public int getAdditionalDelayAudio() {
+		return additionalDelayMS_audio;
+	}
+	private int additionalDelayMS_global;
+	private int additionalDelayMS_visual;
+	private int additionalDelayMS_audio;
 	public int totalDelayGlobal(ClockSetting clockSetting){
 		return additionalDelayMS_global + measures*clockSetting.getMsPerMeasure();		
 	}
@@ -35,5 +44,16 @@ public class DelaySetting {
 		additionalDelayMS_audio = audio;
 		additionalDelayMS_visual = visual;
 	}
-	public static DelaySetting defaultDelaySetting = new DelaySetting(1); 
+	public static DelaySetting defaultDelaySetting = new DelaySetting(1);
+	public int getMeasuresDelay() {
+		// TODO Auto-generated method stub
+		return measures;
+	} 
+	
+	public String toString(){
+		return "delay setting:\n Measures: "+measures 
+				+"\nAdditionalDelay (general): " + additionalDelayMS_global
+				+"\nAdditionalDelay for audio: " + additionalDelayMS_audio
+				+"\nAdditionalDelay for video: " + additionalDelayMS_visual;
+	}
 }

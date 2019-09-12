@@ -101,6 +101,8 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		JMenuItem mntmTempo = new JMenuItem("Tempo ...");
 		mnOtherSettings.add(mntmTempo);
 		
+		
+		
 		mntmTempo.addActionListener(e -> {
 			MutableClock clockManager = new MutableClock(this.client.getBeatClock());
 			ClockSubscriber globalChange = setting->{
@@ -108,6 +110,13 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 				this.client.broadcastClockChange();
 			};
 			new BPMWindow(clockManager,globalChange).setVisible(true);
+		});
+		
+		JMenuItem mntmDelays = new JMenuItem("Delays ...");
+		mnOtherSettings.add(mntmDelays);
+		
+		mntmDelays.addActionListener(e->{
+			new DelaySettingsDialog(this.client.getDelayManager()).setVisible(true);;
 		});
 		/*JButton btnClose = new JButton("Close");
 		btnClose.addActionListener(new ActionListener() {
@@ -138,7 +147,7 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		this.conductor = new BezierConductor(client.getBeatClock());
 		//ViewPanel webcamViewer = new ViewPanel();
 		//viewManager = new ConductorAndWebcamViewer(conductor, webcamViewer);
-		viewManager = new ConductorAndWebcamViewer(conductor);
+		viewManager = new ConductorAndWebcamViewer(conductor, this.client.getDelayManager());
 		
 		getContentPane().add(viewManager, BorderLayout.CENTER);
 		

@@ -28,6 +28,7 @@ import worldjam.gui.ClientSetupGUI_P2P_multiPeer;
 import worldjam.net.WJConstants;
 import worldjam.time.ClockSetting;
 import worldjam.time.ClockSubscriber;
+import worldjam.time.DelayManager;
 import worldjam.util.DefaultObjects;
 import worldjam.video.WebcamThread;
 
@@ -101,6 +102,7 @@ public class Client implements ClockSubscriber {
 			e.printStackTrace();
 		}
 		connections.put(peer.clientID, new Connection(socket, dis, dos, peer, isServer));
+		delayManager.addChannel(peer.clientID, peer.displayName);
 		if(gui != null)
 			gui.channelsChanged();
 	}
@@ -519,5 +521,10 @@ public class Client implements ClockSubscriber {
 			con.sendVideoFrame(image,timestamp);
 		}
 		//gui.videoFrameReceived(0, timestamp, image);
+	}
+	
+	private DelayManager delayManager = new DelayManager();
+	public DelayManager getDelayManager(){
+		return delayManager;
 	}
 }

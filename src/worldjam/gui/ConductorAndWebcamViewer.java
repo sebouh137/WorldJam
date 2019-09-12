@@ -20,6 +20,7 @@ import javax.swing.OverlayLayout;
 import worldjam.gui.conductor.BezierConductor;
 import worldjam.time.ClockSetting;
 import worldjam.time.ClockSubscriber;
+import worldjam.time.DelayManager;
 import worldjam.util.DefaultObjects;
 
 import worldjam.video.ViewPanel;
@@ -31,8 +32,9 @@ public class ConductorAndWebcamViewer extends JPanel implements ClockSubscriber 
 	private Map<Long, ViewPanel> viewers = new HashMap<Long, ViewPanel>();
 	private int nRows;
 	private int nColumns;
+	private DelayManager delayManager;
 	//= new BezierConductor();
-	public ConductorAndWebcamViewer(BezierConductor conductor){
+	public ConductorAndWebcamViewer(BezierConductor conductor, DelayManager dm){
 		conductor.setOpaque(false);
 		conductor.setStroke(new BasicStroke(8));
 		//conductor.setBattonColor(new Color(1.f, 1.f, 1.f, .5f));
@@ -48,7 +50,7 @@ public class ConductorAndWebcamViewer extends JPanel implements ClockSubscriber 
 		viewerGrid.setLayout(new GridLayout(1,1));
 		nRows = 1;
 		nColumns = 1;
-		
+		this.delayManager = dm;
 	}
 	
 	public void imageReceived(long senderID, BufferedImage image, long timestamp) {
@@ -56,6 +58,12 @@ public class ConductorAndWebcamViewer extends JPanel implements ClockSubscriber 
 		ViewPanel viewer = this.viewers.get(senderID);
 		if(viewer == null){
 			viewer = new ViewPanel(clock);
+			if(delayManager != null){ 
+				//the delay manager is only null during certain tests.  
+				//otherwise connect the delay manager to the viewer.  
+				DelayManager.DelayedChannel dc = delayManager.getChannel(senderID);
+				dc.addListener(viewer);
+			}
 			addViewer(viewer,senderID);
 			
 		}

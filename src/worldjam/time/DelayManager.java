@@ -18,6 +18,7 @@ public class DelayManager {
 			for(DelayChangeListener listener : listeners){
 				listener.changeDelaySetting(newDelaySetting);
 			}
+			this.delay = newDelaySetting;
 		}
 		List<DelayChangeListener> listeners = new ArrayList();
 		public void addListener(DelayChangeListener listener){

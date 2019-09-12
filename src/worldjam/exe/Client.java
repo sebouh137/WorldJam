@@ -95,14 +95,16 @@ public class Client implements ClockSubscriber {
 
 	Map<Long,Connection> connections = new HashMap<Long,Connection>();
 	void addConnection(ClientDescriptor peer, Socket socket, DataInputStream dis, DataOutputStream dos, boolean isServer){
+		delayManager.addChannel(peer.clientID, peer.displayName);
 		try {
-			if(playback != null)
+			if(playback != null){
 				playback.addChannel(peer.clientID,peer.displayName);
+				delayManager.getChannel(peer.clientID).addListener(playback.getChannel(peer.clientID));
+			}
 		} catch (LineUnavailableException e) {
 			e.printStackTrace();
 		}
 		connections.put(peer.clientID, new Connection(socket, dis, dos, peer, isServer));
-		delayManager.addChannel(peer.clientID, peer.displayName);
 		if(gui != null)
 			gui.channelsChanged();
 	}
@@ -156,6 +158,8 @@ public class Client implements ClockSubscriber {
 		return beatClock;
 	}
 
+	boolean loopbackAudio;
+	
 	public void changeClockSettingsNow(ClockSetting clock){
 		if(clock == null)
 			throw new NullPointerException();
@@ -176,12 +180,14 @@ public class Client implements ClockSubscriber {
 			}
 			input.addSubscriber(sample -> {this.broadcastAudioSample(sample);});
 			input.start();
-			try {
-				playback.addChannel(input.getSenderID(), this.selfDescriptor.displayName);
-			} catch (LineUnavailableException e) {
-				e.printStackTrace();
+			if(loopbackAudio){
+				try {
+					playback.addChannel(input.getSenderID(), this.selfDescriptor.displayName);
+				} catch (LineUnavailableException e) {
+					e.printStackTrace();
+				}
+				input.addSubscriber(playback);
 			}
-			input.addSubscriber(playback);
 		}else{
 			if(input != null) input.changeClockSettingsNow(beatClock);
 		}
@@ -522,7 +528,7 @@ public class Client implements ClockSubscriber {
 		}
 		//gui.videoFrameReceived(0, timestamp, image);
 	}
-	
+
 	private DelayManager delayManager = new DelayManager();
 	public DelayManager getDelayManager(){
 		return delayManager;

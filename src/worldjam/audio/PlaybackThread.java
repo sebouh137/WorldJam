@@ -11,9 +11,11 @@ import javax.sound.sampled.Mixer;
 import javax.sound.sampled.SourceDataLine;
 
 import worldjam.time.ClockSetting;
+import worldjam.time.DelayChangeListener;
+import worldjam.time.DelaySetting;
 import worldjam.util.DigitalAnalogConverter;
 
-public class PlaybackThread extends Thread implements PlaybackChannel{
+public class PlaybackThread extends Thread implements PlaybackChannel, DelayChangeListener{
 	AudioTrackRecorder recorder;
 	private boolean convertToStereo = true;
 	private SourceDataLine sdl;
@@ -283,6 +285,15 @@ public class PlaybackThread extends Thread implements PlaybackChannel{
 			return muteControl.getValue();
 		}
 		return false;
+	}
+	@Override
+	public void changeDelaySetting(DelaySetting newDelaySetting) {
+		//I am just going to use existing methods here.  
+		this.offsetMeasures = newDelaySetting.getMeasuresDelay();
+		this.offsetBeats = 0;
+		this.offset_ms = newDelaySetting.getAdditionalDelayAudio()+newDelaySetting.getAdditionalDelayGlobal();
+		this.setReplayOffset(offsetMeasures, 0, 
+				offset_ms);
 	}
 	
 }

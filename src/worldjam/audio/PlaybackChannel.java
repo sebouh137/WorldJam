@@ -8,8 +8,9 @@ import javax.sound.sampled.Mixer;
 
 import worldjam.time.ClockSetting;
 import worldjam.time.ClockSubscriber;
+import worldjam.time.DelayChangeListener;
 
-public interface PlaybackChannel extends RMS, AudioSubscriber, ClockSubscriber{
+public interface PlaybackChannel extends RMS, AudioSubscriber, ClockSubscriber, DelayChangeListener{
 	public void setReplayOffset(int nMeasures, int nBeats, int n_ms);
 	public void close();
 	public void changeClockSettingsNow(ClockSetting beatClock);

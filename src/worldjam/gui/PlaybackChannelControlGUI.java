@@ -18,6 +18,9 @@ import worldjam.audio.PlaybackChannel;
 import worldjam.filters.NoiseGateFilter;
 import worldjam.filters.pitchshift.PitchShift;
 import worldjam.filters.pitchshift.WfsoPitchShift;
+import worldjam.time.DelayManager;
+import worldjam.time.DelayManager.DelayedChannel;
+import worldjam.time.DelaySetting;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -56,7 +59,7 @@ public class PlaybackChannelControlGUI extends JFrame {
 	LineControls lineControls;
 	private SoundLevelBar slb;
 
-	public PlaybackChannelControlGUI(PlaybackChannel playbackChannel, String title) {
+	public PlaybackChannelControlGUI(PlaybackChannel playbackChannel, String title, DelayManager dm) {
 
 
 		setTitle(title);
@@ -70,7 +73,7 @@ public class PlaybackChannelControlGUI extends JFrame {
 		tabbedPane.addTab("Line", null, lineControls, null);
 		tabbedPane.addTab("Transpose", null, createTransposeControls(playbackChannel), null);
 		tabbedPane.addTab("Noise Gate", null, createNoiseGateControls(playbackChannel), null);
-		tabbedPane.addTab("Delay", null, createDelayControls(playbackChannel), null);
+		tabbedPane.addTab("Delay", null, createDelayControls(playbackChannel,dm), null);
 		tabbedPane.addTab("Info", null, createInfoPanel(playbackChannel), null);
 
 		slb = new SoundLevelBar(playbackChannel, SoundLevelBar.VERTICAL);
@@ -94,22 +97,16 @@ public class PlaybackChannelControlGUI extends JFrame {
 	}
 
 
-	private JPanel createDelayControls(PlaybackChannel channel) {
+	private JPanel createDelayControls(PlaybackChannel channel, DelayManager dm) {
 		JPanel delayPanel = new JPanel();
 		GridBagLayout gbl_delayPanel = new GridBagLayout();
 		gbl_delayPanel.columnWidths = new int[]{64, 65, 61, 0, 0, 0};
-		gbl_delayPanel.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0};
+		gbl_delayPanel.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0};
 		gbl_delayPanel.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
-		gbl_delayPanel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_delayPanel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		delayPanel.setLayout(gbl_delayPanel);
 
-		JLabel label_2 = new JLabel("(");
-		GridBagConstraints gbc_label_2 = new GridBagConstraints();
-		gbc_label_2.anchor = GridBagConstraints.EAST;
-		gbc_label_2.insets = new Insets(0, 0, 5, 5);
-		gbc_label_2.gridx = 0;
-		gbc_label_2.gridy = 0;
-		delayPanel.add(label_2, gbc_label_2);
+		
 
 		JSpinner spinner = new JSpinner();
 		GridBagConstraints gbc_spinner = new GridBagConstraints();
@@ -128,7 +125,7 @@ public class PlaybackChannelControlGUI extends JFrame {
 		gbc_lblMeasures.gridx = 2;
 		gbc_lblMeasures.gridy = 0;
 		delayPanel.add(lblMeasures, gbc_lblMeasures);
-		JLabel lblMsmeasure = new JLabel(String.format(")*( %d ms/measure )", msPerMeasure));
+		JLabel lblMsmeasure = new JLabel(String.format("( %d ms/measure )", msPerMeasure));
 		GridBagConstraints gbc_lblMsmeasure = new GridBagConstraints();
 		gbc_lblMsmeasure.anchor = GridBagConstraints.WEST;
 		gbc_lblMsmeasure.insets = new Insets(0, 0, 5, 5);
@@ -136,77 +133,67 @@ public class PlaybackChannelControlGUI extends JFrame {
 		gbc_lblMsmeasure.gridy = 0;
 		delayPanel.add(lblMsmeasure, gbc_lblMsmeasure);
 
-		JLabel label_1 = new JLabel("+ (");
-		GridBagConstraints gbc_label_1 = new GridBagConstraints();
-		gbc_label_1.anchor = GridBagConstraints.EAST;
-		gbc_label_1.insets = new Insets(0, 0, 5, 5);
-		gbc_label_1.gridx = 0;
-		gbc_label_1.gridy = 1;
-		delayPanel.add(label_1, gbc_label_1);
-
-		JSpinner spinner_1 = new JSpinner();
+		/*JSpinner spinner_1 = new JSpinner();
 		spinner_1.setModel(new SpinnerNumberModel(channel.getAddDelayBeats(), 0, 48, 1));
 		GridBagConstraints gbc_spinner_1 = new GridBagConstraints();
 		gbc_spinner_1.fill = GridBagConstraints.HORIZONTAL;
 		gbc_spinner_1.insets = new Insets(0, 0, 5, 5);
 		gbc_spinner_1.gridx = 1;
 		gbc_spinner_1.gridy = 1;
-		delayPanel.add(spinner_1, gbc_spinner_1);
+		delayPanel.add(spinner_1, gbc_spinner_1);*/
 
-		int msPerBeat = channel.getClock().msPerBeat;
 
-		JLabel lblBeats = new JLabel("beats");
+		/*JLabel lblBeats = new JLabel("beats");
 		lblBeats.setHorizontalAlignment(SwingConstants.LEFT);
 		GridBagConstraints gbc_lblBeats = new GridBagConstraints();
 		gbc_lblBeats.insets = new Insets(0, 0, 5, 5);
 		gbc_lblBeats.gridx = 2;
 		gbc_lblBeats.gridy = 1;
-		delayPanel.add(lblBeats, gbc_lblBeats);
-		JLabel lblMs_5 = new JLabel(String.format(")*( %d ms/beat )", msPerBeat));
-		GridBagConstraints gbc_lblMs_5 = new GridBagConstraints();
-		gbc_lblMs_5.anchor = GridBagConstraints.WEST;
-		gbc_lblMs_5.insets = new Insets(0, 0, 5, 5);
-		gbc_lblMs_5.gridx = 3;
-		gbc_lblMs_5.gridy = 1;
-		delayPanel.add(lblMs_5, gbc_lblMs_5);
-
-		JLabel label = new JLabel("+");
-		GridBagConstraints gbc_label = new GridBagConstraints();
-		gbc_label.anchor = GridBagConstraints.EAST;
-		gbc_label.insets = new Insets(0, 0, 5, 5);
-		gbc_label.gridx = 0;
-		gbc_label.gridy = 2;
-		delayPanel.add(label, gbc_label);
+		delayPanel.add(lblBeats, gbc_lblBeats);*/
+		
+		
+		
 
 		JSpinner spinner_2 = new JSpinner();
 		GridBagConstraints gbc_spinner_2 = new GridBagConstraints();
-		spinner_2.setModel(new SpinnerNumberModel(channel.getAddDelayMS(), -500, 500, 10));
+		spinner_2.setModel(new SpinnerNumberModel(dm.getChannel(channel.getSenderID()).getDelaySetting().getAdditionalDelayAudio(), 
+				-1000, 1000, 10));
 		gbc_spinner_2.insets = new Insets(0, 0, 5, 5);
 		gbc_spinner_2.gridx = 1;
 		gbc_spinner_2.gridy = 2;
 		delayPanel.add(spinner_2, gbc_spinner_2);
+		
+				JLabel lblMs = new JLabel("ms  (audio calibration)");
+				lblMs.setHorizontalAlignment(SwingConstants.CENTER);
+				GridBagConstraints gbc_lblMs = new GridBagConstraints();
+				gbc_lblMs.gridwidth = 2;
+				gbc_lblMs.insets = new Insets(0, 0, 5, 5);
+				gbc_lblMs.gridx = 2;
+				gbc_lblMs.gridy = 2;
+				delayPanel.add(lblMs, gbc_lblMs);
 
-		JLabel lblMs = new JLabel("ms");
-		GridBagConstraints gbc_lblMs = new GridBagConstraints();
-		gbc_lblMs.insets = new Insets(0, 0, 5, 5);
-		gbc_lblMs.gridx = 2;
-		gbc_lblMs.gridy = 2;
-		delayPanel.add(lblMs, gbc_lblMs);
-
-		JSeparator separator = new JSeparator();
-		GridBagConstraints gbc_separator = new GridBagConstraints();
-		gbc_separator.gridwidth = 4;
-		gbc_separator.insets = new Insets(0, 0, 5, 5);
-		gbc_separator.gridx = 0;
-		gbc_separator.gridy = 3;
-		delayPanel.add(separator, gbc_separator);
-
+				
+				JCheckBox chckbxShowAdvancedSettings = new JCheckBox("Show advanced settings");
+				GridBagConstraints gbc_chckbxShowAdvancedSettings = new GridBagConstraints();
+				gbc_chckbxShowAdvancedSettings.gridwidth = 2;
+				gbc_chckbxShowAdvancedSettings.insets = new Insets(0, 0, 5, 5);
+				gbc_chckbxShowAdvancedSettings.gridx = 1;
+				gbc_chckbxShowAdvancedSettings.gridy = 1;
+				delayPanel.add(chckbxShowAdvancedSettings, gbc_chckbxShowAdvancedSettings);
+				
+				chckbxShowAdvancedSettings.addChangeListener(e->{
+					lblMs.setVisible(chckbxShowAdvancedSettings.isSelected());
+					spinner_2.setVisible(chckbxShowAdvancedSettings.isSelected());
+				});
+				
+				spinner_2.setVisible(false);
+				lblMs.setVisible(false);
 		JLabel lblTotal = new JLabel("total:");
 		GridBagConstraints gbc_lblTotal = new GridBagConstraints();
 		gbc_lblTotal.anchor = GridBagConstraints.EAST;
 		gbc_lblTotal.insets = new Insets(0, 0, 5, 5);
 		gbc_lblTotal.gridx = 0;
-		gbc_lblTotal.gridy = 4;
+		gbc_lblTotal.gridy = 3;
 		delayPanel.add(lblTotal, gbc_lblTotal);
 
 		JLabel lblSum = new JLabel(Integer.toString(channel.getTotalDelayInMS()));
@@ -214,7 +201,7 @@ public class PlaybackChannelControlGUI extends JFrame {
 		gbc_lblSum.anchor = GridBagConstraints.EAST;
 		gbc_lblSum.insets = new Insets(0, 0, 5, 5);
 		gbc_lblSum.gridx = 1;
-		gbc_lblSum.gridy = 4;
+		gbc_lblSum.gridy = 3;
 		delayPanel.add(lblSum, gbc_lblSum);
 
 
@@ -223,21 +210,21 @@ public class PlaybackChannelControlGUI extends JFrame {
 			@Override
 			public void stateChanged(ChangeEvent e) {
 				int val = ((int)spinner.getValue()*channel.getClock().beatsPerMeasure
-						+(int)spinner_1.getValue())*channel.getClock().msPerBeat
+						/*+(int)spinner_1.getValue()*/)*channel.getClock().msPerBeat
 						+ (int)spinner_2.getValue();
 				lblSum.setText(Integer.toString(val));
 			}
 
 		};
 		spinner.addChangeListener(recalc);
-		spinner_1.addChangeListener(recalc);
+		/*spinner_1.addChangeListener(recalc);*/
 		spinner_2.addChangeListener(recalc);
 
 		JLabel lblMs_1 = new JLabel("ms");
 		GridBagConstraints gbc_lblMs_1 = new GridBagConstraints();
 		gbc_lblMs_1.insets = new Insets(0, 0, 5, 5);
 		gbc_lblMs_1.gridx = 2;
-		gbc_lblMs_1.gridy = 4;
+		gbc_lblMs_1.gridy = 3;
 		delayPanel.add(lblMs_1, gbc_lblMs_1);
 				
 				JSeparator separator_1 = new JSeparator();
@@ -245,7 +232,7 @@ public class PlaybackChannelControlGUI extends JFrame {
 				gbc_separator_1.gridwidth = 4;
 				gbc_separator_1.insets = new Insets(0, 0, 5, 5);
 				gbc_separator_1.gridx = 0;
-				gbc_separator_1.gridy = 5;
+				gbc_separator_1.gridy = 3;
 				delayPanel.add(separator_1, gbc_separator_1);
 		
 				JButton btnRevert = new JButton("Revert");
@@ -253,47 +240,52 @@ public class PlaybackChannelControlGUI extends JFrame {
 				gbc_btnRevert.gridwidth = 2;
 				gbc_btnRevert.insets = new Insets(0, 0, 0, 5);
 				gbc_btnRevert.gridx = 0;
-				gbc_btnRevert.gridy = 6;
+				gbc_btnRevert.gridy = 5;
 				delayPanel.add(btnRevert, gbc_btnRevert);
 				btnRevert.setEnabled(false);
 				
+						JButton btnApply = new JButton("Apply");
+						GridBagConstraints gbc_btnApply = new GridBagConstraints();
+						gbc_btnApply.gridwidth = 2;
+						gbc_btnApply.insets = new Insets(0, 0, 0, 5);
+						gbc_btnApply.gridx = 2;
+						gbc_btnApply.gridy = 5;
+						delayPanel.add(btnApply, gbc_btnApply);
+						
+								btnApply.setEnabled(false);
+								
+										btnApply.addActionListener(
+												e-> {
+													/*channel.setReplayOffset((Integer)spinner.getModel().getValue(),
+															0(Integer)spinner_1.getModel().getValue(), 
+															(Integer)spinner_2.getModel().getValue());*/
+													DelayedChannel dc = dm.getChannel(channel.getSenderID());
+													dc.setDelay(new DelaySetting((Integer)spinner.getModel().getValue(), 
+															dc.getDelaySetting().getAdditionalDelayGlobal(),
+															(Integer)spinner_2.getModel().getValue(),
+															dc.getDelaySetting().getAdditionalDelayVisual()));		
+													btnApply.setEnabled(false);
+													btnRevert.setEnabled(false);
+												}
+												);
+				
 						btnRevert.addActionListener(
 								e -> {
-									spinner.setValue(channel.getAddDelayMeasures());
-									spinner_1.setValue(channel.getAddDelayBeats());
-									spinner_2.setValue(channel.getAddDelayMS());
+									spinner.setValue(dm.getChannel(channel.getSenderID()).getDelaySetting().getMeasuresDelay());
+									//spinner_1.setValue(channel.getAddDelayBeats());
+									spinner_2.setValue(dm.getChannel(channel.getSenderID()).getDelaySetting().getAdditionalDelayAudio());
 								});
-
-		JButton btnApply = new JButton("Apply");
-		GridBagConstraints gbc_btnApply = new GridBagConstraints();
-		gbc_btnApply.gridwidth = 2;
-		gbc_btnApply.insets = new Insets(0, 0, 0, 5);
-		gbc_btnApply.gridx = 2;
-		gbc_btnApply.gridy = 6;
-		delayPanel.add(btnApply, gbc_btnApply);
-
-		btnApply.setEnabled(false);
-
-		btnApply.addActionListener(
-				e-> {
-					channel.setReplayOffset((Integer)spinner.getModel().getValue(),
-							(Integer)spinner_1.getModel().getValue(), 
-							(Integer)spinner_2.getModel().getValue());
-					btnApply.setEnabled(false);
-					btnRevert.setEnabled(false);
-				}
-				);
 
 		ChangeListener changeListener = e-> {
 			boolean isSame = 
-					(channel.getAddDelayMeasures() == (int)spinner.getValue())
-					&& (channel.getAddDelayBeats() == (int)spinner_1.getValue())
-					&&  (channel.getAddDelayMS() == (int)spinner_2.getValue());
+					(dm.getChannel(channel.getSenderID()).getDelaySetting().getMeasuresDelay() == (int)spinner.getValue())
+					/*&& (channel.getAddDelayBeats() == (int)spinner_1.getValue())*/
+					&&  (dm.getChannel(channel.getSenderID()).getDelaySetting().getAdditionalDelayAudio() == (int)spinner_2.getValue());
 			btnApply.setEnabled(!isSame);
 			btnRevert.setEnabled(!isSame);
 		};
 		spinner.addChangeListener(changeListener);
-		spinner_1.addChangeListener(changeListener);
+		/*spinner_1.addChangeListener(changeListener);*/
 		spinner_2.addChangeListener(changeListener);
 
 

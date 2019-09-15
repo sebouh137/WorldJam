@@ -263,7 +263,8 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					new PlaybackChannelControlGUI(client.getPlaybackManager().getChannel(id), "Settings for channel: " + channelName);
+					new PlaybackChannelControlGUI(client.getPlaybackManager().getChannel(id), "Settings for channel: " + channelName,
+							client.getDelayManager());
 				}
 				
 			});

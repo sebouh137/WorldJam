@@ -516,6 +516,7 @@ public class Client implements ClockSubscriber {
 	public void attachWebcam(WebcamThread webcamThread){
 		webcamThread.addSubscriber((image,timestamp)->{
 			sendVideoFrame(image,timestamp);
+			gui.videoFrameReceived(0L, timestamp, image);
 		});
 		webcamThread.start();
 	}

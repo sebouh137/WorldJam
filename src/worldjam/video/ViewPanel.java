@@ -26,6 +26,7 @@ public class ViewPanel extends JComponent implements VideoSubscriber, DelayChang
 		}
 		BufferedImage bufferedImage;
 		long timestamp;
+	
 	}
 	private LinkedList<ImageAndTimestamp> images = new LinkedList();
 
@@ -33,7 +34,6 @@ public class ViewPanel extends JComponent implements VideoSubscriber, DelayChang
 		this.clockSetting = clockSetting;
 		this.changeDelaySetting(DelaySetting.defaultDelaySetting);
 		refreshThread.start();
-		
 	}
 	
 	
@@ -51,10 +51,11 @@ public class ViewPanel extends JComponent implements VideoSubscriber, DelayChang
 	
 
 	private BufferedImage currentImage = null;
+	private boolean closed = false;
 	
 	private Thread refreshThread = new Thread(()->{
 		BufferedImage prevImage = null;
-		while(true){
+		while(!closed ){
 			while(images.size()==0){
 				try {
 					Thread.sleep(10);
@@ -73,7 +74,7 @@ public class ViewPanel extends JComponent implements VideoSubscriber, DelayChang
 				}
 				currentImage = entry.bufferedImage;
 				
-				repaint();
+				this.getTopLevelAncestor().repaint();
 				if(prevImage != null)
 					prevImage.flush();
 
@@ -115,5 +116,10 @@ public class ViewPanel extends JComponent implements VideoSubscriber, DelayChang
 	public void changeDelaySetting(DelaySetting newDelaySetting) {
 		this.delaySetting = newDelaySetting;
 		this.delayMS = delaySetting.totalDelayVisual(clockSetting);
+	}
+
+
+	public void close() {
+		this.closed = true;
 	}
 }

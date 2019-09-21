@@ -71,7 +71,7 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		this.client = client;
 		this.changeClockSettingsNow(client.getBeatClock());
 		
-		this.setSize(559, 400);
+		this.setSize(964, 646);
 		
 		/*try {
 			Image image = ImageIO.read(new File("img/icons/wj_logo.png"));

@@ -69,7 +69,7 @@ public class BezierConductor extends VisualMetronome implements ClockSubscriber{
 	
 	
 	
-	
+	@Override
 	public void paint(Graphics2D g2, long time){
 		
 		

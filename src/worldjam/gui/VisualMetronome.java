@@ -83,7 +83,8 @@ public abstract class VisualMetronome extends JComponent {
 	public ClockSetting getClock() {
 		return clock;
 	}
-	public void paint(Graphics g){
+	@Override
+	public void paintComponent(Graphics g){
 		paint((Graphics2D)g.create(), System.currentTimeMillis());
 	}
 

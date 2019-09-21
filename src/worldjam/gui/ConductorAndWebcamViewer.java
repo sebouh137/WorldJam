@@ -3,8 +3,13 @@ package worldjam.gui;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Graphics;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -13,6 +18,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.OverlayLayout;
@@ -27,12 +33,22 @@ import worldjam.video.ViewPanel;
 import worldjam.video.WebcamThread;
 
 public class ConductorAndWebcamViewer extends JPanel implements ClockSubscriber {
+	
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -2249827020866967439L;
 	BezierConductor conductor;
 	JPanel viewerGrid = new JPanel(); 
 	private Map<Long, ViewPanel> viewers = new HashMap<Long, ViewPanel>();
+	ViewPanel selfieViewer;
 	private int nRows;
 	private int nColumns;
 	private DelayManager delayManager;
+	static {
+		System.setProperty("sun.awt.noerasebackground", "true");
+	}
 	//= new BezierConductor();
 	public ConductorAndWebcamViewer(BezierConductor conductor, DelayManager dm){
 		conductor.setOpaque(false);
@@ -45,18 +61,39 @@ public class ConductorAndWebcamViewer extends JPanel implements ClockSubscriber 
 		this.conductor = conductor;
 		this.setLayout(new OverlayLayout(this));
 		this.add(conductor);
+		selfieViewer = new ViewPanel(clock);
+		selfieViewer.setVisible(false);
+		selfieViewer.setMaximumSize(new Dimension(200,150));
+		selfieViewer.setPreferredSize(new Dimension(200,150));
+		selfieViewer.setLocation(0,0);
+		//selfieViewer.setDebugMessage("selfieViewer")
+		selfieViewer.setBounds(0, 0, 200,150);
+		JPanel invisible = new JPanel();
+		invisible.setOpaque(false);
+		invisible.setLayout(new BorderLayout());
+		JPanel invisible2 = new JPanel();
+		invisible.add(invisible2, BorderLayout.NORTH);
+		invisible2.setOpaque(false);
+		invisible2.setLayout(new BorderLayout());
+		invisible2.add(selfieViewer,BorderLayout.WEST);
+		this.add(invisible);
 		this.add(viewerGrid);
 		viewerGrid.setBackground(Color.BLACK);
 		viewerGrid.setLayout(new GridLayout(1,1));
 		nRows = 1;
 		nColumns = 1;
 		this.delayManager = dm;
+		this.setDoubleBuffered(true);
 	}
 	
 	public void imageReceived(long senderID, BufferedImage image, long timestamp) {
 		
 		ViewPanel viewer = this.viewers.get(senderID);
-		if(viewer == null){
+		if(senderID == 0){
+			selfieViewer.setVisible(true);
+			viewer = selfieViewer;
+		}
+		else if(viewer == null){
 			viewer = new ViewPanel(clock);
 			if(delayManager != null){ 
 				//the delay manager is only null during certain tests.  
@@ -64,11 +101,15 @@ public class ConductorAndWebcamViewer extends JPanel implements ClockSubscriber 
 				DelayManager.DelayedChannel dc = delayManager.getChannel(senderID);
 				dc.addListener(viewer);
 			}
+			
 			addViewer(viewer,senderID);
 			
 		}
 		viewer.imageReceived(image, timestamp);
 	}
+	
+	
+
 	private void addViewer(ViewPanel viewer, long id){
 		//this.add(viewer, BorderLayout.CENTER);
 		//viewers.put(id,viewer);
@@ -142,6 +183,9 @@ public class ConductorAndWebcamViewer extends JPanel implements ClockSubscriber 
 		this.clock = clock;
 		for(ViewPanel vp : viewers.values()){
 			vp.changeClockSettingsNow(clock);
+		}
+		if(selfieViewer != null){
+			selfieViewer.changeClockSettingsNow(clock);
 		}
 	}
 	

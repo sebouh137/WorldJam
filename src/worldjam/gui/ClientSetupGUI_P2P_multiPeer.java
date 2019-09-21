@@ -7,6 +7,7 @@ import java.awt.GridBagLayout;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -54,6 +55,7 @@ public class ClientSetupGUI_P2P_multiPeer extends JFrame{
 	 * 
 	 */
 	private static final long serialVersionUID = 2630697418874820157L;
+	private static final String NO_WEBCAM = "[none]";
 	private JTextField txtUser;
 	private JTextField txtBPM;
 	private JSpinner spinner_msPerBeat;
@@ -79,6 +81,8 @@ public class ClientSetupGUI_P2P_multiPeer extends JFrame{
 	private JLabel lblVideoInput;
 	private JCheckBox chckbxUsedDefault;
 	private JComboBox comboBoxWebcams;
+	private JLabel lblVideoResolution;
+	private JComboBox comboBoxResolutions;
 
 
 	public ClientSetupGUI_P2P_multiPeer() {
@@ -354,9 +358,9 @@ public class ClientSetupGUI_P2P_multiPeer extends JFrame{
 		tabs.addTab("Audio/Video IO", tabAudioIO);
 		GridBagLayout gbl_tabAudioIO = new GridBagLayout();
 		gbl_tabAudioIO.columnWidths = new int[]{122, 44, 0};
-		gbl_tabAudioIO.rowHeights = new int[]{27, 0, 0, 0, 0};
+		gbl_tabAudioIO.rowHeights = new int[]{27, 0, 0, 0, 0, 0};
 		gbl_tabAudioIO.columnWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
-		gbl_tabAudioIO.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_tabAudioIO.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		tabAudioIO.setLayout(gbl_tabAudioIO);
 
 		lblInput = new JLabel("Audio Input");
@@ -398,14 +402,14 @@ public class ClientSetupGUI_P2P_multiPeer extends JFrame{
 		lblVideoInput = new JLabel("Video Input");
 		GridBagConstraints gbc_lblVideoInput = new GridBagConstraints();
 		gbc_lblVideoInput.anchor = GridBagConstraints.EAST;
-		gbc_lblVideoInput.insets = new Insets(0, 0, 0, 5);
+		gbc_lblVideoInput.insets = new Insets(0, 0, 5, 5);
 		gbc_lblVideoInput.gridx = 0;
 		gbc_lblVideoInput.gridy = 3;
 		tabAudioIO.add(lblVideoInput, gbc_lblVideoInput);
 		
 		List<Webcam> webcams = Webcam.getWebcams();
 		List<String> webcamNames = new ArrayList();
-		webcamNames.add("[none]");
+		webcamNames.add(NO_WEBCAM);
 		for(Webcam webcam : webcams){
 			webcamNames.add(webcam.getName());
 		}
@@ -413,12 +417,47 @@ public class ClientSetupGUI_P2P_multiPeer extends JFrame{
 		comboBoxWebcams = new JComboBox();
 		comboBoxWebcams.setModel(new DefaultComboBoxModel(webcamNames.toArray()));
 		GridBagConstraints gbc_comboBox_2 = new GridBagConstraints();
+		gbc_comboBox_2.insets = new Insets(0, 0, 5, 0);
 		gbc_comboBox_2.fill = GridBagConstraints.HORIZONTAL;
 		gbc_comboBox_2.gridx = 1;
 		gbc_comboBox_2.gridy = 3;
 		tabAudioIO.add(comboBoxWebcams, gbc_comboBox_2);
 		
+		lblVideoResolution = new JLabel("Video Resolution");
+		GridBagConstraints gbc_lblVideoResolution = new GridBagConstraints();
+		gbc_lblVideoResolution.anchor = GridBagConstraints.EAST;
+		gbc_lblVideoResolution.insets = new Insets(0, 0, 0, 5);
+		gbc_lblVideoResolution.gridx = 0;
+		gbc_lblVideoResolution.gridy = 4;
+		tabAudioIO.add(lblVideoResolution, gbc_lblVideoResolution);
 		
+		comboBoxResolutions = new JComboBox();
+		gbc_comboBox_2 = new GridBagConstraints();
+		gbc_comboBox_2.fill = GridBagConstraints.HORIZONTAL;
+		gbc_comboBox_2.gridx = 1;
+		gbc_comboBox_2.gridy = 4;
+		tabAudioIO.add(comboBoxResolutions, gbc_comboBox_2);
+		
+		comboBoxWebcams.addActionListener(e->{
+			if(comboBoxWebcams.getSelectedItem() == NO_WEBCAM){
+				comboBoxResolutions.setEnabled(false);
+				lblVideoResolution.setEnabled(false);
+			}
+			else{
+				lblVideoResolution.setEnabled(true);
+				comboBoxResolutions.setEnabled(true);
+				Vector<String> strings = new Vector();
+
+				Webcam cam = Webcam.getWebcamByName((String)comboBoxWebcams.getSelectedItem());
+				for(Dimension dim : cam.getViewSizes()){
+					strings.add(dim.width + "x" + dim.height);
+				}
+				comboBoxResolutions.setModel(new DefaultComboBoxModel<String>(strings));
+				comboBoxResolutions.setSelectedItem(cam.getViewSize().width + "x" + cam.getViewSize().height);
+
+				System.out.println(strings);
+			}
+		});
 		
 		
 		
@@ -485,7 +524,14 @@ public class ClientSetupGUI_P2P_multiPeer extends JFrame{
 				gui.dispose();
 				Client client;
 				try {
-					Webcam webcam = Webcam.getDefault();//Webcam.getWebcamByName((String)gui.comboBoxWebcams.getSelectedItem());
+					Webcam webcam = null;
+					if (!gui.comboBoxWebcams.getSelectedItem().equals(NO_WEBCAM)){
+						webcam = Webcam.getWebcamByName((String)gui.comboBoxWebcams.getSelectedItem());
+						String s[] = ((String)gui.comboBoxResolutions.getSelectedItem()).split("x");
+						
+						Dimension viewSize = new Dimension(Integer.parseInt(s[0]),Integer.parseInt(s[1])); 
+						webcam.setViewSize(viewSize);
+					}
 					if(webcam != null)
 						webcam.open();
 					WebcamThread webcamThread = webcam != null ? new WebcamThread(webcam) : null;

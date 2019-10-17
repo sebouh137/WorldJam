@@ -10,4 +10,7 @@ public class WJConstants {
 	public static final byte COMMAND_JOIN_RECEIVED = 'R';
 	public static final byte VIDEO_FRAME = 'V';
 	
+	
+	public static final String DEFAULT_IMAGE_FORMAT = "jpeg";
+	
 }

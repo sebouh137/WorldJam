@@ -116,4 +116,7 @@ public class InputThread extends Thread implements RMS, ClockSubscriber{
 	public void close() {
 		alive = false;
 	}
+	public void removeSubscriber(AudioSubscriber sub) {
+		this.subscribers.remove(sub);
+	}
 }

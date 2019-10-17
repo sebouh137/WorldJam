@@ -3,8 +3,12 @@ package worldjam.exe;
 import java.awt.image.BufferedImage;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
@@ -159,7 +163,7 @@ public class Client implements ClockSubscriber {
 	}
 
 	boolean loopbackAudio;
-	
+
 	public void changeClockSettingsNow(ClockSetting clock){
 		if(clock == null)
 			throw new NullPointerException();
@@ -245,11 +249,30 @@ public class Client implements ClockSubscriber {
 								long timestamp = dis.readLong();
 								BufferedImage image = ImageIO.read(dis);
 								gui.videoFrameReceived(senderID,timestamp,image);
+								synchronized(recordingLock){
+									if(recordToFile != null && recordVideo){
+										try{
+											recordToFile.writeByte(WJConstants.VIDEO_FRAME);
+											recordToFile.writeLong(senderID);
+											recordToFile.writeLong(timestamp);
+											ImageIO.write(image, "bmp", recordToFile);
+										}catch(IOException e){
+											e.printStackTrace();
+										}
+									}
+								}
 							} else if(code == WJConstants.AUDIO_SAMPLE){								
 								AudioSample sample = AudioSample.readFromStream(dis);
-								for(AudioSubscriber reactor: reactors){
-									reactor.sampleReceived(sample);
-
+								audioSampleReceived(sample);
+								synchronized(recordingLock){
+									if(recordToFile != null  && recordAudio){
+										try{
+											recordToFile.writeByte(WJConstants.AUDIO_SAMPLE);
+											sample.writeToStream(recordToFile);
+										}catch(IOException e){
+											e.printStackTrace();
+										}
+									}
 								}
 							} else if(code == WJConstants.LIST_CLIENTS){
 								int N = dis.readInt();
@@ -264,6 +287,16 @@ public class Client implements ClockSubscriber {
 								ClockSetting beatClock = ClockSetting.readFromStream(dis);
 								System.out.println(displayName + ": received clock " + beatClock);
 								changeClockSettingsNow(beatClock);
+								synchronized(recordingLock){
+									if(recordToFile != null && recordVideo){
+										try{
+											recordToFile.writeByte(WJConstants.TIME_CHANGED);
+											beatClock.writeToStream(recordToFile);
+										}catch(IOException e){
+											e.printStackTrace();
+										}
+									}
+								}
 							} else throw new Exception("unrecognized code");
 
 						}
@@ -274,6 +307,8 @@ public class Client implements ClockSubscriber {
 					e.printStackTrace();
 				}
 			}
+
+
 
 		}
 
@@ -331,6 +366,13 @@ public class Client implements ClockSubscriber {
 		ClientDescriptor peer;
 
 	}
+
+	public void audioSampleReceived(AudioSample sample) {
+		for(AudioSubscriber reactor: reactors){
+			reactor.sampleReceived(sample);
+
+		}
+	}
 	//list of objects that react to new audio samples received
 	ArrayList<AudioSubscriber> reactors = new ArrayList();
 
@@ -366,6 +408,18 @@ public class Client implements ClockSubscriber {
 			if(connectionMode == ConnectionMode.DIRECT && connection.isToServer)
 				continue;
 			connection.sendAudioSample(sample);
+		}
+		synchronized(recordingLock){
+			if(recordToFile != null && recordAudio){
+				sample.sourceID = selfDescriptor.clientID;
+				try {
+					recordToFile.writeByte(WJConstants.AUDIO_SAMPLE);
+					sample.writeToStream(recordToFile);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 
@@ -420,6 +474,17 @@ public class Client implements ClockSubscriber {
 				try {
 					dos.writeByte(WJConstants.TIME_CHANGED);
 					beatClock.writeToStream(dos);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+		synchronized(recordingLock){
+			if(recordToFile != null){
+				try {
+					recordToFile.writeByte(WJConstants.TIME_CHANGED);
+					beatClock.writeToStream(recordToFile);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -527,6 +592,19 @@ public class Client implements ClockSubscriber {
 			//System.out.println("con send frame");
 			con.sendVideoFrame(image,timestamp);
 		}
+		synchronized(recordingLock){
+			if(recordToFile != null && recordVideo){
+				try {
+					recordToFile.write(WJConstants.VIDEO_FRAME);
+					recordToFile.writeLong(selfDescriptor.clientID);
+					recordToFile.writeLong(timestamp);
+					ImageIO.write(image, "bmp", recordToFile);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
 		//gui.videoFrameReceived(0, timestamp, image);
 	}
 
@@ -534,4 +612,44 @@ public class Client implements ClockSubscriber {
 	public DelayManager getDelayManager(){
 		return delayManager;
 	}
+	Object recordingLock = new Object();
+	DataOutputStream recordToFile;
+
+	private boolean recordVideo;
+
+	private boolean recordAudio;
+	/*
+	 * Begin recording all signals sent to/from this client, and write to a file  
+	 * I will later need to create a program that merges the recorded signals to an audio or video file. 
+	 */
+	public void startRecording(File file, boolean recordVideo, boolean recordAudio) throws FileNotFoundException{
+
+		synchronized(recordingLock){
+			this.recordVideo = recordVideo;
+			this.recordAudio = recordAudio;
+			this.recordToFile = new DataOutputStream(new FileOutputStream(file));
+			try {
+				recordToFile.writeByte(WJConstants.TIME_CHANGED);
+				beatClock.writeToStream(recordToFile);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+		}
+	}
+
+	public void stopRecording(){
+		synchronized(recordingLock){
+			try {
+				recordToFile.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			this.recordToFile = null;
+		}
+
+	}
+
 }

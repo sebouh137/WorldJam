@@ -13,7 +13,6 @@ import worldjam.time.ClockSetting;
 import worldjam.time.ClockSubscriber;
 import worldjam.time.DelayChangeListener;
 import worldjam.time.DelaySetting;
-
 public class ViewPanel extends JComponent implements VideoSubscriber, DelayChangeListener, ClockSubscriber{
 	private DataInputStream inputStream;
 	int delayMS = 2000;
@@ -74,7 +73,10 @@ public class ViewPanel extends JComponent implements VideoSubscriber, DelayChang
 				}
 				currentImage = entry.bufferedImage;
 				
-				this.getTopLevelAncestor().repaint();
+				if(this.getTopLevelAncestor() != null)
+					this.getTopLevelAncestor().repaint();
+				else
+					this.repaint();
 				if(prevImage != null)
 					prevImage.flush();
 

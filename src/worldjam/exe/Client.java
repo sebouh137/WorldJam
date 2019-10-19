@@ -1,6 +1,7 @@
 package worldjam.exe;
 
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -14,6 +15,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,6 +36,7 @@ import worldjam.time.ClockSetting;
 import worldjam.time.ClockSubscriber;
 import worldjam.time.DelayManager;
 import worldjam.util.DefaultObjects;
+import worldjam.video.VideoFrame;
 import worldjam.video.WebcamThread;
 
 public class Client implements ClockSubscriber {
@@ -237,7 +240,7 @@ public class Client implements ClockSubscriber {
 
 			@SuppressWarnings("rawtypes")
 			public void run(){
-
+				ByteArrayOutputStream baos = new ByteArrayOutputStream(10000);
 				try {
 					while(alive){
 						synchronized(dis){
@@ -245,17 +248,17 @@ public class Client implements ClockSubscriber {
 							code = dis.readByte();
 							if(code == WJConstants.VIDEO_FRAME){
 								//System.out.println("recevied video frame");
-								long senderID = dis.readLong();
-								long timestamp = dis.readLong();
-								BufferedImage image = ImageIO.read(dis);
-								gui.videoFrameReceived(senderID,timestamp,image);
+								//long senderID = dis.readLong();
+								//long timestamp = dis.readLong();
+								//System.out.println(Arrays.toString(ImageIO.getReaderFormatNames()));
+								//BufferedImage image = ImageIO.read(dis);
+								VideoFrame frame = VideoFrame.readFromStream(dis);
+								gui.videoFrameReceived(frame);
 								synchronized(recordingLock){
 									if(recordToFile != null && recordVideo){
 										try{
-											recordToFile.writeByte(WJConstants.VIDEO_FRAME);
-											recordToFile.writeLong(senderID);
-											recordToFile.writeLong(timestamp);
-											ImageIO.write(image, "bmp", recordToFile);
+											dos.write(WJConstants.VIDEO_FRAME);
+											frame.writeToStream(dos, baos);
 										}catch(IOException e){
 											e.printStackTrace();
 										}
@@ -297,7 +300,7 @@ public class Client implements ClockSubscriber {
 										}
 									}
 								}
-							} else throw new Exception("unrecognized code");
+							} else throw new Exception("unrecognized code " + (char)code + " (" +(int)code + ")");
 
 						}
 					}
@@ -340,16 +343,13 @@ public class Client implements ClockSubscriber {
 				}
 			}
 		}
-
-		public void sendVideoFrame(BufferedImage image, long timestamp) {
+		//reuseable auxilliary stream used for converting video data to bytes.    
+		ByteArrayOutputStream baos = new ByteArrayOutputStream(10000);
+		public void sendVideoFrame(VideoFrame frame) {
 			synchronized(dos){
 				try {
 					dos.write(WJConstants.VIDEO_FRAME);
-					dos.writeLong(selfDescriptor.clientID);
-					dos.writeLong(timestamp);
-
-
-					ImageIO.write(image, "bmp", dos);
+					frame.writeToStream(dos, baos);
 				} catch (SocketException e) {
 					System.out.println("closing connection");
 					removeConnection(peer.clientID);
@@ -426,6 +426,12 @@ public class Client implements ClockSubscriber {
 	ClientDescriptor selfDescriptor;
 
 	private CheckForTimeoutThread checkForTimeoutThread;
+	/**
+	 * auxilliary stream for writing video frames to a stream.  
+	 * This is part of a patch for allowing the use of a stream of jpeg images,
+	 * whose lengths are not known a priori.   
+	 */
+	private ByteArrayOutputStream baosForRecording;
 
 	public ClientDescriptor getDescriptor() {
 		return this.selfDescriptor;
@@ -580,25 +586,23 @@ public class Client implements ClockSubscriber {
 	}
 	public void attachWebcam(WebcamThread webcamThread){
 		webcamThread.addSubscriber((image,timestamp)->{
-			sendVideoFrame(image,timestamp);
+			broadcastVideoFrame(new VideoFrame(this.selfDescriptor.clientID,timestamp, image));
 			gui.videoFrameReceived(0L, timestamp, image);
 		});
 		webcamThread.start();
 	}
-	private void sendVideoFrame(BufferedImage image, long timestamp){
-
+	private void broadcastVideoFrame(VideoFrame frame){
 		//System.out.println("subs send frame");
 		for (Connection con : connections.values()){
 			//System.out.println("con send frame");
-			con.sendVideoFrame(image,timestamp);
+			con.sendVideoFrame(frame);
 		}
+		
 		synchronized(recordingLock){
 			if(recordToFile != null && recordVideo){
 				try {
 					recordToFile.write(WJConstants.VIDEO_FRAME);
-					recordToFile.writeLong(selfDescriptor.clientID);
-					recordToFile.writeLong(timestamp);
-					ImageIO.write(image, "bmp", recordToFile);
+					frame.writeToStream(recordToFile, baosForRecording);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

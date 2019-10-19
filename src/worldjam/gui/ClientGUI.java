@@ -11,6 +11,7 @@ import worldjam.gui.conductor.BezierConductor;
 import worldjam.time.ClockSetting;
 import worldjam.time.ClockSubscriber;
 import worldjam.time.MutableClock;
+import worldjam.video.VideoFrame;
 import worldjam.video.ViewPanel;
 import worldjam.audio.*;
 
@@ -114,6 +115,12 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		
 		JMenuItem mntmDelays = new JMenuItem("Delays ...");
 		mnOtherSettings.add(mntmDelays);
+		
+		JMenuItem mnRecording = new JMenuItem("Recording...");
+		menuBar.add(mnRecording);
+		mnRecording.addActionListener(e->{
+			new RecordDialog(this.client).setVisible(true);
+		});
 		
 		mntmDelays.addActionListener(e->{
 			new DelaySettingsDialog(this.client.getDelayManager()).setVisible(true);;
@@ -319,5 +326,8 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 	public void videoFrameReceived(long senderID, long timestamp, BufferedImage image) {
 		
 		viewManager.imageReceived(senderID, image, timestamp);
+	}
+	public void videoFrameReceived(VideoFrame frame) {
+		this.videoFrameReceived(frame.getSourceID(), frame.getTimestamp(), frame.getImage());
 	}
 }

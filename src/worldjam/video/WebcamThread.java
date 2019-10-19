@@ -22,6 +22,7 @@ public class WebcamThread extends Thread{
 			
 			while(true){
 				long timestamp = System.currentTimeMillis();
+				
 				BufferedImage image = webcam.getImage();
 				
 				if(image == null){

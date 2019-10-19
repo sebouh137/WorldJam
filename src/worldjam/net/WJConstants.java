@@ -1,5 +1,7 @@
 package worldjam.net;
 
+import com.github.sarxos.webcam.util.ImageUtils;
+
 public class WJConstants {
 	public static final byte LIST_CLIENTS = (byte)'L';
 	public static final byte COMMAND_JOIN = (byte)'J';

@@ -9,21 +9,22 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
+import worldjam.exe.ClientDescriptor;
 import worldjam.net.WJConstants;
 
 public class VideoFrame {
 	private long timestamp;
-	private long senderID;
+	private long sourceID;
 	private BufferedImage image;
 
-	public VideoFrame(long senderID, long timestamp, BufferedImage image) {
-		this.senderID = senderID;
+	public VideoFrame(BufferedImage image, long timestamp, long sourceID) {
+		this.sourceID = sourceID;
 		this.timestamp = timestamp;
 		this.image = image;
 	}
 
 	public void writeToStream(DataOutputStream dos, ByteArrayOutputStream baos) throws IOException{
-		dos.writeLong(senderID);
+		dos.writeLong(sourceID);
 		dos.writeLong(timestamp);
 		if(baos == null)
 			baos = new ByteArrayOutputStream(10000);
@@ -49,7 +50,7 @@ public class VideoFrame {
 		if (image == null){
 			throw new RuntimeException ("read a null image from stream");
 		}
-		return new VideoFrame(senderID, timestamp, image);
+		return new VideoFrame(image, timestamp, senderID);
 	}
 
 	public BufferedImage getImage() {
@@ -57,10 +58,14 @@ public class VideoFrame {
 	}
 
 	public long getSourceID() {
-		return senderID;
+		return sourceID;
 	}
 	
 	public long getTimestamp(){
 		return this.timestamp;
+	}
+
+	public void setSourceID(long clientID) {
+		this.sourceID = clientID;
 	}
 }

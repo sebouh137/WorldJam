@@ -17,17 +17,8 @@ public class ViewPanel extends JComponent implements VideoSubscriber, DelayChang
 	private DataInputStream inputStream;
 	int delayMS = 2000;
 
-	private class ImageAndTimestamp{
-		public ImageAndTimestamp(BufferedImage bufferedImage, long timestamp) {
-			super();
-			this.bufferedImage = bufferedImage;
-			this.timestamp = timestamp;
-		}
-		BufferedImage bufferedImage;
-		long timestamp;
 	
-	}
-	private LinkedList<ImageAndTimestamp> images = new LinkedList();
+	private LinkedList<VideoFrame> images = new LinkedList();
 
 	public ViewPanel(ClockSetting clockSetting){
 		this.clockSetting = clockSetting;
@@ -36,9 +27,11 @@ public class ViewPanel extends JComponent implements VideoSubscriber, DelayChang
 	}
 	
 	
-	public void imageReceived(BufferedImage image, long timestamp){
+	public void imageReceived(VideoFrame frame){
+		BufferedImage image = frame.getImage();
+		long timestamp = frame.getTimestamp();
 		//System.out.println("image received: " + (image != null) + ". timestamp: " + timestamp + ".  delay=" + delayMS);
-		ImageAndTimestamp entry = new ImageAndTimestamp(image,timestamp);
+		VideoFrame entry = new VideoFrame(image,timestamp,0);
 		//System.out.println("received image");
 		if(image != null){
 			synchronized(ViewPanel.this){
@@ -55,23 +48,22 @@ public class ViewPanel extends JComponent implements VideoSubscriber, DelayChang
 	private Thread refreshThread = new Thread(()->{
 		BufferedImage prevImage = null;
 		while(!closed ){
+			//waiting for images buffer
 			while(images.size()==0){
 				try {
-					Thread.sleep(10);
-					//System.out.println("waiting for images buffer");
+					Thread.sleep(6);
 				} catch (InterruptedException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 			}
 			//synchronized(ViewPanel.this){
-				ImageAndTimestamp entry = images.removeFirst();
+				VideoFrame entry = images.removeFirst();
 				try {
-					Thread.sleep(Math.max(0,entry.timestamp + delayMS - System.currentTimeMillis()));
+					Thread.sleep(Math.max(0,entry.getTimestamp() + delayMS - System.currentTimeMillis()));
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
-				currentImage = entry.bufferedImage;
+				currentImage = entry.getImage();
 				
 				if(this.getTopLevelAncestor() != null)
 					this.getTopLevelAncestor().repaint();

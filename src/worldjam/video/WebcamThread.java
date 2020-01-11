@@ -32,7 +32,8 @@ public class WebcamThread extends Thread{
 
 					//System.out.println("created image");
 					for(VideoSubscriber sub : subscribers){
-						sub.imageReceived(image, timestamp);
+						VideoFrame frame = new VideoFrame(image, timestamp, 0);
+						sub.imageReceived(frame);
 					}
 				}
 				Thread.sleep(msBetweenFrames);

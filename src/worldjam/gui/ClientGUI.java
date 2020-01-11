@@ -323,11 +323,8 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 	void getChat(){
 		
 	}
-	public void videoFrameReceived(long senderID, long timestamp, BufferedImage image) {
-		
-		viewManager.imageReceived(senderID, image, timestamp);
-	}
+	
 	public void videoFrameReceived(VideoFrame frame) {
-		this.videoFrameReceived(frame.getSourceID(), frame.getTimestamp(), frame.getImage());
+		viewManager.imageReceived(frame);
 	}
 }

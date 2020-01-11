@@ -28,11 +28,12 @@ import worldjam.time.ClockSetting;
 import worldjam.time.ClockSubscriber;
 import worldjam.time.DelayManager;
 import worldjam.util.DefaultObjects;
-
+import worldjam.video.VideoFrame;
+import worldjam.video.VideoSubscriber;
 import worldjam.video.ViewPanel;
 import worldjam.video.WebcamThread;
 
-public class ConductorAndWebcamViewer extends JPanel implements ClockSubscriber {
+public class ConductorAndWebcamViewer extends JPanel implements ClockSubscriber, VideoSubscriber {
 	
 	
 	/**
@@ -86,10 +87,10 @@ public class ConductorAndWebcamViewer extends JPanel implements ClockSubscriber 
 		this.setDoubleBuffered(true);
 	}
 	
-	public void imageReceived(long senderID, BufferedImage image, long timestamp) {
-		
-		ViewPanel viewer = this.viewers.get(senderID);
-		if(senderID == 0){
+	public void imageReceived(VideoFrame frame) {
+		long sourceID = frame.getSourceID();
+		ViewPanel viewer = this.viewers.get(sourceID);
+		if(sourceID == 0){
 			selfieViewer.setVisible(true);
 			viewer = selfieViewer;
 		}
@@ -98,14 +99,14 @@ public class ConductorAndWebcamViewer extends JPanel implements ClockSubscriber 
 			if(delayManager != null){ 
 				//the delay manager is only null during certain tests.  
 				//otherwise connect the delay manager to the viewer.  
-				DelayManager.DelayedChannel dc = delayManager.getChannel(senderID);
+				DelayManager.DelayedChannel dc = delayManager.getChannel(sourceID);
 				dc.addListener(viewer);
 			}
 			
-			addViewer(viewer,senderID);
+			addViewer(viewer,sourceID);
 			
 		}
-		viewer.imageReceived(image, timestamp);
+		viewer.imageReceived(frame);
 	}
 	
 	

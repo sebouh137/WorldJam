@@ -360,7 +360,9 @@ public class Client implements ClockSubscriber {
 		}
 
 		public void close() throws IOException {
-			socket.close();
+			if(this.socket != null) {
+				socket.close();
+			}
 			this.alive = false;
 		}
 		ClientDescriptor peer;
@@ -542,7 +544,16 @@ public class Client implements ClockSubscriber {
 		}
 	}
 
-	public void joinSessionP2P(String peerIpAddress, int port) throws UnknownHostException, IOException{
+	public void joinSessionP2P(String string) throws NumberFormatException, UnknownHostException, IOException {
+		//so far, the string must be of the form ip.add.re.ss:port for a peer on a LAN or a VPN
+		//a better system would be to have the username or something user-friendly like that, and have a server
+		//facilitate the connection between peers.  
+		
+		String peerIP = string.split(":")[0];
+		String peerPort = string.split(":")[1];
+		joinSessionP2P(peerIP, Integer.parseInt(peerPort));
+	}
+	private void joinSessionP2P(String peerIpAddress, int port) throws UnknownHostException, IOException{
 		Socket socket = new Socket(peerIpAddress, port);
 		System.out.println("socket connected");
 		DataInputStream dis = new DataInputStream(socket.getInputStream());

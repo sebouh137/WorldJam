@@ -76,7 +76,7 @@ public class TwoClientTest {
 						client = new Client(localPort, displayName, input, playback, defaultClock,new WebcamThread(webcam));
 						String serverIP = "127.0.0.1";
 						int peerPort = 2901;
-						client.joinSessionP2P(serverIP, peerPort);
+						client.joinSessionP2P(serverIP+":"+ peerPort);
 						client.getGUI().setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 					} catch (LineUnavailableException | IOException e) {
 						e.printStackTrace();

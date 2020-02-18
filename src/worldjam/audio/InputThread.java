@@ -24,14 +24,17 @@ public class InputThread extends Thread implements RMS, ClockSubscriber{
 	private byte[] buffer;
 	private ArrayList<AudioSubscriber> subscribers = new ArrayList();
 	private AudioFormat format;
+	public InputThread(Mixer mixer, AudioFormat format, ClockSetting clock) throws LineUnavailableException {
+		this(mixer, format, clock, 500);
+	}
 	
-	public InputThread(Mixer mixer, AudioFormat format, ClockSetting clock) throws LineUnavailableException{
+	public InputThread(Mixer mixer, AudioFormat format, ClockSetting clock, int nMsPerLoop) throws LineUnavailableException{
 		this.format = format;
 		this.mixer = mixer;
 		this.clock = clock;
 		Line.Info info = new DataLine.Info(TargetDataLine.class, format);
 		tdl = (TargetDataLine)mixer.getLine(info);
-		nMsPerLoop = 500;
+		this.nMsPerLoop = nMsPerLoop;
 		nBytesPerLoop = format.getFrameSize()*(int)(format.getFrameRate()*nMsPerLoop/1000.);
 		buffer = new byte[nBytesPerLoop];
 		buffer2 = new byte[nBytesPerLoop];

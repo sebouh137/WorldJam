@@ -480,7 +480,7 @@ public class ClientSetupGUI_P2P extends JFrame{
 					ClockSetting clock = DefaultObjects.bc0;
 					PlaybackManager playback = new PlaybackManager(outputMixer, clock, DefaultObjects.defaultFormat);
 					client = new Client(localPort, displayName, input, playback, clock, null);
-					client.joinSessionP2P(serverIP, peerPort);
+					client.joinSessionP2P(serverIP+":"+ peerPort);
 				} else{
 					ClockSetting clock = new ClockSetting(msPerBeat, num, denom);
 					InputThread input = new InputThread(inputMixer, DefaultObjects.defaultFormat, clock);

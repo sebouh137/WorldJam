@@ -543,9 +543,7 @@ public class ClientSetupGUI_P2P_multiPeer extends JFrame{
 						String[] entries = gui.textFieldPort.getText().trim().split(",[ \t]*");
 
 						for(String entry : entries){
-							String peerIP = entry.split(":")[0];
-							String peerPort = entry.split(":")[1];
-							client.joinSessionP2P(peerIP, Integer.parseInt(peerPort));
+							client.joinSessionP2P(entry);
 						}
 					} else{
 						ClockSetting clock = new ClockSetting(msPerBeat, num, denom);

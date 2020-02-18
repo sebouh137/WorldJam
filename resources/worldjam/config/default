@@ -1,0 +1,4 @@
+#calibrate the delays (due to taking longer to record or playback sound or video frames
+calib.delays.video = 0 # ms
+calib.delays.audio = 0 
+calib.delays.global = 0

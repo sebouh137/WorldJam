@@ -5,13 +5,16 @@ import static java.lang.System.out;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 
 public class NetworkUtils {
 	public static String getLocalIP() {
@@ -36,7 +39,6 @@ public class NetworkUtils {
 						whatismyip.openStream()));
 				String ip = in.readLine();
 				byte bytes[] = new byte[4];
-				System.out.println(ip);
 				for(int i = 0; i< 4; i++){
 					bytes[i] = (byte)Integer.parseInt(ip.split("\\.")[i]);	
 				}
@@ -56,20 +58,71 @@ public class NetworkUtils {
 		}
 		return null;
 	}
-	
-	public static void printNetworkInterfaceInfo()  throws SocketException{
-		Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
-		for (NetworkInterface netint : Collections.list(nets))
-			displayInterfaceInformation(netint);
+	public static void main(String arg[]) throws SocketException {
+		System.out.println("unfiltered:\n" + getNetworkInterfaceInfo(false));
+		System.out.println("\n\n\nfiltered:\n" + getNetworkInterfaceInfo(true));
+		System.out.println("public IP" + getPublicIP());
 	}
-	public static void displayInterfaceInformation(NetworkInterface netint) throws SocketException {
-		out.printf("Display name: %s\n", netint.getDisplayName());
-		
-		out.printf("Name: %s\n", netint.getName());
-		Enumeration<InetAddress> inetAddresses = netint.getInetAddresses();
-		for (InetAddress inetAddress : Collections.list(inetAddresses)) {
-			out.printf("InetAddress: %s\n", inetAddress.getHostAddress());
+
+	static HashMap<String,String> commonInterfaceDescriptions = new HashMap();
+	static {
+		commonInterfaceDescriptions.put("ham0", "Hamatchi VPN");
+		commonInterfaceDescriptions.put("en0", "Wifi");
+	}
+
+	
+	public static String getDescription(String interfaceName) {
+		if(interfaceName.matches("en[0-9]")) {
+			return "Physical network (" + interfaceName + ")";
 		}
-		out.printf("\n");
+		if(interfaceName.matches("ham[0-9]")) {
+			return "Hamatchi VPN (" + interfaceName + ")";
+		}
+		return String.format("Other network interface (%s)",interfaceName);
+	}
+
+	public static String getNetworkInterfaceInfo(boolean filtered)  throws SocketException{
+		String string = "";
+		Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
+		for (NetworkInterface netint : Collections.list(nets)) {
+			if(!netint.isUp() && filtered)
+				continue;
+			if(netint.isLoopback() && filtered)
+				continue;
+			
+			string +=  "interface: " + netint.getName();
+			if (!netint.getDisplayName().equals(netint.getName())) {
+				string += " [" + netint.getDisplayName() + "]";
+			}
+			if(netint.isVirtual()) string += "  (virtual)";
+			string += ":\n";
+			//out.printf("Name: %s\n", netint.getName());
+			Enumeration<InetAddress> inetAddresses = netint.getInetAddresses();
+			for (InetAddress inetAddress : Collections.list(inetAddresses)) {
+				if(inetAddress.isLinkLocalAddress() && filtered)
+					continue;
+				String version = inetAddress instanceof Inet4Address ? "  ipv4" : "  ipv6";
+				string +=  version + " " + inetAddress.getHostAddress();
+				
+				
+				if(inetAddress.isSiteLocalAddress()) {
+					string+="  (site local)";
+				}
+				if(inetAddress.isLinkLocalAddress()) {
+					string+="  (link local)";
+				}
+				if(inetAddress.isLoopbackAddress()) {
+					string+="  (loopback)";
+				}
+				
+				string += "\n";
+
+			}
+			/*for (InterfaceAddress addr : netint.getInterfaceAddresses()) {
+			System.out.println("InterfaceAddress:" + addr.toString());
+		}*/
+			string += "\n";
+		}
+		return string;
 	}
 }

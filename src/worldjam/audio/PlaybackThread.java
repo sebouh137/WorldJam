@@ -73,7 +73,7 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 		return senderID;
 	}
 	protected byte[] buffer;
-	private int bufferPosition;
+	protected int bufferPosition;
 
 
 	private int offsetMeasures; private int offsetBeats; private int offset_ms, total_offset_ms;
@@ -104,24 +104,26 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 		destPos %= buffer.length;
 		if(destPos < 0)
 			destPos += buffer.length;
-		if(filter != null){
-			try{
-				sample.sampleData = filter.process(sample.sampleData, inputFormat);
-			} catch (Exception e){
-				e.printStackTrace();
-			}
-		} 
+
+		byte data [] = sample.sampleData;
 		if(recorder != null)
 			try{
 				recorder.sampleReceived(sample);
 			} catch (Exception e){
 				e.printStackTrace();
 			}
+		if(filter != null){
+			try{
+				data = filter.process(data, inputFormat);
+			} catch (Exception e){
+				e.printStackTrace();
+			}
+		} 
 		
 		if(convertToStereo){
-			sample.sampleData = stereoConvert(sample.sampleData);
+			data = stereoConvert(data);
 		}
-		AudioUtils.arrayCopyWrapped(sample.sampleData, 0, buffer, destPos, sample.sampleData.length);
+		AudioUtils.arrayCopyWrapped(data, 0, buffer, destPos, data.length);
 	}
 
 
@@ -146,7 +148,12 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 
 	private long loopStartTime;
 	public void run(){
-		int N_BYTES_PLAYED_AT_ONCE = (int) (playbackFormat.getFrameRate()*playbackFormat.getFrameSize());
+		//write one second at a time
+		int defaultBytesPerCycle = (int) (playbackFormat.getFrameRate())*playbackFormat.getFrameSize();
+		//avoid writing less than a certain number of bytes in a cycle by extending the current cycle 
+		//to the end of the buffer if necessary. 
+		int minBytesPerCycle = (int) (playbackFormat.getFrameRate()*0.1)*playbackFormat.getFrameSize();
+		
 		
 		/*
 		 * For convenience, start at the beginning of a measure
@@ -172,7 +179,30 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 			e.printStackTrace();
 		}
 		while(alive){
+			// Threadsafe
+			byte buff[] = this.buffer;
+			int bufferPos = this.bufferPosition;
+			int len = buff.length;
+			
 
+			// determine how many bytes to play on this cycle, as well
+			// as the buffer position for the next cycle. 
+			int bytesToBePlayed = defaultBytesPerCycle;
+			if(bufferPos + bytesToBePlayed > len || bufferPos + defaultBytesPerCycle + minBytesPerCycle > len) {
+				bytesToBePlayed = len -bufferPos;
+				bufferPosition = 0;
+			} else if (bufferPos + bytesToBePlayed == len) {
+				bufferPosition = 0;
+			} else {
+				bufferPosition = bufferPos + bytesToBePlayed;
+			}
+			sdl.write(buff, bufferPos, bytesToBePlayed);
+			
+			
+			
+			
+			
+			/*
 			if(bufferPosition + N_BYTES_PLAYED_AT_ONCE < buffer.length){
 				sdl.write(buffer, bufferPosition, N_BYTES_PLAYED_AT_ONCE);
 				bufferPosition+= N_BYTES_PLAYED_AT_ONCE;
@@ -181,7 +211,7 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 				sdl.write(buffer, bufferPosition, buffer.length - bufferPosition);
 				sdl.write(buffer, 0, N_BYTES_PLAYED_AT_ONCE - (buffer.length - bufferPosition));
 				bufferPosition = N_BYTES_PLAYED_AT_ONCE - (buffer.length - bufferPosition);
-			}
+			}*/
 			//System.out.println("blahhhh " + sourceName + ((System.currentTimeMillis()-loopStartTime)*1000 - sdl.getMicrosecondPosition()));
 
 		}

@@ -1,35 +1,30 @@
 package worldjam.exe;
 
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FilterInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.imageio.ImageIO;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.Mixer;
 
 import worldjam.audio.InputThread;
+import worldjam.audio.PlaybackChannel;
 import worldjam.audio.PlaybackManager;
 import worldjam.audio.AudioSample;
 import worldjam.audio.AudioSubscriber;
 import worldjam.gui.ClientGUI;
-import worldjam.gui.ClientSetupGUI;
 import worldjam.gui.ClientSetupGUI_P2P_multiPeer;
 import worldjam.net.WJConstants;
 import worldjam.time.ClockSetting;
@@ -86,7 +81,7 @@ public class Client implements ClockSubscriber {
 				input.setSenderID(this.selfDescriptor.clientID);
 				playback.addChannel(input.getSenderID(), this.selfDescriptor.displayName);
 				try {
-					Thread.sleep(300);//the thread sleep prevents problems where the channel cannot be muted 
+					Thread.sleep(700);//the thread sleep prevents problems where the channel cannot be muted 
 					//right after being added.  Is this necessary?  Idk
 					playback.getChannel(input.getSenderID()).setMuted(true); //by default, mute the selfy channel
 				} catch (Exception e) {
@@ -106,6 +101,10 @@ public class Client implements ClockSubscriber {
 		this.changeClockSettingsNow(clock);
 		if(webcamThread != null){
 			attachWebcam(webcamThread);
+		}
+		for (PlaybackChannel pbc : playback.getChannels()) {
+			delayManager.addChannel(pbc.getSenderID(), pbc.getSourceName());
+			delayManager.getChannel(pbc.getSenderID()).addListener(pbc);
 		}
 	}
 
@@ -546,12 +545,12 @@ public class Client implements ClockSubscriber {
 	}
 
 	public void joinSessionP2P(String string) throws NumberFormatException, UnknownHostException, IOException {
-		//so far, the string must be of the form ip.add.re.ss:port for a peer on a LAN or a VPN
+		//so far, the string must be of the form ip.add.re.ss/port for a peer on a LAN or a VPN
 		//a better system would be to have the username or something user-friendly like that, and have a server
 		//facilitate the connection between peers.  
 		
-		String peerIP = string.split(":")[0];
-		String peerPort = string.split(":")[1];
+		String peerIP = string.split("/")[0];
+		String peerPort = string.split("/")[1];
 		joinSessionP2P(peerIP, Integer.parseInt(peerPort));
 	}
 	private void joinSessionP2P(String peerIpAddress, int port) throws UnknownHostException, IOException{
@@ -628,6 +627,7 @@ public class Client implements ClockSubscriber {
 
 	private DelayManager delayManager = new DelayManager();
 	public DelayManager getDelayManager(){
+		
 		return delayManager;
 	}
 	Object recordingLock = new Object();

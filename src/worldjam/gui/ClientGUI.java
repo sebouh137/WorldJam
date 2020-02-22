@@ -62,7 +62,6 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 					conductor.close();
 					client.exit();
 				} catch (IOException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 			}
@@ -74,13 +73,7 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		
 		this.setSize(964, 646);
 		
-		/*try {
-			Image image = ImageIO.read(new File("img/icons/wj_logo.png"));
-			this.setIconImage(image);
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}*/
+		
 				
 		JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
@@ -116,6 +109,17 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		JMenuItem mntmDelays = new JMenuItem("Delays ...");
 		mnOtherSettings.add(mntmDelays);
 		
+		JMenu mnDebug = new JMenu("Debug");
+		menuBar.add(mnDebug);
+		
+		JMenuItem mntmNetwork = new JMenuItem("Network...");
+		mnDebug.add(mntmNetwork);
+		mntmNetwork.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				new NetworkInfoWindow(client);
+			}
+		});
+		
 		JMenuItem mnRecording = new JMenuItem("Recording...");
 		menuBar.add(mnRecording);
 		mnRecording.addActionListener(e->{
@@ -132,7 +136,6 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 					client.exit();
 					System.out.println("client.close();");
 				} catch (IOException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 			}
@@ -183,6 +186,8 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		muteButton.setSelected(false);
 		muteButton.addChangeListener(e->{
 			ClientListItem selection = clientList.getSelectedValue();
+			if(selection == null)
+				return;
 			long channelID = selection.getClientID();
 			PlaybackChannel channel = client.getPlaybackManager().getChannel(channelID);
 			channel.setMuted(muteButton.isSelected());
@@ -202,13 +207,11 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 
 			@Override
 			public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-				// TODO Auto-generated method stub
 				
 			}
 
 			@Override
 			public void popupMenuCanceled(PopupMenuEvent e) {
-				// TODO Auto-generated method stub
 				
 			}
 		});
@@ -216,7 +219,7 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		clientList.setModel(clientListModel);
 		clientList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		clientList.setSelectedIndex(0);
-		clientListModel.addElement(new ClientListItem(client.getUserName(), client.getDescriptor().clientID, true));
+		clientListModel.addElement(new ClientListItem(client.getUserName(), client.getDescriptor().clientID, true, true));
 		
 		clientList.validate();
 		getContentPane().add(clientList, BorderLayout.EAST);
@@ -285,7 +288,7 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 				}
 			}
 			if(!found)
-				clientListModel.addElement(new ClientListItem(channelName, id, false));
+				clientListModel.addElement(new ClientListItem(channelName, id, false, client.getPlaybackManager().getChannel(id).isMuted()));
 		}
 		//now remove any dead channels.
 		for(Object item : clientListModel.toArray()){

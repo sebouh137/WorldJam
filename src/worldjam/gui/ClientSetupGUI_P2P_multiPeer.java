@@ -191,7 +191,7 @@ public class ClientSetupGUI_P2P_multiPeer extends JFrame{
 
 
 
-		lblServerIpAddress = new JLabel("Input peer IP address:ports below (eg 192.12.13.14:2901, etc)");
+		lblServerIpAddress = new JLabel("Input peer IP address/ports below (eg 192.12.13.14/2901, etc)");
 		lblServerIpAddress.setEnabled(false);
 		GridBagConstraints gbc_lblServerIpAddress = new GridBagConstraints();
 		gbc_lblServerIpAddress.gridwidth = 4;
@@ -203,7 +203,7 @@ public class ClientSetupGUI_P2P_multiPeer extends JFrame{
 
 		textFieldPort = new JTextField();
 		textFieldPort.setEnabled(false);
-		textFieldPort.setText(Integer.toString(DefaultObjects.defaultPort));
+		textFieldPort.setText("127.0.0.1/2901");
 		GridBagConstraints gbc_textFieldPort = new GridBagConstraints();
 		gbc_textFieldPort.gridwidth = 4;
 		gbc_textFieldPort.fill = GridBagConstraints.HORIZONTAL;

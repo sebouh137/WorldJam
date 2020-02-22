@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -148,5 +149,8 @@ public class PlaybackManager implements AudioSubscriber, ClockSubscriber{
 		for(PlaybackChannel channel : channels.values()){
 			channel.close();
 		}
+	}
+	public Collection<PlaybackChannel> getChannels() {
+		return channels.values();
 	}
 }

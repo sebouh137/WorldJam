@@ -9,7 +9,7 @@ import static java.lang.System.out;
 public class ListNets{
 
 	public static void main(String args[]) throws SocketException {
-		NetworkUtils.printNetworkInterfaceInfo();
+		System.out.println(NetworkUtils.getNetworkInterfaceInfo(false));
 	}
 
 	

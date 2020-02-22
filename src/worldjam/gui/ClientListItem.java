@@ -21,12 +21,19 @@ public class ClientListItem {
 		this.clientID = clientID;
 	}
 	
+	ClientListItem(String username, long clientID, boolean isSelf,boolean isMuted){
+		this.username = username;
+		this.isSelf = isSelf;
+		this.clientID = clientID;
+		this.muted = isMuted;
+	}
+	
 	public String toString() {
 		int[] codepoints = {0x1F507};
 		String muteSymbol = " [M]";//new String(codepoints, 0, codepoints.length);//= "M";//"\uF09F\u9487";
 		String unmuteSymbol = "";//"\uF09F\u9488";
 		
-		return username +  (isSelf ? " (me)": "") + (muted ? muteSymbol: unmuteSymbol);
+		return (this.isSelf ? "loopback" : username) + (muted ? muteSymbol: unmuteSymbol);
 	}
 	static class ClientListItemRenderer extends Container implements ListCellRenderer<ClientListItem> {
 		JLabel label = new JLabel();
@@ -39,7 +46,7 @@ public class ClientListItem {
 		@Override
 		public Component getListCellRendererComponent(JList<? extends ClientListItem> list, ClientListItem value,
 				int index, boolean isSelected, boolean cellHasFocus) {
-			this.label.setText(value.username + (value.isSelf ? " (me)": ""));
+			this.label.setText(toString());
 			if(isSelected)
 				label.setBackground(selectedColor);
 			else

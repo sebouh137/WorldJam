@@ -13,6 +13,7 @@ import javax.sound.sampled.SourceDataLine;
 import worldjam.time.ClockSetting;
 import worldjam.time.DelayChangeListener;
 import worldjam.time.DelaySetting;
+import worldjam.util.Configurations;
 import worldjam.util.DigitalAnalogConverter;
 
 public class PlaybackThread extends Thread implements PlaybackChannel, DelayChangeListener{
@@ -51,9 +52,8 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 		DataLine.Info info = new DataLine.Info(SourceDataLine.class, playbackFormat);
 		this.mixer = mixer;
 		sdl = (SourceDataLine)mixer.getLine(info);
-
 		this.clock = clock;
-		setReplayOffset(1, 0, 0);
+		setReplayOffset(1, 0, Configurations.getIntValue("calib.delays.audio"));
 		//a buffer of 10 measures long is overkill
 		int nMeasuresInBuffer = 5;
 		int bufferSize = (int)(playbackFormat.getFrameSize()*
@@ -72,7 +72,7 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 	public long getSenderID() {
 		return senderID;
 	}
-	private byte[] buffer;
+	protected byte[] buffer;
 	private int bufferPosition;
 
 
@@ -125,7 +125,7 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 	}
 
 
-	private byte[] stereoConvert(byte[] mono) {
+	protected byte[] stereoConvert(byte[] mono) {
 		byte[] stereo = new byte[mono.length*2];
 		int ifs = inputFormat.getFrameSize();
 		for(int i = 0; i<mono.length/ifs; i++){
@@ -163,6 +163,8 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 			loopStartTime = prestart+sleepTime;
 			
 			sdl.start();
+			
+			//System.out.println("blahhhh" + ((System.currentTimeMillis()-loopStartTime)*1000 - sdl.getMicrosecondPosition()));
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		} catch (LineUnavailableException e) {
@@ -180,7 +182,7 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 				sdl.write(buffer, 0, N_BYTES_PLAYED_AT_ONCE - (buffer.length - bufferPosition));
 				bufferPosition = N_BYTES_PLAYED_AT_ONCE - (buffer.length - bufferPosition);
 			}
-
+			//System.out.println("blahhhh " + sourceName + ((System.currentTimeMillis()-loopStartTime)*1000 - sdl.getMicrosecondPosition()));
 
 		}
 	}
@@ -225,7 +227,7 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 
 	}
 
-	public int getAddDelayMeasures(){
+	/*public int getAddDelayMeasures(){
 		return offsetMeasures;
 	}
 	
@@ -235,7 +237,7 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 	
 	public int getAddDelayMS(){
 		return offset_ms;
-	}
+	}*/
 	
 	public int getTotalDelayInMS() {
 		return total_offset_ms;
@@ -290,7 +292,6 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 	public void changeDelaySetting(DelaySetting newDelaySetting) {
 		//I am just going to use existing methods here.  
 		this.offsetMeasures = newDelaySetting.getMeasuresDelay();
-		this.offsetBeats = 0;
 		this.offset_ms = newDelaySetting.getAdditionalDelayAudio()+newDelaySetting.getAdditionalDelayGlobal();
 		this.setReplayOffset(offsetMeasures, 0, 
 				offset_ms);

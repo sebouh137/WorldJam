@@ -85,6 +85,15 @@ public class Client implements ClockSubscriber {
 			try {
 				input.setSenderID(this.selfDescriptor.clientID);
 				playback.addChannel(input.getSenderID(), this.selfDescriptor.displayName);
+				try {
+					Thread.sleep(300);//the thread sleep prevents problems where the channel cannot be muted 
+					//right after being added.  Is this necessary?  Idk
+					playback.getChannel(input.getSenderID()).setMuted(true); //by default, mute the selfy channel
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
 			} catch (LineUnavailableException e) {
 				e.printStackTrace();
 			}
@@ -165,7 +174,6 @@ public class Client implements ClockSubscriber {
 		return beatClock;
 	}
 
-	boolean loopbackAudio;
 
 	public void changeClockSettingsNow(ClockSetting clock){
 		if(clock == null)
@@ -187,14 +195,7 @@ public class Client implements ClockSubscriber {
 			}
 			input.addSubscriber(sample -> {this.broadcastAudioSample(sample);});
 			input.start();
-			if(loopbackAudio){
-				try {
-					playback.addChannel(input.getSenderID(), this.selfDescriptor.displayName);
-				} catch (LineUnavailableException e) {
-					e.printStackTrace();
-				}
-				input.addSubscriber(playback);
-			}
+			
 		}else{
 			if(input != null) input.changeClockSettingsNow(beatClock);
 		}

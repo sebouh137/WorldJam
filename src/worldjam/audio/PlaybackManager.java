@@ -24,6 +24,23 @@ public class PlaybackManager implements AudioSubscriber, ClockSubscriber{
 		this.mixer = mixer;
 		this.clock = clock;
 		this.format = format;
+		Metronome metronome = new Metronome(); 
+		long metronomeChanID = 1234;
+		PlaybackChannel metronomeChannel;
+		try {
+			metronomeChannel = new AutomatedChannel(mixer, format, clock, "metronome", metronomeChanID, metronome);
+			channels.put(metronomeChanID, metronomeChannel);
+			channelNames.put(metronomeChanID, "metronome");
+			channelsChanged();
+			Thread.sleep(300);
+			//mute the metronome by default
+			metronomeChannel.setMuted(true);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
 	}
 	Mixer mixer;
 	ClockSetting clock;

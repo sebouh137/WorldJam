@@ -16,7 +16,13 @@ import worldjam.util.DefaultObjects;
 import worldjam.video.WebcamThread;
 
 public class TwoClientTest {
+
+	static boolean useWebcam = false;
 	public static void main(String arg[]){
+		for (String ar : arg) {
+			if(ar.equals("-w"))
+				useWebcam=true;
+		}
 		boolean joinerHasMicrophone = true;
 		int msPerBeat = 750, num = 3, denom = 4;
 		ClockSetting clock = new ClockSetting(msPerBeat, num, denom);
@@ -69,11 +75,13 @@ public class TwoClientTest {
 							input = null;
 						PlaybackManager playback = new PlaybackManager(outputMixer, defaultClock, DefaultObjects.defaultFormat);
 						Client client;
-
-						Webcam webcam = Webcam.getDefault();
-						//webcam.setViewSize(WebcamResolution.VGA.getSize());
-						webcam.open(true);
-						client = new Client(localPort, displayName, input, playback, defaultClock,new WebcamThread(webcam));
+						WebcamThread webcamThread = null;
+						if(useWebcam) {
+							Webcam webcam = Webcam.getDefault();
+							webcam.open(true);
+							webcamThread = new WebcamThread(webcam);
+						}
+						client = new Client(localPort, displayName, input, playback, defaultClock,webcamThread);
 						String serverIP = "127.0.0.1";
 						int peerPort = 2901;
 						client.joinSessionP2P(serverIP+":"+ peerPort);

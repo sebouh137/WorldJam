@@ -36,7 +36,6 @@ import worldjam.video.WebcamThread;
 
 public class Client implements ClockSubscriber {
 
-	private ClientConnectionManager base;
 	public static void main(String arg[]) throws LineUnavailableException, UnknownHostException, IOException{
 
 		//if(arg.length >= 1 && arg[0].equals("-g")){
@@ -51,14 +50,6 @@ public class Client implements ClockSubscriber {
 	private ListenForConnectionsRequestThread listenForConnectionsRequestThread;
 	public void setDebug(boolean debug){
 		this.debug = debug;
-	}
-	public Client(String serverIP, int port, String sessionName, String displayName, Mixer inputMixer, Mixer outputMixer) throws LineUnavailableException, UnknownHostException, IOException{
-		this.selfDescriptor = new ClientDescriptor(displayName, displayName.hashCode());
-		base = new ClientConnectionManager(serverIP, port, sessionName, displayName, this);
-		this.sessionName = sessionName;
-		this.displayName = displayName;
-		this.inputMixer = inputMixer;
-		this.outputMixer = outputMixer;
 	}
 
 	public Client(int listeningPort, String displayName, InputThread input, PlaybackManager playback, ClockSetting clock,WebcamThread webcamThread) 
@@ -85,7 +76,6 @@ public class Client implements ClockSubscriber {
 					//right after being added.  Is this necessary?  Idk
 					playback.getChannel(input.getSenderID()).setMuted(true); //by default, mute the selfy channel
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				
@@ -108,7 +98,7 @@ public class Client implements ClockSubscriber {
 		}
 	}
 
-	Map<Long,Connection> connections = new HashMap<Long,Connection>();
+	private Map<Long,Connection> connections = new HashMap<Long,Connection>();
 	void addConnection(ClientDescriptor peer, Socket socket, DataInputStream dis, DataOutputStream dos, boolean isServer){
 		delayManager.addChannel(peer.clientID, peer.displayName);
 		try {
@@ -338,7 +328,6 @@ public class Client implements ClockSubscriber {
 					System.out.println("closing connection");
 					removeConnection(peer.clientID);
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -388,15 +377,6 @@ public class Client implements ClockSubscriber {
 		return this.sessionName;
 	}
 
-	public void joinSession() throws IOException{
-		this.base.joinSession();
-	}
-
-	public void startNewSession(ClockSetting clock) throws IOException{
-		this.changeClockSettingsNow(clock);
-		this.base.startNewSession(clock);
-	}
-
 	private enum ConnectionMode{
 		DIRECT, THROUGH_SERVER;
 	}
@@ -418,7 +398,6 @@ public class Client implements ClockSubscriber {
 					recordToFile.writeByte(WJConstants.AUDIO_SAMPLE);
 					sample.writeToStream(recordToFile);
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -483,7 +462,6 @@ public class Client implements ClockSubscriber {
 					dos.writeByte(WJConstants.TIME_CHANGED);
 					beatClock.writeToStream(dos);
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -494,19 +472,23 @@ public class Client implements ClockSubscriber {
 					recordToFile.writeByte(WJConstants.TIME_CHANGED);
 					beatClock.writeToStream(recordToFile);
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
 		}
 	}
 
-	public class ListenForConnectionsRequestThread extends Thread {
+
+	private ServerSocket serverSocket;
+	
+	public ServerSocket getServerSocket() {
+		return serverSocket;
+	}
+	private class ListenForConnectionsRequestThread extends Thread {
 		int port;
 		ListenForConnectionsRequestThread(int port){
 			this.port = port;
 		}
-		ServerSocket serverSocket;
 		public void run(){
 			try {
 				serverSocket = new ServerSocket(port);
@@ -538,7 +520,6 @@ public class Client implements ClockSubscriber {
 			try {
 				serverSocket.close();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -617,7 +598,6 @@ public class Client implements ClockSubscriber {
 					recordToFile.write(WJConstants.VIDEO_FRAME);
 					frame.writeToStream(recordToFile, baosForRecording);
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -650,7 +630,6 @@ public class Client implements ClockSubscriber {
 				recordToFile.writeByte(WJConstants.TIME_CHANGED);
 				beatClock.writeToStream(recordToFile);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
@@ -662,7 +641,6 @@ public class Client implements ClockSubscriber {
 			try {
 				recordToFile.close();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			this.recordToFile = null;

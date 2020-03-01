@@ -50,7 +50,6 @@ public class InputThread extends Thread implements RMS, ClockSubscriber{
 		try {
 			tdl.open();
 		} catch (LineUnavailableException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		tdl.start();

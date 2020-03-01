@@ -9,6 +9,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -481,9 +482,7 @@ public class Client implements ClockSubscriber {
 
 	private ServerSocket serverSocket;
 	
-	public ServerSocket getServerSocket() {
-		return serverSocket;
-	}
+	
 	private class ListenForConnectionsRequestThread extends Thread {
 		int port;
 		ListenForConnectionsRequestThread(int port){
@@ -646,6 +645,32 @@ public class Client implements ClockSubscriber {
 			this.recordToFile = null;
 		}
 
+	}
+
+	/**
+	 * 
+	 * @return a String representing the status of the session, for debug
+	 * purposes
+	 */
+	public String getFormattedSessionStatusString() {
+		String info = "";
+		info += "username: " + getUserName();
+		info += " (id = " + Long.toHexString(getDescriptor().clientID) + ")\n";
+		info +=  "server socket listening on port " +  serverSocket.getLocalPort() ;
+		if(!serverSocket.getInetAddress().getHostAddress().equals("0.0.0.0")) {
+			info +=  " (address = " +  serverSocket.getInetAddress() +")\n";
+		}
+		else 
+			info += " (listening on all local IP addresses)\n";
+		info += "\nPeers:\n";
+		for (Connection connection : connections.values()) {
+			String name = connection.peer.displayName;
+			long id = connection.peer.clientID;
+			SocketAddress sa = connection.socket.getRemoteSocketAddress();
+			info += name + " (id = " + Long.toHexString(id) + ")  address = " + sa.toString();
+		}
+		
+		return info;
 	}
 
 }

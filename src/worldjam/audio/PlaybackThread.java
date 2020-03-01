@@ -19,7 +19,7 @@ import worldjam.util.DigitalAnalogConverter;
 public class PlaybackThread extends Thread implements PlaybackChannel, DelayChangeListener{
 	AudioTrackRecorder recorder;
 	private boolean convertToStereo = true;
-	private SourceDataLine sdl;
+	protected SourceDataLine sdl;
 	/**
 	 * The PlaybackThread uses the clock information in order to wait until the beginning of a measure to start,
 	 * and so that the delay time can be set as an integer number of beats or measures in the 
@@ -31,10 +31,16 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 	private Mixer mixer;
 	private String sourceName;
 	private long senderID;
+	
 	public PlaybackThread(Mixer mixer, AudioFormat inputFormat, ClockSetting clock, String sourceName, long senderID) throws LineUnavailableException{
+		this(mixer, inputFormat, clock, sourceName, senderID, null);
+	}
+		
+	public PlaybackThread(Mixer mixer, AudioFormat inputFormat, ClockSetting clock, String sourceName, long senderID, LoopBuilder loopBuilder) throws LineUnavailableException{
 		this.sourceName = sourceName;
 		this.senderID = senderID;
 		this.inputFormat = inputFormat;
+		this.loopBuilder = loopBuilder;
 		System.out.println("input format: " + inputFormat);
 		if(convertToStereo){
 			playbackFormat = new AudioFormat(inputFormat.getEncoding()
@@ -46,7 +52,7 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 					inputFormat.isBigEndian());
 		} else
 			playbackFormat = inputFormat;
-		
+
 
 		System.out.println("playback format: " + playbackFormat);
 		DataLine.Info info = new DataLine.Info(SourceDataLine.class, playbackFormat);
@@ -72,8 +78,7 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 	public long getSenderID() {
 		return senderID;
 	}
-	protected byte[] buffer;
-	protected int bufferPosition;
+	private byte[] buffer;
 
 
 	private int offsetMeasures; private int offsetBeats; private int offset_ms, total_offset_ms;
@@ -119,16 +124,30 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 				e.printStackTrace();
 			}
 		} 
-		
+
 		if(convertToStereo){
 			data = stereoConvert(data);
 		}
 		AudioUtils.arrayCopyWrapped(data, 0, buffer, destPos, data.length);
 	}
 
-
+	//recycled byte array
+	boolean recycleStereoByteArray = true;
+	byte stereoConverted[];
+	
 	protected byte[] stereoConvert(byte[] mono) {
-		byte[] stereo = new byte[mono.length*2];
+		
+		byte[] stereo;
+		if(!recycleStereoByteArray) {
+			stereo = new byte[mono.length*2];
+		} else {
+			if(stereoConverted == null || stereoConverted.length != mono.length*2) {
+				stereo = new byte[mono.length*2];
+				stereoConverted = stereo;
+			} else {
+				stereo = stereoConverted;
+			}
+		}
 		int ifs = inputFormat.getFrameSize();
 		for(int i = 0; i<mono.length/ifs; i++){
 			System.arraycopy(mono, ifs*i, stereo, ifs*2*i, ifs);
@@ -136,7 +155,7 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 		}
 		return stereo;
 	}
-	
+
 	//status flags
 	private boolean alive = true;
 
@@ -147,14 +166,15 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 	}
 
 	private long loopStartTime;
+	private byte[] replacementBuffer;
 	public void run(){
-		//write one second at a time
-		int defaultBytesPerCycle = (int) (playbackFormat.getFrameRate())*playbackFormat.getFrameSize();
+		//write such and such seconds at a time
+		int defaultBytesPerCycle = (int) (playbackFormat.getFrameRate()*1)*playbackFormat.getFrameSize();
 		//avoid writing less than a certain number of bytes in a cycle by extending the current cycle 
 		//to the end of the buffer if necessary. 
-		int minBytesPerCycle = (int) (playbackFormat.getFrameRate()*0.1)*playbackFormat.getFrameSize();
-		
-		
+		int minBytesPerCycle = (int) (playbackFormat.getFrameRate()*0.05)*playbackFormat.getFrameSize();
+
+
 		/*
 		 * For convenience, start at the beginning of a measure
 		 */
@@ -168,54 +188,51 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 				sleepTime += msPerMeasure;
 			Thread.sleep(sleepTime);
 			loopStartTime = prestart+sleepTime;
-			
+
 			sdl.start();
-			
+
 			//System.out.println("blahhhh" + ((System.currentTimeMillis()-loopStartTime)*1000 - sdl.getMicrosecondPosition()));
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		} catch (LineUnavailableException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		int bufferPositionNextCycle = 0;
 		while(alive){
-			// Threadsafe
+			// this should be thread-safe
 			byte buff[] = this.buffer;
-			int bufferPos = this.bufferPosition;
+			int bufferPos = bufferPositionNextCycle;
 			int len = buff.length;
-			
+
 
 			// determine how many bytes to play on this cycle, as well
 			// as the buffer position for the next cycle. 
 			int bytesToBePlayed = defaultBytesPerCycle;
 			if(bufferPos + bytesToBePlayed > len || bufferPos + defaultBytesPerCycle + minBytesPerCycle > len) {
 				bytesToBePlayed = len -bufferPos;
-				bufferPosition = 0;
+				bufferPositionNextCycle = 0;
+				if(loopBuilder != null) System.out.println("new cycle");
 			} else if (bufferPos + bytesToBePlayed == len) {
-				bufferPosition = 0;
+				bufferPositionNextCycle = 0;
+				if(loopBuilder != null) System.out.println("new cycle");
 			} else {
-				bufferPosition = bufferPos + bytesToBePlayed;
+				bufferPositionNextCycle = bufferPos + bytesToBePlayed;
 			}
 			sdl.write(buff, bufferPos, bytesToBePlayed);
-			
-			
-			
-			
-			
-			/*
-			if(bufferPosition + N_BYTES_PLAYED_AT_ONCE < buffer.length){
-				sdl.write(buffer, bufferPosition, N_BYTES_PLAYED_AT_ONCE);
-				bufferPosition+= N_BYTES_PLAYED_AT_ONCE;
-			}
-			else {
-				sdl.write(buffer, bufferPosition, buffer.length - bufferPosition);
-				sdl.write(buffer, 0, N_BYTES_PLAYED_AT_ONCE - (buffer.length - bufferPosition));
-				bufferPosition = N_BYTES_PLAYED_AT_ONCE - (buffer.length - bufferPosition);
-			}*/
-			//System.out.println("blahhhh " + sourceName + ((System.currentTimeMillis()-loopStartTime)*1000 - sdl.getMicrosecondPosition()));
 
+			if (rebuildLoopFlag) {
+				this.buffer = replacementBuffer;
+				long now = System.currentTimeMillis();
+				int framePos = (int)(((now-clock.startTime)%clock.getMsPerMeasure())*playbackFormat.getFrameRate()/1000.);
+				System.out.println("rebuilding loop\nframePos =" + framePos + "\nbufferLength=" + 
+						buffer.length + "\nLoopDuration (s) =" + buffer.length/(playbackFormat.getFrameRate()*playbackFormat.getFrameSize()));
+				bufferPositionNextCycle = framePos*playbackFormat.getFrameSize();
+				rebuildLoopFlag = false;
+			}
 		}
 	}
+	private boolean rebuildLoopFlag;
+	private LoopBuilder loopBuilder;
 
 	public Line getLine(){
 		return sdl;
@@ -235,7 +252,19 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 
 	public void changeClockSettingsNow(ClockSetting clock) {
 		this.clock = clock;
-		this.setReplayOffset(offsetMeasures, offsetBeats, offset_ms);
+		if(this.loopBuilder != null) {
+			float[] floatBuffer =loopBuilder.createSamples(inputFormat.getFrameRate(), clock);
+			byte[] byteBuffer = new byte[floatBuffer.length*inputFormat.getFrameSize()];
+			new DigitalAnalogConverter(inputFormat).convert(floatBuffer,byteBuffer);
+			this.replacementBuffer = stereoConvert(byteBuffer);
+			rebuildLoopFlag = true;
+			
+			this.setReplayOffset(0, 0, 0); //no offset.  Just a pre-generated loop.  
+		}
+		else {
+			this.setReplayOffset(offsetMeasures, offsetBeats, offset_ms);
+		}
+		
 	}
 
 	public double getRMS(double windowInMS){
@@ -254,21 +283,21 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 			sumSqr += sqr;
 		}
 		return Math.sqrt(sumSqr)/nSamples;
-
+		
 	}
 
 	/*public int getAddDelayMeasures(){
 		return offsetMeasures;
 	}
-	
+
 	public int getAddDelayBeats(){
 		return offsetBeats;
 	}
-	
+
 	public int getAddDelayMS(){
 		return offset_ms;
 	}*/
-	
+
 	public int getTotalDelayInMS() {
 		return total_offset_ms;
 	}
@@ -290,7 +319,7 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 	@Override
 	public void startRecording(OutputStream output, long startTime) {
 		this.recorder = new AudioTrackRecorder(output, this.inputFormat, startTime);
-		
+
 	}
 
 
@@ -326,5 +355,5 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 		this.setReplayOffset(offsetMeasures, 0, 
 				offset_ms);
 	}
-	
+
 }

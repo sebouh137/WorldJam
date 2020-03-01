@@ -6,7 +6,7 @@ import worldjam.time.ClockSetting;
 import worldjam.util.DefaultObjects;
 import worldjam.util.DigitalAnalogConverter;
 
-public class Metronome implements ChannelAutomator{
+public class Metronome implements LoopBuilder{
 	long channelID = 10;
 	@Override
 	public float[] createSamples(double frameRate, ClockSetting clock) {

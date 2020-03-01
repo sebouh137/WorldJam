@@ -29,7 +29,7 @@ public class PlaybackManager implements AudioSubscriber, ClockSubscriber{
 		long metronomeChanID = 1234;
 		PlaybackChannel metronomeChannel;
 		try {
-			metronomeChannel = new AutomatedChannel(mixer, format, clock, "metronome", metronomeChanID, metronome);
+			metronomeChannel = new PlaybackThread(mixer, format, clock, "metronome", metronomeChanID, metronome);
 			channels.put(metronomeChanID, metronomeChannel);
 			channelNames.put(metronomeChanID, "metronome");
 			channelsChanged();
@@ -49,7 +49,7 @@ public class PlaybackManager implements AudioSubscriber, ClockSubscriber{
 	Map<Long, PlaybackChannel> channels = new HashMap<Long, PlaybackChannel>();
 	private Map<Long, String> channelNames = new HashMap();
 	public void addChannel(long senderID, String name) throws LineUnavailableException{
-		PlaybackChannel channel = new PlaybackThread(mixer, format, clock, name, senderID);
+		PlaybackChannel channel = new PlaybackThread(mixer, format, clock, name, senderID, null);
 		
 		channels.put(senderID, channel);
 		channelNames.put(senderID, name);

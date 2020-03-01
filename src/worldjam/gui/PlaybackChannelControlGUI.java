@@ -6,6 +6,7 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.sound.sampled.*;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -88,7 +89,8 @@ public class PlaybackChannelControlGUI extends JFrame {
 		JTextArea textArea = new JTextArea();
 		textArea.setEditable(false);
 		String text = channel.getMixer().getMixerInfo().toString();
-
+		text += "\n" + channel.getLine().getLineInfo();
+		text += "\nbuffer size: " + ((SourceDataLine)channel.getLine()).getBufferSize();
 		textArea.setText(text);
 		textArea.setLineWrap(true);
 		textArea.setWrapStyleWord(true);

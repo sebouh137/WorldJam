@@ -43,16 +43,14 @@ public class NetworkInfoWindow extends JFrame{
 		JScrollPane jsp = new JScrollPane(textArea);
 		panel.add(jsp, BorderLayout.CENTER);
 		
-		String info = "";
-		info += "username: " + client.getUserName();
-		info += " (id = " + client.getDescriptor().clientID + ")\n";
-		info +=  "server socket listening on port " +  client.getServerSocket().getLocalPort() ;
-		if(!client.getServerSocket().getInetAddress().getHostAddress().equals("0.0.0.0")) {
-			info +=  " (address = " +  client.getServerSocket().getInetAddress() +")\n";
-		}
-		else 
-			info += " (listening on all local IP addresses)\n";
+		String info = client.getFormattedSessionStatusString();
+		
 		textArea.setText(info);
+		JButton refresh = new JButton("Refresh");
+		refresh.addActionListener((e)->{
+			textArea.setText(client.getFormattedSessionStatusString());
+		});
+		panel.add(refresh,BorderLayout.SOUTH);
 		return panel;
 	}
 
@@ -78,7 +76,6 @@ public class NetworkInfoWindow extends JFrame{
 			try {
 				textArea.setText(NetworkUtils.getNetworkInterfaceInfo(!chckbxNewCheckBox.isSelected()));
 			} catch (SocketException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 		};

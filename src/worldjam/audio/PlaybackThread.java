@@ -188,9 +188,10 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 				sleepTime += msPerMeasure;
 			Thread.sleep(sleepTime);
 			loopStartTime = prestart+sleepTime;
-
+			loopStartTime = System.currentTimeMillis();
 			sdl.start();
-
+			long postStart = System.currentTimeMillis()-loopStartTime;
+			System.out.println("sdl takes " + postStart + " ms to start");
 			//System.out.println("blahhhh" + ((System.currentTimeMillis()-loopStartTime)*1000 - sdl.getMicrosecondPosition()));
 		} catch (InterruptedException e) {
 			e.printStackTrace();
@@ -211,10 +212,10 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 			if(bufferPos + bytesToBePlayed > len || bufferPos + defaultBytesPerCycle + minBytesPerCycle > len) {
 				bytesToBePlayed = len -bufferPos;
 				bufferPositionNextCycle = 0;
-				if(loopBuilder != null) System.out.println("new cycle");
+				//if(loopBuilder != null) System.out.println("new cycle");
 			} else if (bufferPos + bytesToBePlayed == len) {
 				bufferPositionNextCycle = 0;
-				if(loopBuilder != null) System.out.println("new cycle");
+				//if(loopBuilder != null) System.out.println("new cycle");
 			} else {
 				bufferPositionNextCycle = bufferPos + bytesToBePlayed;
 			}
@@ -223,14 +224,22 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 			if (rebuildLoopFlag) {
 				this.buffer = replacementBuffer;
 				long now = System.currentTimeMillis();
+				//now += 500; // TODO Figure out a better solution than this. 
 				int framePos = (int)(((now-clock.startTime)%clock.getMsPerMeasure())*playbackFormat.getFrameRate()/1000.);
 				System.out.println("rebuilding loop\nframePos =" + framePos + "\nbufferLength=" + 
 						buffer.length + "\nLoopDuration (s) =" + buffer.length/(playbackFormat.getFrameRate()*playbackFormat.getFrameSize()));
 				bufferPositionNextCycle = framePos*playbackFormat.getFrameSize();
 				rebuildLoopFlag = false;
 			}
+			if (resyncFlag) {
+				long now = System.currentTimeMillis();
+				int framePos = (int)(((now-this.loopStartTime)%clock.getMsPerMeasure())*playbackFormat.getFrameRate()/1000.);
+				// TODO include code to resync the playback with System.currentTimeMillis()
+				resyncFlag = true;
+			}
 		}
 	}
+	private boolean resyncFlag;
 	private boolean rebuildLoopFlag;
 	private LoopBuilder loopBuilder;
 

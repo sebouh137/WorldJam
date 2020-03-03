@@ -130,8 +130,8 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 	}
 
 	//recycled byte array
-	boolean recycleStereoByteArray = true;
-	byte stereoConverted[];
+	private boolean recycleStereoByteArray = true;
+	private byte stereoConverted[];
 	
 	protected byte[] stereoConvert(byte[] mono) {
 		
@@ -257,6 +257,8 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 	public AudioFormat getInputFormat(){
 		return inputFormat;
 	}
+	
+	private byte [] generatedLoop;
 
 	public void changeClockSettingsNow(ClockSetting clock) {
 		this.clock = clock;
@@ -264,15 +266,47 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 			float[] floatBuffer =loopBuilder.createSamples(inputFormat.getFrameRate(), clock);
 			byte[] byteBuffer = new byte[floatBuffer.length*inputFormat.getFrameSize()];
 			new DigitalAnalogConverter(inputFormat).convert(floatBuffer,byteBuffer);
-			this.replacementBuffer = stereoConvert(byteBuffer);
-			rebuildLoopFlag = true;
+			this.generatedLoop = stereoConvert(byteBuffer);
 			
-			this.changeDelaySetting(delaySetting); 
-		}
-		else {
-			this.changeDelaySetting(delaySetting);
 		}
 		
+		this.validateDelays();
+	}
+	
+	private void validateDelays() {
+		// Different mechanisms are used for delaying streamed versus looped channels.
+		// For looped channels, you shift everything once, and replace the buffer contents.  
+		// For streamed channels, you change the offset in the position where the newly received samples are written 
+		// into the buffer.  
+		if(loopBuilder != null && generatedLoop != null) {
+			this.replacementBuffer = addDelayToLoop(generatedLoop, delaySetting);
+			rebuildLoopFlag = true;
+		} else {
+			int total_offset_ms = (delaySetting.getMeasuresDelay()*clock.beatsPerMeasure)*clock.msPerBeat+
+					delaySetting.getAdditionalDelayAudio()+delaySetting.getAdditionalDelayGlobal();
+			replayOffsetInBytes = (int) (total_offset_ms*playbackFormat.getFrameRate()/1000.)*playbackFormat.getFrameSize();
+			
+		}
+	}
+
+	private byte[] addDelayToLoop(byte[] input, DelaySetting delaySetting) {
+		int offsetInMs = delaySetting.getAdditionalDelayAudio()+delaySetting.getAdditionalDelayGlobal();
+		int offsetInBytes = ((int)(offsetInMs*playbackFormat.getFrameRate()/1000.)*playbackFormat.getFrameSize());
+		byte output[]; 
+		if(offsetInBytes > 0) {
+			output = new byte[input.length];
+			System.arraycopy(input, 0, output, offsetInBytes, output.length-offsetInBytes);
+			System.arraycopy(input, output.length-offsetInBytes, output, 0, offsetInBytes);
+		} else if(offsetInBytes < 0){
+			offsetInBytes = input.length + offsetInBytes;
+			output = new byte[input.length];
+			System.arraycopy(input, 0, output, offsetInBytes, output.length-offsetInBytes);
+			System.arraycopy(input, output.length-offsetInBytes, output, 0, offsetInBytes);
+		}
+		else {
+			output = input.clone();
+		}
+		return output;
 	}
 
 	public double getRMS(double windowInMS){
@@ -357,10 +391,7 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 	public void changeDelaySetting(DelaySetting newDelaySetting) {
 		
 		this.delaySetting = newDelaySetting;
-		int total_offset_ms = (newDelaySetting.getMeasuresDelay()*clock.beatsPerMeasure)*clock.msPerBeat+
-				newDelaySetting.getAdditionalDelayAudio()+newDelaySetting.getAdditionalDelayGlobal();
-		replayOffsetInBytes = (int) (
-				total_offset_ms*playbackFormat.getFrameRate()/1000.)*playbackFormat.getFrameSize();
+		validateDelays();
 		
 	}
 	private DelaySetting delaySetting;

@@ -8,6 +8,7 @@ import javax.swing.JMenuItem;
 
 import worldjam.exe.Client;
 import worldjam.gui.conductor.BezierConductor;
+import worldjam.gui.extras.Tuner;
 import worldjam.time.ClockSetting;
 import worldjam.time.ClockSubscriber;
 import worldjam.time.MutableClock;
@@ -37,6 +38,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.JList;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.HashMap;
@@ -89,7 +91,7 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		JMenuItem mntmInputMonitor = new JMenuItem("Input Monitor...");
 		mnInput.add(mntmInputMonitor);
 		
-		JMenu mnOtherSettings = new JMenu("Other Settings");
+		JMenu mnOtherSettings = new JMenu("Timing");
 		menuBar.add(mnOtherSettings);
 		
 		JMenuItem mntmTempo = new JMenuItem("Tempo ...");
@@ -120,12 +122,68 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 			}
 		});
 		
+		
+		
+		JMenu mnTools = new JMenu("Tools");
+		menuBar.add(mnTools);
+		
+		JMenuItem mntmTuner = new JMenuItem("Tuner...");
+		mnTools.add(mntmTuner);
+		mntmTuner.addActionListener(e->{
+			Tuner tuner = new Tuner();
+			client.getInput().addSubscriber(tuner);
+			JFrame frame = new JFrame();
+			frame.setTitle("WorldJam: Tuner");
+			frame.setSize(300,300);
+			frame.add(tuner);
+			frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+			
+			frame.addWindowListener(new WindowListener() {
+
+				@Override
+				public void windowOpened(WindowEvent e) { 
+					
+				}
+
+				@Override
+				public void windowClosing(WindowEvent e) {
+					client.getInput().removeSubscriber(tuner);
+				}
+
+				@Override
+				public void windowClosed(WindowEvent e) {
+					client.getInput().removeSubscriber(tuner);
+				}
+
+				@Override
+				public void windowIconified(WindowEvent e) {
+					client.getInput().removeSubscriber(tuner);
+				}
+
+				@Override
+				public void windowDeiconified(WindowEvent e) {
+					client.getInput().addSubscriber(tuner);
+				}
+
+				@Override
+				public void windowActivated(WindowEvent e) {
+					
+				}
+
+				@Override
+				public void windowDeactivated(WindowEvent e) {
+					
+				}
+				
+			});
+			frame.setVisible(true);
+			
+		});
 		JMenuItem mnRecording = new JMenuItem("Recording...");
-		menuBar.add(mnRecording);
+		mnTools.add(mnRecording);
 		mnRecording.addActionListener(e->{
 			new RecordDialog(this.client).setVisible(true);
 		});
-		
 		mntmDelays.addActionListener(e->{
 			new DelaySettingsDialog(this.client.getDelayManager()).setVisible(true);;
 		});

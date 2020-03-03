@@ -135,7 +135,7 @@ public class PlaybackManager implements AudioSubscriber, ClockSubscriber{
 		// of frames.
 		timestamp/=10; timestamp*= 10; 
 		for(PlaybackChannel channel : channels.values()){
-			File trackFile = new File(directory.getPath() + File.separatorChar +"trk_"+ channel.getSourceName() + ext);
+			File trackFile = new File(directory.getPath() + File.separatorChar +"trk_"+ channel.getChannelName() + ext);
 			channel.startRecording(new FileOutputStream(trackFile), timestamp);
 		}
 	}

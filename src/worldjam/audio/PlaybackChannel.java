@@ -11,25 +11,21 @@ import worldjam.time.ClockSubscriber;
 import worldjam.time.DelayChangeListener;
 
 public interface PlaybackChannel extends RMS, AudioSubscriber, ClockSubscriber, DelayChangeListener{
-	public void setReplayOffset(int nMeasures, int nBeats, int n_ms);
 	public void close();
 	public void changeClockSettingsNow(ClockSetting beatClock);
 	public ClockSetting getClock();
 	public Line getLine();
 	public Mixer getMixer();
-	/*public int getAddDelayMeasures();
-	public int getAddDelayBeats();
-	public int getAddDelayMS();*/
-	public int getTotalDelayInMS();
 	public void setFilter(AudioFilter filter);
 	public AudioFormat getInputFormat();
 	public AudioFormat getPlaybackFormat();
 	public AudioFilter getFilter();
-	public String getSourceName();
-	public long getSenderID();
+	public String getChannelName();
+	public long getChannelID();
 	void startRecording(OutputStream output, long startTime);
 	public void stopRecording(long timestamp);
 	public void setMuted(boolean muted);
 	public boolean isMuted();
 	public boolean canBeMuted();
+	public int getTotalDelayInMS();
 }

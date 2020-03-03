@@ -94,8 +94,8 @@ public class Client implements ClockSubscriber {
 			attachWebcam(webcamThread);
 		}
 		for (PlaybackChannel pbc : playback.getChannels()) {
-			delayManager.addChannel(pbc.getSenderID(), pbc.getSourceName());
-			delayManager.getChannel(pbc.getSenderID()).addListener(pbc);
+			delayManager.addChannel(pbc.getChannelID(), pbc.getChannelName());
+			delayManager.getChannel(pbc.getChannelID()).addListener(pbc);
 		}
 	}
 

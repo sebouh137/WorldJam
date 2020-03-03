@@ -29,16 +29,16 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 	private AudioFormat playbackFormat;
 	private AudioFormat inputFormat;
 	private Mixer mixer;
-	private String sourceName;
-	private long senderID;
+	private String channelName;
+	private long channelID;
 	
 	public PlaybackThread(Mixer mixer, AudioFormat inputFormat, ClockSetting clock, String sourceName, long senderID) throws LineUnavailableException{
 		this(mixer, inputFormat, clock, sourceName, senderID, null);
 	}
 		
 	public PlaybackThread(Mixer mixer, AudioFormat inputFormat, ClockSetting clock, String sourceName, long senderID, LoopBuilder loopBuilder) throws LineUnavailableException{
-		this.sourceName = sourceName;
-		this.senderID = senderID;
+		this.channelName = sourceName;
+		this.channelID = senderID;
 		this.inputFormat = inputFormat;
 		this.loopBuilder = loopBuilder;
 		System.out.println("input format: " + inputFormat);
@@ -59,8 +59,7 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 		this.mixer = mixer;
 		sdl = (SourceDataLine)mixer.getLine(info);
 		this.clock = clock;
-		setReplayOffset(1, 0, Configurations.getIntValue("calib.delays.audio"));
-		//a buffer of 10 measures long is overkill
+		this.changeDelaySetting(DelaySetting.defaultDelaySetting);
 		int nMeasuresInBuffer = 5;
 		int bufferSize = (int)(playbackFormat.getFrameSize()*
 				playbackFormat.getFrameRate()*
@@ -70,27 +69,26 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 		buffer = new byte[bufferSize];
 		this.start();
 	}
-	public String getSourceName() {
-		return sourceName;
+	public String getChannelName() {
+		return channelName;
 	}
 
 
-	public long getSenderID() {
-		return senderID;
+	public long getChannelID() {
+		return channelID;
 	}
 	private byte[] buffer;
 
 
-	private int offsetMeasures; private int offsetBeats; private int offset_ms, total_offset_ms;
 
-	public void setReplayOffset(int nMeasures, int nBeats, int n_ms){
+	/*public void setReplayOffset(int nMeasures, int nBeats, int n_ms){
 		this.offsetMeasures = nMeasures;
 		this.offsetBeats = nBeats;
 		this.offset_ms = n_ms;
 		this.total_offset_ms = (nMeasures*clock.beatsPerMeasure+nBeats)*clock.msPerBeat+n_ms;
 		replayOffsetInBytes = (int) (
 				total_offset_ms*playbackFormat.getFrameRate()/1000.)*playbackFormat.getFrameSize();
-	}
+	}*/
 
 	/*public void setReplayOffsetInMeasures(int nMeasures){
 		replayOffsetInBytes = (int) (nMeasures*clock.beatsPerMeasure*clock.msPerBeat*format.getFrameRate()/1000.)*format.getFrameSize();
@@ -229,6 +227,7 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 				System.out.println("rebuilding loop\nframePos =" + framePos + "\nbufferLength=" + 
 						buffer.length + "\nLoopDuration (s) =" + buffer.length/(playbackFormat.getFrameRate()*playbackFormat.getFrameSize()));
 				bufferPositionNextCycle = framePos*playbackFormat.getFrameSize();
+				replacementBuffer = null;
 				rebuildLoopFlag = false;
 			}
 			if (resyncFlag) {
@@ -268,10 +267,10 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 			this.replacementBuffer = stereoConvert(byteBuffer);
 			rebuildLoopFlag = true;
 			
-			this.setReplayOffset(0, 0, 0); //no offset.  Just a pre-generated loop.  
+			this.changeDelaySetting(delaySetting); 
 		}
 		else {
-			this.setReplayOffset(offsetMeasures, offsetBeats, offset_ms);
+			this.changeDelaySetting(delaySetting);
 		}
 		
 	}
@@ -307,9 +306,7 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 		return offset_ms;
 	}*/
 
-	public int getTotalDelayInMS() {
-		return total_offset_ms;
-	}
+	
 
 	public ClockSetting getClock() {
 		return clock;
@@ -358,11 +355,19 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 	}
 	@Override
 	public void changeDelaySetting(DelaySetting newDelaySetting) {
-		//I am just going to use existing methods here.  
-		this.offsetMeasures = newDelaySetting.getMeasuresDelay();
-		this.offset_ms = newDelaySetting.getAdditionalDelayAudio()+newDelaySetting.getAdditionalDelayGlobal();
-		this.setReplayOffset(offsetMeasures, 0, 
-				offset_ms);
+		
+		this.delaySetting = newDelaySetting;
+		int total_offset_ms = (newDelaySetting.getMeasuresDelay()*clock.beatsPerMeasure)*clock.msPerBeat+
+				newDelaySetting.getAdditionalDelayAudio()+newDelaySetting.getAdditionalDelayGlobal();
+		replayOffsetInBytes = (int) (
+				total_offset_ms*playbackFormat.getFrameRate()/1000.)*playbackFormat.getFrameSize();
+		
+	}
+	private DelaySetting delaySetting;
+
+	@Override
+	public int getTotalDelayInMS() {
+		return delaySetting.getAdditionalDelayAudio()+delaySetting.getAdditionalDelayGlobal()+delaySetting.getMeasuresDelay()*clock.getMsPerMeasure();
 	}
 
 }

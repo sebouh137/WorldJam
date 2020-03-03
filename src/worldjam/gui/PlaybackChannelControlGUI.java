@@ -158,7 +158,7 @@ public class PlaybackChannelControlGUI extends JFrame {
 
 		JSpinner spinner_2 = new JSpinner();
 		GridBagConstraints gbc_spinner_2 = new GridBagConstraints();
-		spinner_2.setModel(new SpinnerNumberModel(dm.getChannel(channel.getSenderID()).getDelaySetting().getAdditionalDelayAudio(), 
+		spinner_2.setModel(new SpinnerNumberModel(dm.getChannel(channel.getChannelID()).getDelaySetting().getAdditionalDelayAudio(), 
 				-1000, 1000, 10));
 		gbc_spinner_2.insets = new Insets(0, 0, 5, 5);
 		gbc_spinner_2.gridx = 1;
@@ -261,7 +261,7 @@ public class PlaybackChannelControlGUI extends JFrame {
 													/*channel.setReplayOffset((Integer)spinner.getModel().getValue(),
 															0(Integer)spinner_1.getModel().getValue(), 
 															(Integer)spinner_2.getModel().getValue());*/
-													DelayedChannel dc = dm.getChannel(channel.getSenderID());
+													DelayedChannel dc = dm.getChannel(channel.getChannelID());
 													dc.setDelay(new DelaySetting((Integer)spinner.getModel().getValue(), 
 															dc.getDelaySetting().getAdditionalDelayGlobal(),
 															(Integer)spinner_2.getModel().getValue(),
@@ -273,16 +273,16 @@ public class PlaybackChannelControlGUI extends JFrame {
 				
 						btnRevert.addActionListener(
 								e -> {
-									spinner.setValue(dm.getChannel(channel.getSenderID()).getDelaySetting().getMeasuresDelay());
+									spinner.setValue(dm.getChannel(channel.getChannelID()).getDelaySetting().getMeasuresDelay());
 									//spinner_1.setValue(channel.getAddDelayBeats());
-									spinner_2.setValue(dm.getChannel(channel.getSenderID()).getDelaySetting().getAdditionalDelayAudio());
+									spinner_2.setValue(dm.getChannel(channel.getChannelID()).getDelaySetting().getAdditionalDelayAudio());
 								});
 
 		ChangeListener changeListener = e-> {
 			boolean isSame = 
-					(dm.getChannel(channel.getSenderID()).getDelaySetting().getMeasuresDelay() == (int)spinner.getValue())
+					(dm.getChannel(channel.getChannelID()).getDelaySetting().getMeasuresDelay() == (int)spinner.getValue())
 					/*&& (channel.getAddDelayBeats() == (int)spinner_1.getValue())*/
-					&&  (dm.getChannel(channel.getSenderID()).getDelaySetting().getAdditionalDelayAudio() == (int)spinner_2.getValue());
+					&&  (dm.getChannel(channel.getChannelID()).getDelaySetting().getAdditionalDelayAudio() == (int)spinner_2.getValue());
 			btnApply.setEnabled(!isSame);
 			btnRevert.setEnabled(!isSame);
 		};

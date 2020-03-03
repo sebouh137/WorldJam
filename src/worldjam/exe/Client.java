@@ -71,7 +71,7 @@ public class Client implements ClockSubscriber {
 		if(playback != null && input != null){
 			try {
 				input.setSenderID(this.selfDescriptor.clientID);
-				playback.addChannel(input.getSenderID(), this.selfDescriptor.displayName);
+				playback.addChannel(input.getSenderID(), "loopback");
 				try {
 					Thread.sleep(700);//the thread sleep prevents problems where the channel cannot be muted 
 					//right after being added.  Is this necessary?  Idk

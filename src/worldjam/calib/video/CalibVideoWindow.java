@@ -3,6 +3,7 @@ package worldjam.calib.video;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.EventQueue;
+import java.awt.GraphicsEnvironment;
 import java.awt.image.BufferedImage;
 
 import javax.swing.JButton;
@@ -17,6 +18,10 @@ import worldjam.video.ViewPanel;
 
 public class CalibVideoWindow extends JFrame {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -8315841806214717460L;
 	static BufferedImage allBlack;
 	static BufferedImage allWhite;
 	
@@ -56,8 +61,8 @@ public class CalibVideoWindow extends JFrame {
 	 */
 	
 	public CalibVideoWindow(CalibVideo calibrator) {
-		setBounds(0, 0, 800, 1800);
-		this.setState(MAXIMIZED_BOTH);
+		setBounds(GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds());
+		//this.setState(MAXIMIZED_BOTH);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		contentPane.setLayout(new BorderLayout(0, 0));

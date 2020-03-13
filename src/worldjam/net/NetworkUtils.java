@@ -101,7 +101,7 @@ public class NetworkUtils {
 				String ip = in.readLine();
 				socket.close();
 				return ip;
-			} catch ( UnknownHostException | NoRouteToHostException e2) {
+			} catch ( UnknownHostException | NoRouteToHostException | ConnectException e2) {
 				//do nothing.  don't clog up the command line with junk
 			} catch (Exception e){
 				e.printStackTrace();

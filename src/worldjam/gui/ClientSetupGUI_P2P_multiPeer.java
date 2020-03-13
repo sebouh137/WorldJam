@@ -29,7 +29,7 @@ import com.github.sarxos.webcam.Webcam;
 import worldjam.audio.InputThread;
 import worldjam.audio.PlaybackManager;
 import worldjam.exe.Client;
-import worldjam.gui.conductor.BezierConductor;
+import worldjam.gui.conductor.Conductor;
 import worldjam.time.ClockSetting;
 import worldjam.util.DefaultObjects;
 import worldjam.util.WJUtil;
@@ -73,7 +73,7 @@ public class ClientSetupGUI_P2P_multiPeer extends JFrame{
 	private JComboBox<MixerWrapper> comboBox;
 	private JLabel lblOutput;
 	private JComboBox<MixerWrapper> comboBox_1;
-	private BezierConductor previewConductor;
+	private Conductor previewConductor;
 	private JTextField textFieldPort;
 	private JLabel lblServerIpAddress;
 	private JLabel lblLocalPort;
@@ -302,7 +302,7 @@ public class ClientSetupGUI_P2P_multiPeer extends JFrame{
 		gbc_panel.gridx = 5;
 		gbc_panel.gridy = 1;
 
-		previewConductor = new BezierConductor(
+		previewConductor = new Conductor(
 				new ClockSetting(
 						(int)spinner_msPerBeat.getValue(),
 						(int)spinner.getValue(),

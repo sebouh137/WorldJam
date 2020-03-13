@@ -20,7 +20,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import worldjam.gui.conductor.BezierConductor;
+import worldjam.gui.conductor.Conductor;
 import worldjam.time.ClockSetting;
 import worldjam.time.ClockSubscriber;
 import worldjam.time.MutableClock;
@@ -250,7 +250,7 @@ public class BPMWindow extends JFrame {
 		gbc_conductor.gridx = 1;
 		gbc_conductor.gridy = 4;
 		gbc_conductor.gridwidth=2;
-		conductor = new BezierConductor(clock.getSetting());
+		conductor = new Conductor(clock.getSetting());
 		mutableClock.addChangeSubscriber(conductor);
 		contentPane.add(conductor, gbc_conductor);
 		//contentPane.add(button, gbc_button);
@@ -264,6 +264,6 @@ public class BPMWindow extends JFrame {
 	private JSeparator separator;
 	private JButton button;
 	private JButton btnReset;
-	private BezierConductor conductor;
+	private Conductor conductor;
 
 }

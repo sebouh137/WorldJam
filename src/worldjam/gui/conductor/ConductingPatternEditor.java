@@ -18,7 +18,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JSpinner;
 
-import worldjam.gui.conductor.BezierConductor;
+import worldjam.gui.conductor.Conductor;
 import worldjam.time.ClockSetting;
 
 import javax.swing.SpinnerNumberModel;
@@ -35,7 +35,7 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 
 public class ConductingPatternEditor extends JFrame{
-	class EditorConductor extends BezierConductor{
+	class EditorConductor extends Conductor{
 		public EditorConductor(ClockSetting clock, ConductingPattern pattern) {
 			super(clock, pattern);
 			this.addMouseMotionListener(mouseAdapter);

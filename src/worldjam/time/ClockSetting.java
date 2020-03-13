@@ -38,7 +38,7 @@ public class ClockSetting {
 	 * @return another instance of BeatClock with a different tempo
 	 */
 	public ClockSetting createWithDifferentTempo(int newMsPerBeat, long whenEffective){
-		long t = System.currentTimeMillis();
+		//long t = System.currentTimeMillis();
 		long newStartTime = whenEffective - (long)((newMsPerBeat/(double)msPerBeat*(whenEffective- this.startTime)));
 		newStartTime = (newStartTime/10)*10;
 		return new ClockSetting(newMsPerBeat, beatsPerMeasure, beatDenominator, newStartTime);

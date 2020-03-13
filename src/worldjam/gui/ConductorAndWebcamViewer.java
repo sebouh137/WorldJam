@@ -3,35 +3,21 @@ package worldjam.gui;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Graphics;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.GridLayout;
-import java.awt.image.BufferedImage;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.OverlayLayout;
 
-import worldjam.gui.conductor.BezierConductor;
+import worldjam.gui.conductor.Conductor;
 import worldjam.time.ClockSetting;
 import worldjam.time.ClockSubscriber;
 import worldjam.time.DelayManager;
-import worldjam.util.DefaultObjects;
 import worldjam.video.VideoFrame;
 import worldjam.video.VideoSubscriber;
 import worldjam.video.ViewPanel;
-import worldjam.video.WebcamThread;
 
 public class ConductorAndWebcamViewer extends JPanel implements ClockSubscriber, VideoSubscriber {
 	
@@ -40,7 +26,7 @@ public class ConductorAndWebcamViewer extends JPanel implements ClockSubscriber,
 	 * 
 	 */
 	private static final long serialVersionUID = -2249827020866967439L;
-	BezierConductor conductor;
+	Conductor conductor;
 	JPanel viewerGrid = new JPanel(); 
 	private Map<Long, ViewPanel> viewers = new HashMap<Long, ViewPanel>();
 	ViewPanel selfieViewer;
@@ -51,7 +37,7 @@ public class ConductorAndWebcamViewer extends JPanel implements ClockSubscriber,
 		System.setProperty("sun.awt.noerasebackground", "true");
 	}
 	//= new BezierConductor();
-	public ConductorAndWebcamViewer(BezierConductor conductor, DelayManager dm){
+	public ConductorAndWebcamViewer(Conductor conductor, DelayManager dm){
 		conductor.setOpaque(false);
 		conductor.setStroke(new BasicStroke(8));
 		//conductor.setBattonColor(new Color(1.f, 1.f, 1.f, .5f));
@@ -128,7 +114,7 @@ public class ConductorAndWebcamViewer extends JPanel implements ClockSubscriber,
 			nColumns = (int)Math.ceil(nChannels/(double)nRows);
 			viewerGrid.removeAll();
 			viewerGrid.setLayout(new GridLayout(nRows,nColumns));
-			int i = 0;
+			//int i = 0;
 			for(ViewPanel panel : viewers.values()){
 				viewerGrid.add(panel);
 			}

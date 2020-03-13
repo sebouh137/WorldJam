@@ -1,71 +1,152 @@
 package worldjam.gui.conductor;
 
 import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Stroke;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Path2D;
+import java.awt.geom.PathIterator;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import javax.swing.JFrame;
 
 import worldjam.gui.VisualMetronome;
 import worldjam.time.ClockSetting;
 import worldjam.time.ClockSubscriber;
-/**
- * Mimics a conductor's baton.
- * @author spaul
- *
- */
-public abstract class Conductor extends VisualMetronome implements ClockSubscriber{
+import worldjam.util.DefaultObjects;
+public class Conductor extends VisualMetronome implements ClockSubscriber{
 
-	
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -8162896956489786921L;
-	public Conductor(ClockSetting clock) {
+	private static final long serialVersionUID = -3856681830782446266L;
+	private ConductingPattern pattern;
+
+	
+
+	public Conductor(ClockSetting clock, ConductingPattern pattern) {
 		super(clock);
+		this.pattern = pattern;
+		segments = pattern.getSegments();	
+	}
+	
+	public void changeClockSettingsNow(ClockSetting clock){
+		if(getClock() == null){
+			super.changeClockSettingsNow(clock);
+			return;
+		}
+		if(getClock().beatsPerMeasure < clock.beatsPerMeasure){
+			setPattern(DefaultConductingPatternProvider.getInstance().getDefaultPattern(clock.beatsPerMeasure));
+			super.changeClockSettingsNow(clock);
+		} else if(getClock().beatsPerMeasure > clock.beatsPerMeasure){
+			super.changeClockSettingsNow(clock);
+			setPattern(DefaultConductingPatternProvider.getInstance().getDefaultPattern(clock.beatsPerMeasure));
+		} else {
+			super.changeClockSettingsNow(clock);
+		}
 	}
 
+	public Object getPattern() {
+		return pattern;
+	}
+	protected List<BezierSegment> segments;
+	private Font measureNumFont = new Font(Font.SANS_SERIF, Font.PLAIN, 24);
 	
-	public void paint(Graphics g){
-		super.paint(g);
-		//apparently this is supposed to make things render smoother
-		if(prev != null)
-			g.drawImage(prev, 0, 0, null);
-		//g.setColor(this.get);
+
+	public Conductor(ClockSetting clock) {
+		this(clock, DefaultConductingPatternProvider.getInstance().getDefaultPattern(clock != null ? clock.beatsPerMeasure : 4));
+		//this.setBackground(Color.BLACK);
+		this.setOpaque(false);
+	}
+	
+	
+	
+	@Override
+	public void paint(Graphics2D g2, long time){
 		
-		double t = ((System.currentTimeMillis() - clock.startTime)%(clock.msPerBeat*clock.beatsPerMeasure))/(double)clock.msPerBeat;
+		
+		double t = ((time - clock.startTime)
+				%(clock.msPerBeat*clock.beatsPerMeasure))
+				/(double)clock.msPerBeat;
 
-		BufferedImage img = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_3BYTE_BGR);
-		double x1 =  x(t);//interpolate(x[i],x[(i+1)%x.length], Math.pow(a, 1.5));
-		double y1 =  y(t);//1-interpolate(y[i],y[(i+1)%y.length], Math.pow(a, 3));
+		double x=0,y=0;
+		//BezierSegment segment = segments.get((int)t);
+		for(BezierSegment s : segments){
+			if (t > s.t1 && t <= s.t2){
+				double u = (t-s.t1)/(s.t2-s.t1);
+				x = s.interpolateX(u);
+				y = s.interpolateY(u);
+				break;
+			}
+		} 
 
-		Graphics2D g2 = (Graphics2D)img.createGraphics();
-		g2.setStroke(new BasicStroke(3));
+		
+		//Graphics2D g2 = (Graphics2D)g;
+		
+
+		//draw the baton
+		g2.setColor(battonColor);
+		g2.setStroke(stroke);
 		g2.drawLine(
-				(int)(getWidth()*(.1+.8*x1)), 
-				(int)(getHeight()*(.1+.8*y1)), 
-				(int)(getWidth()*(.1+.4*x1)), 
-				(int)(getHeight()*(.25+.4*y1))
+				(int)(getWidth()*(.1+.8*x)), 
+				(int)(getHeight()*(.1+.8*y)), 
+				(int)(getWidth()*(.1+.4*x)), 
+				(int)(getHeight()*(.25+.4*y))
 				);
+		if(showMeasureNumber){
+			g2.setFont(measureNumFont );
+			g2.drawString(String.format("measure %d", clock.getCurrentMeasure()), 10, getHeight()-10);
+		}
+		this.paintExtras(g2);
 		
-		g.drawString(String.format("measure %d", clock.getCurrentMeasure()), 10, getHeight()-10);
-		//apparently this is supposed to make things render smoother
-		g.drawImage(img, 0, 0, null);
-		prev = img;
+	}
+	void paintExtras(Graphics g){
+		
+	}
+	
+	
+	public static void main(String arg[]){
+		JFrame frame = new JFrame();
+		frame.setSize(300, 300);
+		
+		Path2D path = new Path2D.Double();
+		path.moveTo(.5, 0);
+		path.curveTo(.5, 0, .5, 1, .5, 1);
+		path.curveTo(.5, .8, .1, .5, 0, .5);
+		path.curveTo(.3, .7, .7, .3, 1, .5);
+		path.curveTo(.8,.5, .5, .1, .5, 0);
+		
+		
+		Conductor tb = new Conductor(DefaultObjects.bc0, 
+				new ConductingPattern(BezierUtil.generateSegments(path)));
+		frame.add(tb);
+		frame.setVisible(true);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	}
+	public void setPattern(ConductingPattern pattern) {
+		this.pattern = pattern;
+		this.segments = pattern.getSegments();
+	}
+	private Stroke stroke = new BasicStroke(3);
+	private boolean showMeasureNumber;
+	private Color battonColor = Color.BLACK;
+	public void setStroke(Stroke stroke){
+		this.stroke = stroke;
 	}
 
-	BufferedImage prev = null;
-	
-	/**
-	 * 
-	 * @param t time since the begining of the measure, in beats.
-	 * @return x coordinate of the end of the baton, between 0 and 1
-	 */
-	protected abstract double x(double t);
-	/**
-	 * 
-	 * @param t time since the begining of the measure, in beats.
-	 * @return x coordinate of the end of the baton, between 0 and 1
-	 */
-	protected abstract double y(double t);
-	
+	public void setMeasureNumberVisible(boolean b) {
+		this.showMeasureNumber=false;
+	}
+
+	public void setBattonColor(Color color){
+		this.battonColor  = color;
+	}
 }

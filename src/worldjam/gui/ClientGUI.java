@@ -7,7 +7,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 
 import worldjam.exe.Client;
-import worldjam.gui.conductor.BezierConductor;
+import worldjam.gui.conductor.Conductor;
 import worldjam.gui.extras.Tuner;
 import worldjam.time.ClockSetting;
 import worldjam.time.ClockSubscriber;
@@ -54,7 +54,7 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 	private static final long serialVersionUID = -6893387160409587544L;
 	private Client client;
 	private JMenu mnChannels;
-	private BezierConductor conductor;
+	private Conductor conductor;
 	//private ViewPanel webcamViewer;
 	public ClientGUI(Client client) {
 		addWindowListener(new WindowAdapter() {
@@ -212,7 +212,7 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		});
 		
 		
-		this.conductor = new BezierConductor(client.getBeatClock());
+		this.conductor = new Conductor(client.getBeatClock());
 		//ViewPanel webcamViewer = new ViewPanel();
 		//viewManager = new ConductorAndWebcamViewer(conductor, webcamViewer);
 		viewManager = new ConductorAndWebcamViewer(conductor, this.client.getDelayManager());

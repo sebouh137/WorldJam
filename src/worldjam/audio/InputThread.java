@@ -46,6 +46,16 @@ public class InputThread extends Thread implements RMS, ClockSubscriber{
 	private ClockSetting clock;
 	
 	private long timestamp;
+	private long timeCalibration;
+	
+	/**
+	 * Sets the calibration of the timestamp.  
+	 * @param calib The calibration of the timestamp in ms.  This value is subtracted from the timestamp of every recorded sample. 
+	 */
+	public void setTimeCalibration(int calib) {
+		this.timeCalibration = calib;
+	}
+	
 	public void run(){
 		try {
 			tdl.open();
@@ -60,7 +70,7 @@ public class InputThread extends Thread implements RMS, ClockSubscriber{
 			AudioSample message = new AudioSample();
 			message.sampleData = buffer.clone();
 			message.sourceID = this.lineID;
-			message.sampleStartTime = timestamp;
+			message.sampleStartTime = timestamp-timeCalibration;
 			timestamp+= nMsPerLoop;
 			System.arraycopy(buffer, 0, buffer2, 0, buffer.length);
 			for(AudioSubscriber subscriber : subscribers)

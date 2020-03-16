@@ -9,6 +9,7 @@ import javax.sound.sampled.Mixer;
 import worldjam.time.ClockSetting;
 import worldjam.time.ClockSubscriber;
 import worldjam.time.DelayChangeListener;
+import worldjam.time.DelaySetting;
 
 public interface PlaybackChannel extends RMS, AudioSubscriber, ClockSubscriber, DelayChangeListener{
 	public void close();
@@ -28,4 +29,6 @@ public interface PlaybackChannel extends RMS, AudioSubscriber, ClockSubscriber, 
 	public boolean isMuted();
 	public boolean canBeMuted();
 	public int getTotalDelayInMS();
+	public DelaySetting getDelaySetting();
+	void validateDelays();
 }

@@ -1,0 +1,2 @@
+Step 1:  Calibrating the timing of the playback
+Use the buttons below to adjust the timing offset of the playback until the metronome clicks are synchronized with the conductor's baton.  If the metronome click is early, press the right buttons to increase the offset.  If it is late, press the left buttons to decrease the offset.  The loudest click should be on the first beat of the measure.  

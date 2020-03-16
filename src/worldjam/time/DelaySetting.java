@@ -58,4 +58,7 @@ public class DelaySetting {
 				+"\nAdditionalDelay for audio: " + additionalDelayMS_audio
 				+"\nAdditionalDelay for video: " + additionalDelayMS_visual;
 	}
+	public DelaySetting createWithNewAudioDelay(int delay) {
+		return new DelaySetting(measures, additionalDelayMS_global, delay, additionalDelayMS_visual);
+	}
 }

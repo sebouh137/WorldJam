@@ -27,6 +27,7 @@ import worldjam.audio.AudioSample;
 import worldjam.audio.AudioSubscriber;
 import worldjam.gui.ClientGUI;
 import worldjam.gui.ClientSetupGUI_P2P_multiPeer;
+import worldjam.gui.TimeCalibrationDialog;
 import worldjam.net.WJConstants;
 import worldjam.time.ClockSetting;
 import worldjam.time.ClockSubscriber;
@@ -192,6 +193,8 @@ public class Client implements ClockSubscriber {
 		if(gui == null){
 			gui = new ClientGUI(this);
 			gui.setVisible(true);
+			TimeCalibrationDialog tc = new TimeCalibrationDialog(this);
+			tc.setVisible(true);
 		}
 		gui.changeClockSettingsNow(clock);
 	}

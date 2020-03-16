@@ -46,7 +46,7 @@ public class InputThread extends Thread implements RMS, ClockSubscriber{
 	private ClockSetting clock;
 	
 	private long timestamp;
-	private long timeCalibration;
+	private int timeCalibration;
 	
 	/**
 	 * Sets the calibration of the timestamp.  
@@ -54,6 +54,10 @@ public class InputThread extends Thread implements RMS, ClockSubscriber{
 	 */
 	public void setTimeCalibration(int calib) {
 		this.timeCalibration = calib;
+	}
+	
+	public int getTimeCalibration() {
+		return timeCalibration;
 	}
 	
 	public void run(){

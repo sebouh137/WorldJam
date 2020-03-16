@@ -44,4 +44,12 @@ public class DelayManager {
 	public DelayedChannel getChannel(long id){
 		return channels.get(id);
 	}
+	
+	public void setTimeCalibration() {
+		
+	}
+	
+	public void getTimeCalibration() {
+		
+	}
 }

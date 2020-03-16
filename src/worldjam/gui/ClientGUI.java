@@ -111,6 +111,14 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		JMenuItem mntmDelays = new JMenuItem("Delays ...");
 		mnOtherSettings.add(mntmDelays);
 		
+		JMenuItem mntmNewMenuItem = new JMenuItem("Calibration ...");
+		mntmNewMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				new TimeCalibrationDialog(client);
+			}
+		});
+		mnOtherSettings.add(mntmNewMenuItem);
+		
 		JMenu mnDebug = new JMenu("Debug");
 		menuBar.add(mnDebug);
 		
@@ -291,6 +299,8 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		client.getPlaybackManager().updateChannels();
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		channelsChanged();
+		
+		
 	}
 	JList<ClientListItem> clientList;
 	DefaultListModel<ClientListItem> clientListModel;

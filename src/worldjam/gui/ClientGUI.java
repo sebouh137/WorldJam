@@ -114,7 +114,7 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		JMenuItem mntmNewMenuItem = new JMenuItem("Calibration ...");
 		mntmNewMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				new TimeCalibrationDialog(client);
+				new TimeCalibrationDialog(client).setVisible(true);;
 			}
 		});
 		mnOtherSettings.add(mntmNewMenuItem);

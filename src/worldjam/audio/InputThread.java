@@ -13,6 +13,7 @@ import javax.sound.sampled.TargetDataLine;
 
 import worldjam.time.ClockSetting;
 import worldjam.time.ClockSubscriber;
+import worldjam.util.Configurations;
 import worldjam.util.DigitalAnalogConverter;
 
 public class InputThread extends Thread implements RMS, ClockSubscriber{
@@ -32,9 +33,12 @@ public class InputThread extends Thread implements RMS, ClockSubscriber{
 		this.format = format;
 		this.mixer = mixer;
 		this.clock = clock;
+		this.nMsPerLoop = nMsPerLoop;
+		this.timeCalibration = Configurations.getDefaultTimingCalibration(
+				Configurations.AUDIO_INPUT, mixer.getMixerInfo().getName());
+		
 		Line.Info info = new DataLine.Info(TargetDataLine.class, format);
 		tdl = (TargetDataLine)mixer.getLine(info);
-		this.nMsPerLoop = nMsPerLoop;
 		nBytesPerLoop = format.getFrameSize()*(int)(format.getFrameRate()*nMsPerLoop/1000.);
 		buffer = new byte[nBytesPerLoop];
 		buffer2 = new byte[nBytesPerLoop];

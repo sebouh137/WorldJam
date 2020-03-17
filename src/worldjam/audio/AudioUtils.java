@@ -1,6 +1,11 @@
 package worldjam.audio;
 
+import java.util.Arrays;
+
 import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.Mixer;
 
 
 public class AudioUtils {
@@ -33,6 +38,26 @@ public class AudioUtils {
 		
 	}
 	
+	/**
+	 * prints out information about every Mixer available to the AudioSystem
+	 * @throws LineUnavailableException 
+	 */
+	public static void main(String arg[]) throws LineUnavailableException {
+		for (Mixer.Info mixerInfo : AudioSystem.getMixerInfo()) {
+			Mixer mixer = AudioSystem.getMixer(mixerInfo);
+			mixer.open();
+			
+			System.out.println(mixer.getLineInfo());
+			System.out.println(mixer.getMixerInfo());
+			System.out.println(mixerInfo.getName());
+			System.out.println(mixerInfo.getVendor());
+			System.out.println(mixerInfo.getDescription());
+			System.out.println(mixer.getClass());
+			
+			System.out.println(Arrays.toString(mixer.getControls()));
+			
+		}
+	}
 	
 	
 }

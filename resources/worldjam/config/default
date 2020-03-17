@@ -1,4 +1,38 @@
+# Configuration file for WorldJam
+#
+# Everything after a # in a line is commented out
+#
+# To set a variable, use the format:
+#   variable.name = value
+#
+# To create a list variable, use the format
+#   variable.name += entry1
+#   variable.name += entry2
+#   ...
+#   variable.name += finalEntry
+#
+
+
+# By default, WorldJam automatically detects the username using the
+# environmental variables.  
+# Uncomment the following line to use a different default display name
+# config.displayName = "Your Name"
+
+config.audio.output.timeCalibration += Galaxy Buds.* -> -710
+config.audio.input.timeCalibration += Built-in Microphone -> -1060
+
 #calibrate the delays (due to taking longer to record or playback sound or video frames
 calib.delays.video = 0 # ms
 calib.delays.audio = 0 
 calib.delays.global = 0
+
+
+# Time calibration examples:
+# Timing calibrations can be specified for multiple possible devices.
+# The format of each entry is [Device name (regex is allowed)] -> [calibration in ms]
+#
+#     config.audio.output.timeCalibration += Galaxy Buds.* -> -710    
+#     config.audio.output.timeCalibration += Built-in Output -> -450
+#     config.audio.output.timeCalibration += Galaxy Buds.* -> -500
+#     config.audio.input.timeCalibration += Built-in Microphone -> -1060
+     

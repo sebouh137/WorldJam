@@ -1,29 +1,28 @@
 package worldjam.gui;
 
-import javax.swing.AbstractButton;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridLayout;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+import java.io.IOException;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
+
 import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
 import worldjam.audio.PlaybackChannel;
 import worldjam.exe.Client;
-
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GridLayout;
-import java.awt.TextField;
-import java.io.IOException;
-import java.net.URL;
-import java.util.Scanner;
-import java.awt.FlowLayout;
-import java.awt.Font;
 
 public class TimeCalibrationDialog extends JFrame{
 	/**
@@ -34,8 +33,36 @@ public class TimeCalibrationDialog extends JFrame{
 	private JButton prevButton;
 	private JButton nextButton;
 	private JTextArea instructions;
+	private Map<Long,Boolean> initialMuting = new HashMap();
 	public TimeCalibrationDialog(Client client) {
 		this.client = client;
+		// keep track of which channels are initially muted, and then bring it back to 
+		// the original setting after the calibration is done.
+		for(PlaybackChannel channel : client.getPlaybackManager().getChannels()) {
+			initialMuting.put(channel.getChannelID(), channel.isMuted());
+		}
+		addWindowListener(new WindowAdapter() {
+
+			@Override
+			public void windowClosing(WindowEvent e) {
+				for (Map.Entry<Long,Boolean> entry : initialMuting.entrySet()) {
+					long id = entry.getKey();
+					boolean muted = entry.getValue();
+					client.getPlaybackManager().getChannel(id).setMuted(muted);
+				}
+			}
+
+			@Override
+			public void windowClosed(WindowEvent e) {
+				for (Map.Entry<Long,Boolean> entry : initialMuting.entrySet()) {
+					long id = entry.getKey();
+					boolean muted = entry.getValue();
+					client.getPlaybackManager().getChannel(id).setMuted(muted);
+				}
+			}
+			
+		});
+		
 		setTitle("Timing Calibration");
 		setSize(400,250);
 		setLayout(new BorderLayout());
@@ -93,6 +120,7 @@ public class TimeCalibrationDialog extends JFrame{
 		getContentPane().add(buttonPanel, BorderLayout.SOUTH);
 		//getContentPane().add(tabbedPane, BorderLayout.CENTER);
 	}
+	
 	private Client client;
 
 	private void setMode(int i) {

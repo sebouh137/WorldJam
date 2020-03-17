@@ -5,6 +5,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -60,9 +62,9 @@ public class TimeCalibrationDialog extends JFrame{
 					client.getPlaybackManager().getChannel(id).setMuted(muted);
 				}
 			}
-			
+
 		});
-		
+
 		setTitle("Timing Calibration");
 		setSize(400,250);
 		setLayout(new BorderLayout());
@@ -75,7 +77,18 @@ public class TimeCalibrationDialog extends JFrame{
 		inputPanel.setMinimumSize(new Dimension(400,10));
 		inputField = new JTextField("0");
 		inputField.setHorizontalAlignment(SwingConstants.RIGHT);
-
+		inputField.addActionListener(e-> {
+			try {
+				int i = Integer.parseInt(inputField.getText());
+				if(mode == 1) {
+					setInputCalibration(i);
+				} else {
+					setOutputCalibration(i);
+				}
+			} catch(NumberFormatException ex) {
+				inputField.setText(Integer.toString(mode == 1 ? getInputCalibration() : getOutputCalibration()));
+			}
+		});
 
 		String text[] = {"<<<","<<","<",">",">>",">>>"};
 		int delta[] = {-100, -10,-1,1,10,100};
@@ -120,7 +133,7 @@ public class TimeCalibrationDialog extends JFrame{
 		getContentPane().add(buttonPanel, BorderLayout.SOUTH);
 		//getContentPane().add(tabbedPane, BorderLayout.CENTER);
 	}
-	
+
 	private Client client;
 
 	private void setMode(int i) {
@@ -161,7 +174,7 @@ public class TimeCalibrationDialog extends JFrame{
 		}
 	}
 
-	
+
 
 	private void setInputCalibration(int i) {
 		if(client != null)
@@ -173,12 +186,12 @@ public class TimeCalibrationDialog extends JFrame{
 			return client.getInput().getTimeCalibration();
 		return 0;
 	}
-	
+
 	private void setOutputCalibration(int i) {
 		if(client != null) {
 			client.getPlaybackManager().setTimeCalibration(i);
 		}
-		
+
 	}
 
 	private int getOutputCalibration() {

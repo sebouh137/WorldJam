@@ -7,6 +7,7 @@ import java.awt.GridBagLayout;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
@@ -97,7 +98,8 @@ public class ClientSetupGUI_P2P_multiPeer extends JFrame{
 			e1.printStackTrace();
 		}*/
 		JTabbedPane tabs = new JTabbedPane();
-		this.getContentPane().add(tabs);
+		this.getContentPane().setLayout(new BorderLayout());
+		this.getContentPane().add(tabs, BorderLayout.CENTER);
 		JPanel mainPanel = new JPanel();
 
 		ChangeListener changeTimeSignature = new ChangeListener(){
@@ -323,6 +325,7 @@ public class ClientSetupGUI_P2P_multiPeer extends JFrame{
 		mainPanel.add(rdbtnBeatsPerMinute, gbc_rdbtnBeatsPerMinute);
 
 		txtBPM = new JTextField();
+		txtBPM.setHorizontalAlignment(SwingConstants.RIGHT);
 		txtBPM.setText("120");
 		GridBagConstraints gbc_txtBPM = new GridBagConstraints();
 		gbc_txtBPM.fill = GridBagConstraints.HORIZONTAL;
@@ -348,11 +351,7 @@ public class ClientSetupGUI_P2P_multiPeer extends JFrame{
 
 
 		btnStart = new JButton("Start");
-		GridBagConstraints gbc_btnStart = new GridBagConstraints();
-		gbc_btnStart.gridwidth = 6;
-		gbc_btnStart.gridx = 0;
-		gbc_btnStart.gridy = 9;
-		mainPanel.add(btnStart, gbc_btnStart);
+		getContentPane().add(btnStart, BorderLayout.SOUTH);
 
 		JPanel tabAudioIO = new JPanel(); 
 		tabs.addTab("Audio/Video IO", tabAudioIO);
@@ -490,6 +489,7 @@ public class ClientSetupGUI_P2P_multiPeer extends JFrame{
 
 	private Vector<Mixer.Info> getMixers(Class<? extends DataLine> class1) {
 		Vector<Mixer.Info> availableMixers = new Vector();
+		
 		for(Mixer.Info info : AudioSystem.getMixerInfo()){
 			if(AudioSystem.getMixer(info).isLineSupported(
 					new DataLine.Info(class1, DefaultObjects.defaultFormat)))

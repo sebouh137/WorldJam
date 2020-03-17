@@ -9,6 +9,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.DataLine;
+import javax.sound.sampled.Mixer;
+import javax.sound.sampled.SourceDataLine;
+import javax.sound.sampled.TargetDataLine;
+
 public class Configurations {
 	public static String getStringValue(String name) {
 		if(configs == null) {
@@ -34,7 +40,7 @@ public class Configurations {
 		}
 		return Integer.parseInt(configs.get(name));
 	}
-	
+
 	private static String FILE_LOCATION = System.getProperty("user.home")+"/.worldjam/config";
 	private static void loadConfigs() {
 		File configFile = new File(FILE_LOCATION);
@@ -86,14 +92,21 @@ public class Configurations {
 	}
 	private static HashMap<String,String> configs;
 	private static HashMap<String,ArrayList<String>> configs2;
-	
+
 	public static String AUDIO_INPUT = "config.audio.input.timeCalibration";
 	public static String AUDIO_OUTPUT = "config.audio.output.timeCalibration";
 	public static String VIDEO_INPUT = "config.video.input.timeCalibration";
 	public static String VIDEO_OUTPUT = "config.video.output.timeCalibration";
 	public static String USER_NAME = "config.userName";
-	
+
+
+	private static final String defaultAudioDevice = "Default Audio Device";
 	public static int getDefaultTimingCalibration(String varName, String deviceName) {
+
+		if(deviceName.equals(defaultAudioDevice)) {
+			deviceName = getDefaultMixerName(varName);
+		}
+
 		List<String> list = getStringList(varName);
 		if(list == null)
 			return 0;
@@ -108,7 +121,27 @@ public class Configurations {
 		//not found
 		return 0;
 	}
-	
+	/**
+	 * Get the actual name of the default mixer (patches a quirk in Mac OS
+	 * @param var
+	 * @return
+	 */
+	private static String getDefaultMixerName(String var) {
+		System.out.println(var);
+		for(Mixer.Info info : AudioSystem.getMixerInfo()) {
+			System.out.println(info);
+			if(info.getName().equals(defaultAudioDevice))
+				continue;
+			Class<?> clazz = var.contains("input") ? TargetDataLine.class : SourceDataLine.class;
+			if(AudioSystem.getMixer(info).isLineSupported(
+					new DataLine.Info(clazz, DefaultObjects.defaultFormat))) {
+				System.out.println("chosen");
+				return info.getName();
+			}
+		}
+
+		return "Default Audio Device";
+	}
 	public static String getDefaultUsername() {
 		if(getStringValue(USER_NAME) != null) 
 			return getStringValue(USER_NAME);

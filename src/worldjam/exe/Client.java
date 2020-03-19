@@ -7,15 +7,19 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.Mixer;
@@ -99,6 +103,12 @@ public class Client implements ClockSubscriber {
 			delayManager.getChannel(pbc.getChannelID()).addListener(pbc);
 		}
 	}
+	
+	public void generateRandomSessionID() {
+		Random random = new Random();
+		sessionID = random.nextLong();
+	}
+	private long sessionID;
 
 	private Map<Long,Connection> connections = new HashMap<Long,Connection>();
 	void addConnection(ClientDescriptor peer, Socket socket, DataInputStream dis, DataOutputStream dos, boolean isServer){
@@ -500,21 +510,37 @@ public class Client implements ClockSubscriber {
 
 					DataInputStream dis = new DataInputStream(socket.getInputStream());
 					DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
-					if(dis.readByte() == WJConstants.COMMAND_JOIN){
+					byte firstByte = dis.readByte();
+					if(firstByte == WJConstants.COMMAND_JOIN){
 						ClientDescriptor peer = ClientDescriptor.readFromStream(dis);
 						System.out.println(displayName + ":  received join request from peer " + peer.displayName);
 						synchronized(dos){
 							dos.writeByte(WJConstants.COMMAND_JOIN_RECEIVED);
 							selfDescriptor.writeToStream(dos);
+							dos.writeLong(sessionID);
 							dos.writeByte(WJConstants.TIME_CHANGED);
 							beatClock.writeToStream(dos);
 						}
 						addConnection(peer, socket, dis, dos, false);
+					} else if (firstByte == WJConstants.COMMAND_GET_SESSION_INFO) {
+						System.out.println("sending session info");
+						sessionInfo().writeToStream(dos);
+						//socket.close();
 					}
+					
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+		}
+		private SessionDescriptor sessionInfo() {
+			Connection cons[] =connections.values().toArray(new Connection[connections.values().size()]);
+			ClientDescriptor members[] = new ClientDescriptor[cons.length+1];
+			members[0] = selfDescriptor;
+			for(int i = 0; i<cons.length; i++) {
+				members[i+1] = cons[i].peer;
+			}
+			return new SessionDescriptor(sessionID, beatClock, members);
 		}
 		boolean closed = false;
 		void close(){
@@ -545,6 +571,8 @@ public class Client implements ClockSubscriber {
 		selfDescriptor.writeToStream(dos);
 		dis.readByte();
 		ClientDescriptor peerDescriptor = ClientDescriptor.readFromStream(dis); 
+		long sessionID = dis.readLong();
+		this.sessionID = sessionID;
 		System.out.println(displayName + ":  received welcome from peer " + peerDescriptor.displayName);
 		addConnection(peerDescriptor, socket, dis, dos, debug);
 	}

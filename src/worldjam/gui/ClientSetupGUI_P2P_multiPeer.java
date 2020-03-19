@@ -84,6 +84,7 @@ public class ClientSetupGUI_P2P_multiPeer extends JFrame{
 	private JComboBox comboBoxWebcams;
 	private JLabel lblVideoResolution;
 	private JComboBox comboBoxResolutions;
+	private JButton btnScan;
 
 
 	public ClientSetupGUI_P2P_multiPeer() {
@@ -190,6 +191,18 @@ public class ClientSetupGUI_P2P_multiPeer extends JFrame{
 		gbc_rdbtnJoinExistingSession.gridx = 0;
 		gbc_rdbtnJoinExistingSession.gridy = 2;
 		mainPanel.add(rdbtnJoinExistingSession, gbc_rdbtnJoinExistingSession);
+		
+		btnScan = new JButton("Scan...");
+		btnScan.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				new ScanLocalPeersDialog().setVisible(true);
+			}
+		});
+		GridBagConstraints gbc_btnScan = new GridBagConstraints();
+		gbc_btnScan.insets = new Insets(0, 0, 5, 5);
+		gbc_btnScan.gridx = 3;
+		gbc_btnScan.gridy = 2;
+		mainPanel.add(btnScan, gbc_btnScan);
 
 
 
@@ -551,6 +564,7 @@ public class ClientSetupGUI_P2P_multiPeer extends JFrame{
 						PlaybackManager playback = new PlaybackManager(outputMixer, clock, DefaultObjects.defaultFormat);
 						System.out.println("user name is " + displayName);
 						client = new Client(localPort, displayName, input, playback, clock, webcamThread);
+						client.generateRandomSessionID();
 						/*clock.beatsPerMeasure = num;
 					clock.beatDenominator = denom;
 					clock.msPerBeat = msPerBeat;*/

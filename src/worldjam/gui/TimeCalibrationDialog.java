@@ -42,7 +42,9 @@ public class TimeCalibrationDialog extends JFrame{
 		// the original setting after the calibration is done.
 		for(PlaybackChannel channel : client.getPlaybackManager().getChannels()) {
 			initialMuting.put(channel.getChannelID(), channel.isMuted());
+			channel.setMuted(true);
 		}
+		client.getGUI().channelsChanged();
 		addWindowListener(new WindowAdapter() {
 
 			@Override
@@ -52,6 +54,7 @@ public class TimeCalibrationDialog extends JFrame{
 					boolean muted = entry.getValue();
 					client.getPlaybackManager().getChannel(id).setMuted(muted);
 				}
+				client.getGUI().channelsChanged();
 			}
 
 			@Override
@@ -61,6 +64,7 @@ public class TimeCalibrationDialog extends JFrame{
 					boolean muted = entry.getValue();
 					client.getPlaybackManager().getChannel(id).setMuted(muted);
 				}
+				client.getGUI().channelsChanged();
 			}
 
 		});
@@ -146,6 +150,7 @@ public class TimeCalibrationDialog extends JFrame{
 			if(client != null) {
 				client.getPlaybackManager().getChannelByName("metronome").setMuted(false);
 				client.getPlaybackManager().getChannelByName("loopback").setMuted(false);
+				client.getGUI().channelsChanged();
 			}
 		} else if (i == 0) {
 			prevButton.setEnabled(false);
@@ -156,6 +161,7 @@ public class TimeCalibrationDialog extends JFrame{
 			if(client != null) {
 				client.getPlaybackManager().getChannelByName("metronome").setMuted(false);
 				client.getPlaybackManager().getChannelByName("loopback").setMuted(true);
+				client.getGUI().channelsChanged();
 			}
 		}
 	}

@@ -49,7 +49,7 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 	/**
 	 * 
 	 */
-	
+
 	ConductorAndWebcamViewer viewManager;
 	private static final long serialVersionUID = -6893387160409587544L;
 	private Client client;
@@ -69,36 +69,36 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 			}
 		});
 		setTitle("World Jam: " + client.getUserName());
-		
+
 		this.client = client;
 		this.changeClockSettingsNow(client.getBeatClock());
-		
+
 		this.setSize(964, 646);
-		
-		
-				
+
+
+
 		JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
-		
+
 		JMenu mnPlayback = new JMenu("Playback");
 		menuBar.add(mnPlayback);
 		mnChannels = new JMenu("Channels");
 		mnPlayback.add(mnChannels);		
-		
+
 		JMenu mnInput = new JMenu("Input");
 		menuBar.add(mnInput);
-		
+
 		JMenuItem mntmInputMonitor = new JMenuItem("Input Monitor...");
 		mnInput.add(mntmInputMonitor);
-		
+
 		JMenu mnOtherSettings = new JMenu("Timing");
 		menuBar.add(mnOtherSettings);
-		
+
 		JMenuItem mntmTempo = new JMenuItem("Tempo ...");
 		mnOtherSettings.add(mntmTempo);
-		
-		
-		
+
+
+
 		mntmTempo.addActionListener(e -> {
 			MutableClock clockManager = new MutableClock(this.client.getBeatClock());
 			ClockSubscriber globalChange = setting->{
@@ -107,21 +107,21 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 			};
 			new BPMWindow(clockManager,globalChange).setVisible(true);
 		});
-		
+
 		JMenuItem mntmDelays = new JMenuItem("Delays ...");
 		mnOtherSettings.add(mntmDelays);
-		
+
 		JMenuItem mntmNewMenuItem = new JMenuItem("Calibration ...");
 		mntmNewMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				new TimeCalibrationDialog(client).setVisible(true);;
+				new TimeCalibrationDialog(client).setVisible(true);
 			}
 		});
 		mnOtherSettings.add(mntmNewMenuItem);
-		
+
 		JMenu mnDebug = new JMenu("Debug");
 		menuBar.add(mnDebug);
-		
+
 		JMenuItem mntmNetwork = new JMenuItem("Network...");
 		mnDebug.add(mntmNetwork);
 		mntmNetwork.addActionListener(new ActionListener() {
@@ -129,12 +129,12 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 				new NetworkInfoWindow(client);
 			}
 		});
-		
-		
-		
+
+
+
 		JMenu mnTools = new JMenu("Tools");
 		menuBar.add(mnTools);
-		
+
 		JMenuItem mntmTuner = new JMenuItem("Tuner...");
 		mnTools.add(mntmTuner);
 		mntmTuner.addActionListener(e->{
@@ -145,13 +145,9 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 			frame.setSize(300,300);
 			frame.add(tuner);
 			frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-			
-			frame.addWindowListener(new WindowListener() {
 
-				@Override
-				public void windowOpened(WindowEvent e) { 
-					
-				}
+			frame.addWindowListener(new WindowAdapter() {
+
 
 				@Override
 				public void windowClosing(WindowEvent e) {
@@ -173,19 +169,10 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 					client.getInput().addSubscriber(tuner);
 				}
 
-				@Override
-				public void windowActivated(WindowEvent e) {
-					
-				}
 
-				@Override
-				public void windowDeactivated(WindowEvent e) {
-					
-				}
-				
 			});
 			frame.setVisible(true);
-			
+
 		});
 		JMenuItem mnRecording = new JMenuItem("Recording...");
 		mnTools.add(mnRecording);
@@ -193,7 +180,7 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 			new RecordDialog(this.client).setVisible(true);
 		});
 		mntmDelays.addActionListener(e->{
-			new DelaySettingsDialog(this.client.getDelayManager()).setVisible(true);;
+			new DelaySettingsDialog(this.client.getDelayManager()).setVisible(true);
 		});
 		/*JButton btnClose = new JButton("Close");
 		btnClose.addActionListener(new ActionListener() {
@@ -216,38 +203,39 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 			public void actionPerformed(ActionEvent e) {
 				new InputMonitor(client.getInput(), "Input").setVisible(true);;
 			}
-			
+
 		});
-		
-		
+
+
 		this.conductor = new Conductor(client.getBeatClock());
 		//ViewPanel webcamViewer = new ViewPanel();
 		//viewManager = new ConductorAndWebcamViewer(conductor, webcamViewer);
 		viewManager = new ConductorAndWebcamViewer(conductor, this.client.getDelayManager());
-		
+
 		getContentPane().add(viewManager, BorderLayout.CENTER);
-		
+
 		getContentPane().add(createTimeInfoPanel(), BorderLayout.SOUTH);;
-		
-		
-		
+
+
+
 		JPanel panel = new JPanel();
 		getContentPane().add(panel, BorderLayout.NORTH);
 		panel.setLayout(new BorderLayout(0, 0));
-		
-		
+
+
 		JLabel lblSessionName = new JLabel(client.getSessionName());
 		lblSessionName.setFont(infoFont);
 		panel.add(lblSessionName, BorderLayout.WEST);
 		/*JLabel lblUserName = new JLabel(client.getUserName());
 		lblUserName.setFont(infoFont);
 		panel.add(lblUserName, BorderLayout.EAST);*/
-		
+
 		clientList = new JList<ClientListItem>();
 		JPopupMenu popupMenu = new JPopupMenu();
+		clientList.setCellRenderer(new ClientListItem.ClientListItemRenderer());
 		clientList.setComponentPopupMenu(popupMenu);
 		clientList.setFixedCellWidth(130);
-		
+
 		JCheckBoxMenuItem muteButton = new JCheckBoxMenuItem("Mute Channel");
 		muteButton.setSelected(false);
 		muteButton.addChangeListener(e->{
@@ -273,12 +261,12 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 
 			@Override
 			public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-				
+
 			}
 
 			@Override
 			public void popupMenuCanceled(PopupMenuEvent e) {
-				
+
 			}
 		});
 		clientListModel = new DefaultListModel<ClientListItem>();
@@ -286,21 +274,21 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		clientList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		clientList.setSelectedIndex(0);
 		clientListModel.addElement(new ClientListItem(client.getUserName(), client.getDescriptor().clientID, true, true));
-		
+
 		clientList.validate();
 		getContentPane().add(clientList, BorderLayout.EAST);
-		
+
 		//chat = new ChatPanel();
 		//getContentPane().add(chat, BorderLayout.WEST);
-		
-		
-		
+
+
+
 		client.getPlaybackManager().addChannelChangeListener(this);
 		client.getPlaybackManager().updateChannels();
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		channelsChanged();
-		
-		
+
+
 	}
 	JList<ClientListItem> clientList;
 	DefaultListModel<ClientListItem> clientListModel;
@@ -308,27 +296,27 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 	private Component createTimeInfoPanel() {
 		JPanel panel = new JPanel();
 		panel.setLayout(new BorderLayout());
-		
+
 		ClockSetting clock = client.getBeatClock();
-		
+
 		lblTimeSig = new JLabel(String.format("%d/%d", clock.beatsPerMeasure, clock.beatDenominator));
 		lblTimeSig.setFont(infoFont);
 		panel.add(lblTimeSig, BorderLayout.WEST);
-		
+
 		lblBPM = new JLabel(String.format("%.1f BPM", 60000./clock.msPerBeat));
 		lblBPM.setHorizontalAlignment(SwingConstants.CENTER);
 		lblBPM.setFont(infoFont);
 		panel.add(lblBPM, BorderLayout.CENTER);
-		
+
 		lblMS = new JLabel(String.format("(%d ms per beat)", clock.msPerBeat));
 		lblMS.setFont(infoFont);
 		panel.add(lblMS, BorderLayout.EAST);
-		
+
 		return panel;
 	}
-	
+
 	JLabel lblTimeSig, lblBPM, lblMS;
-	
+
 	public void channelsChanged(){
 		mnChannels.removeAll();
 		boolean listChanged = false;
@@ -344,7 +332,7 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 					new PlaybackChannelControlGUI(client.getPlaybackManager().getChannel(id), "Settings for channel: " + channelName,
 							client.getDelayManager());
 				}
-				
+
 			});
 			boolean found = false;
 			for(Object item : clientListModel.toArray()){
@@ -371,12 +359,15 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 			}
 			if(!found)
 				clientListModel.removeElement(item);
-				
+
 		}
-		if(listChanged){
-			clientList.validate();
-			clientList.repaint();
+		for(Object o : clientListModel.toArray()) {
+			ClientListItem item = (ClientListItem)o;
+			item.setMuted(client.getPlaybackManager().getChannel(item.getClientID()).isMuted());
 		}
+		clientList.validate();
+		clientList.repaint();
+
 	}
 	public void changeClockSettingsNow(ClockSetting clock){
 		if(this.conductor != null)
@@ -392,9 +383,9 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 	}
 	ChatPanel chat = null;
 	void getChat(){
-		
+
 	}
-	
+
 	public void videoFrameReceived(VideoFrame frame) {
 		viewManager.imageReceived(frame);
 	}

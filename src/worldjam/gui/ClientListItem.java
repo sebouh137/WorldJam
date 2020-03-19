@@ -5,6 +5,8 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
@@ -15,45 +17,47 @@ public class ClientListItem {
 	private String username;
 	private boolean isSelf;
 	private int status;
+
 	ClientListItem(String username, long clientID, boolean isSelf){
 		this.username = username;
 		this.isSelf = isSelf;
 		this.clientID = clientID;
 	}
-	
+
 	ClientListItem(String username, long clientID, boolean isSelf,boolean isMuted){
 		this.username = username;
 		this.isSelf = isSelf;
 		this.clientID = clientID;
 		this.muted = isMuted;
 	}
-	
+
 	public String toString() {
-		int[] codepoints = {0x1F507};
-		String muteSymbol = " [M]";//new String(codepoints, 0, codepoints.length);//= "M";//"\uF09F\u9487";
-		String unmuteSymbol = "";//"\uF09F\u9488";
-		
-		return (this.isSelf ? "loopback" : username) + (muted ? muteSymbol: unmuteSymbol);
+
+		return (this.isSelf ? "loopback" : username);
 	}
-	static class ClientListItemRenderer extends Container implements ListCellRenderer<ClientListItem> {
-		JLabel label = new JLabel();
-		ClientListItemRenderer(){
-			this.add(label);
-			this.setPreferredSize(new Dimension(50, 15));
+	static class ClientListItemRenderer extends DefaultListCellRenderer{
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 8705132098176075908L;
+		public Component getListCellRendererComponent(JList list, Object value, int index,
+				boolean isSelected, boolean cellHasFocus) {
+
+
+			JLabel renderer = (JLabel) super.getListCellRendererComponent(list, value, index,
+					isSelected, cellHasFocus);
+			if(((ClientListItem)value).muted) {
+				renderer.setIcon(mutedIcon);
+			} else {
+				renderer.setIcon(unmutedIcon);
+			}
+			return renderer;
+
 		}
-		Color selectedColor = new Color(13,13, 255);
-		Color unselectedColor = new Color(200,200, 200);
-		@Override
-		public Component getListCellRendererComponent(JList<? extends ClientListItem> list, ClientListItem value,
-				int index, boolean isSelected, boolean cellHasFocus) {
-			this.label.setText(toString());
-			if(isSelected)
-				label.setBackground(selectedColor);
-			else
-				label.setBackground(unselectedColor);
-			return this;
-		}
-		
+		private static ImageIcon mutedIcon = new ImageIcon(ClientListItem.class.getResource("/worldjam/gui/icons/mute.png"));
+		private static ImageIcon unmutedIcon = new ImageIcon(ClientListItem.class.getResource("/worldjam/gui/icons/unmute.png"));
+
 	}
 	long clientID;
 	private boolean muted;
@@ -62,7 +66,8 @@ public class ClientListItem {
 	}
 	public void setMuted(boolean muted) {
 		this.muted = muted;
-		
+
 	}
 	
+
 }

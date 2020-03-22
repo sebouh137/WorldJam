@@ -13,9 +13,9 @@ import javax.swing.JTextPane;
 
 import worldjam.exe.ClientDescriptor;
 import worldjam.exe.SessionDescriptor;
-import worldjam.gui.ScanLocalPeersDialog.MyListCellRenderer;
 import worldjam.net.ScanForJamSessions;
 import worldjam.net.SessionConnectionInfo;
+import worldjam.net.WJConstants;
 import worldjam.time.ClockSetting;
 import worldjam.util.DefaultObjects;
 
@@ -23,12 +23,9 @@ import javax.swing.JPanel;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTextField;
-import javax.swing.JTree;
-import javax.swing.ListCellRenderer;
-import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 
-public class ScanLocalPeersDialog extends JFrame{
+public class ScanLocalSessionsGUI extends JPanel{
 	public class MyListCellRenderer extends DefaultListCellRenderer {
 
 		@Override
@@ -59,39 +56,56 @@ public class ScanLocalPeersDialog extends JFrame{
 	 * 
 	 */
 	private static final long serialVersionUID = -1124388249742616941L;
-	private JTextField textField;
+	private JTextField textFieldScanRange;
 	private JList list;
 	//JTextPane textPane;
-	public ScanLocalPeersDialog() {
-		setTitle("World Jam:  Scan for active sessions");
-		getContentPane().setLayout(new BorderLayout(0, 0));
+	public ScanLocalSessionsGUI() {
+		setLayout(new BorderLayout(0, 0));
 		
 		//textPane = new JTextPane();
 		//getContentPane().add(textPane, BorderLayout.CENTER);
 		//textPane.setEditable(false);
 		
-		JButton btnScan = new JButton("Scan");
-		getContentPane().add(btnScan, BorderLayout.SOUTH);
-		btnScan.addActionListener(e->{
-			new Thread(()->{update();}).start();
-		});
+		
 		
 		JPanel panel = new JPanel();
-		getContentPane().add(panel, BorderLayout.NORTH);
+		add(panel, BorderLayout.NORTH);
 		
 		JLabel lblNewLabel = new JLabel("Address range:");
 		panel.add(lblNewLabel);
 		
-		textField = new JTextField();
-		textField.setText("192.168.193.0/24");
-		panel.add(textField);
-		textField.setColumns(10);
+		textFieldScanRange = new JTextField();
+		textFieldScanRange.setText("192.168.193.0/24");
+		panel.add(textFieldScanRange);
+		textFieldScanRange.setColumns(10);
+		
+		JButton btnScan = new JButton("Scan");
+		panel.add(btnScan);
+		btnScan.addActionListener(e->{
+			new Thread(()->{update();}).start();
+		});
 		
 		list = new JList();
-		getContentPane().add(list, BorderLayout.CENTER);
+		add(list, BorderLayout.CENTER);
 		new Thread(()->{update();}).start();
 		this.setSize(450, 300);
-	}
+		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		list.addListSelectionListener(e->{
+			if(list.getSelectedValue() instanceof SessionConnectionInfo) {
+				SessionConnectionInfo sci = (SessionConnectionInfo)list.getSelectedValue();
+				StringBuilder sb = new StringBuilder();
+				for(String s : sci.addresses) {
+					sb.append(s+"/" + DefaultObjects.defaultPort + ",");
+				}
+				jtfSessionInfo.setText(sb.toString().substring(0, sb.toString().length()-1)); //remove trailing comma
+			}
+		});
+		
+		
+		jtfSessionInfo = new JTextField();
+		this.add(jtfSessionInfo, BorderLayout.SOUTH);
+	}	
+	JTextField jtfSessionInfo;
 	private void update() {
 		DefaultListModel<String> dummyListModel = new DefaultListModel<String>(); 
 		list.setModel(dummyListModel);
@@ -99,9 +113,9 @@ public class ScanLocalPeersDialog extends JFrame{
 		list.setCellRenderer(new DefaultListCellRenderer());
 		dummyListModel.addElement("Scanning for jam sessions");
 		try {
-			ArrayList<SessionConnectionInfo> activeSessions = ScanForJamSessions.scanRange(textField.getText(),DefaultObjects.defaultPort, 1000);
+			ArrayList<SessionConnectionInfo> activeSessions = ScanForJamSessions.scanRange(textFieldScanRange.getText(),DefaultObjects.defaultPort, 1000);
 			if(activeSessions.size() != 0) {
-				DefaultListModel<SessionConnectionInfo> listModel = new DefaultListModel<SessionConnectionInfo>();
+				DefaultListModel<Object> listModel = new DefaultListModel<Object>();
 				for (SessionConnectionInfo session : activeSessions) {
 					listModel.addElement(session);
 				}
@@ -109,6 +123,7 @@ public class ScanLocalPeersDialog extends JFrame{
 				list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 				list.setModel(listModel);
 				list.setCellRenderer(new MyListCellRenderer());
+				listModel.addElement(manualInput);
 			} else {
 				dummyListModel = new DefaultListModel<String>(); 
 				list.setModel(dummyListModel);
@@ -120,6 +135,10 @@ public class ScanLocalPeersDialog extends JFrame{
 			e.printStackTrace();
 		}
 		//textPane.setText(sb.toString());
+	}
+	Object manualInput = "Manually input session connection details";
+	public String getSelection() {
+		return jtfSessionInfo.getText().trim();
 	}
 
 }

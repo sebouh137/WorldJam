@@ -51,7 +51,7 @@ import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JCheckBox;;
 
-public class ClientSetupGUI_P2P_multiPeer extends JFrame{
+public class ClientSetupGUI extends JFrame{
 	/**
 	 * 
 	 */
@@ -75,20 +75,18 @@ public class ClientSetupGUI_P2P_multiPeer extends JFrame{
 	private JLabel lblOutput;
 	private JComboBox<MixerWrapper> comboBox_1;
 	private Conductor previewConductor;
-	private JTextField textFieldPort;
-	private JLabel lblServerIpAddress;
+	//private JTextField textFieldPort;
 	private JLabel lblLocalPort;
 	private JTextField jtfLocalPort;
 	private JLabel lblVideoInput;
-	private JCheckBox chckbxUsedDefault;
 	private JComboBox comboBoxWebcams;
 	private JLabel lblVideoResolution;
 	private JComboBox comboBoxResolutions;
-	private JButton btnScan;
+	protected ScanLocalSessionsGUI scanPanel;
 
-
-	public ClientSetupGUI_P2P_multiPeer() {
-		this.setSize(742, 388);
+	JPanel newSessionPanel;
+	ClientSetupGUI() {
+		this.setSize(542, 388);
 		setTitle("WorldJam Client Setup");
 		/*Image image;
 		try {
@@ -101,7 +99,6 @@ public class ClientSetupGUI_P2P_multiPeer extends JFrame{
 		JTabbedPane tabs = new JTabbedPane();
 		this.getContentPane().setLayout(new BorderLayout());
 		this.getContentPane().add(tabs, BorderLayout.CENTER);
-		JPanel mainPanel = new JPanel();
 
 		ChangeListener changeTimeSignature = new ChangeListener(){
 
@@ -111,34 +108,45 @@ public class ClientSetupGUI_P2P_multiPeer extends JFrame{
 				previewConductor.changeClockSettingsNow(clock);
 			}
 		};
+		JPanel mainPanel = new JPanel();
+		mainPanel.setLayout(new BorderLayout());
+
+		JPanel topPanel = new JPanel();
+		mainPanel.add(topPanel, BorderLayout.NORTH);
+
 		tabs.addTab("General", mainPanel);
-		GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.columnWidths = new int[]{83, 45, 113, 69, 62, 96, 0};
-		gridBagLayout.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-		gridBagLayout.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
-		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
-		mainPanel.setLayout(gridBagLayout);
+		
 
 		JLabel lblDisplayName = new JLabel("  Display Name");
-		GridBagConstraints gbc_lblDisplayName = new GridBagConstraints();
-		gbc_lblDisplayName.gridwidth = 2;
-		gbc_lblDisplayName.anchor = GridBagConstraints.WEST;
-		gbc_lblDisplayName.insets = new Insets(0, 0, 5, 5);
-		gbc_lblDisplayName.gridx = 0;
-		gbc_lblDisplayName.gridy = 0;
-		mainPanel.add(lblDisplayName, gbc_lblDisplayName);
+
+		topPanel.add(lblDisplayName);
+		topPanel.setPreferredSize(new Dimension(370,70));
 
 		txtUser = new JTextField();
 		txtUser.setText(Configurations.getDefaultUsername());
-		GridBagConstraints gbc_txtUser = new GridBagConstraints();
-		gbc_txtUser.fill = GridBagConstraints.HORIZONTAL;
-		gbc_txtUser.gridwidth = 2;
-		gbc_txtUser.insets = new Insets(0, 0, 5, 5);
-		gbc_txtUser.gridx = 2;
-		gbc_txtUser.gridy = 0;
-		mainPanel.add(txtUser, gbc_txtUser);
+		topPanel.add(txtUser);
 		txtUser.setColumns(10);
+		lblLocalPort = new JLabel("Local Port");
+		topPanel.add(lblLocalPort);
 
+		jtfLocalPort = new JTextField(Integer.toString(DefaultObjects.defaultPort));
+		topPanel.add(jtfLocalPort);
+		jtfLocalPort.setColumns(5);
+
+		rdbtnStartNewSession = new JRadioButton("Start New Session");
+		buttonGroup.add(rdbtnStartNewSession);
+
+		rdbtnStartNewSession.setSelected(true);
+		GridBagConstraints gbc_rdbtnStartNewSession = new GridBagConstraints();
+		topPanel.add(rdbtnStartNewSession, gbc_rdbtnStartNewSession);
+
+		rdbtnJoinExistingSession = new JRadioButton("Join Existing Session");
+		buttonGroup.add(rdbtnJoinExistingSession);
+		topPanel.add(rdbtnJoinExistingSession);
+
+		JPanel scanPanel = new ScanLocalSessionsGUI();
+
+		
 		ChangeListener cl = new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				boolean enable = rdbtnStartNewSession.isSelected();
@@ -149,8 +157,6 @@ public class ClientSetupGUI_P2P_multiPeer extends JFrame{
 				spinner_1.setEnabled(enable);
 				txtBPM.setEnabled(enable);
 				spinner_msPerBeat.setEnabled(enable);
-				lblServerIpAddress.setEnabled(!enable);
-				textFieldPort.setEnabled(!enable);
 
 				if(rdbtnMsPerBeat.isSelected() && enable){
 					txtBPM.setEnabled(false);
@@ -159,90 +165,37 @@ public class ClientSetupGUI_P2P_multiPeer extends JFrame{
 					spinner_msPerBeat.setEnabled(false);
 					txtBPM.setEnabled(true);
 				}
-				enable &= tabs.getSelectedComponent() == mainPanel;
-				previewConductor.setVisible(enable);
+				enable &= tabs.getSelectedComponent() == newSessionPanel;
 				previewConductor.setMeasureNumberVisible(false);
+				if(rdbtnStartNewSession.isSelected()) {
+					mainPanel.remove(scanPanel);
+					mainPanel.add(newSessionPanel,BorderLayout.CENTER);
+					mainPanel.revalidate();
+					revalidate();
+					repaint();
+
+				} else {
+					mainPanel.remove(newSessionPanel);
+					mainPanel.add(scanPanel,BorderLayout.CENTER);
+					mainPanel.revalidate();
+					revalidate();
+				}
 			}
 		};
+		rdbtnStartNewSession.addChangeListener(cl);
 		tabs.addChangeListener(cl);
 
-		lblLocalPort = new JLabel("Local Port");
-		GridBagConstraints gbc_lblLocalPort = new GridBagConstraints();
-		gbc_lblLocalPort.insets = new Insets(0, 0, 5, 5);
-		gbc_lblLocalPort.gridx = 0;
-		gbc_lblLocalPort.gridy = 1;
-		mainPanel.add(lblLocalPort, gbc_lblLocalPort);
+		newSessionPanel = new JPanel();
+		JPanel subPanel = new JPanel();
+		GridBagLayout gridBagLayout = new GridBagLayout();
 
-		jtfLocalPort = new JTextField(Integer.toString(DefaultObjects.defaultPort));
-		GridBagConstraints gbc_jtfLocalPort = new GridBagConstraints();
-		gbc_jtfLocalPort.insets = new Insets(0, 0, 5, 5);
-		gbc_jtfLocalPort.fill = GridBagConstraints.HORIZONTAL;
-		gbc_jtfLocalPort.gridx = 2;
-		gbc_jtfLocalPort.gridy = 1;
-		mainPanel.add(jtfLocalPort, gbc_jtfLocalPort);
-		jtfLocalPort.setColumns(5);
-
-		rdbtnJoinExistingSession = new JRadioButton("Join Existing Session");
-		buttonGroup.add(rdbtnJoinExistingSession);
-		GridBagConstraints gbc_rdbtnJoinExistingSession = new GridBagConstraints();
-		gbc_rdbtnJoinExistingSession.gridwidth = 3;
-		gbc_rdbtnJoinExistingSession.anchor = GridBagConstraints.WEST;
-		gbc_rdbtnJoinExistingSession.insets = new Insets(0, 0, 5, 5);
-		gbc_rdbtnJoinExistingSession.gridx = 0;
-		gbc_rdbtnJoinExistingSession.gridy = 2;
-		mainPanel.add(rdbtnJoinExistingSession, gbc_rdbtnJoinExistingSession);
-
-		btnScan = new JButton("Scan...");
-		btnScan.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				JFrame frame = new JFrame();
-				frame.add(new ScanLocalSessionsGUI());
-				frame.setVisible(true);
-			}
-		});
-		GridBagConstraints gbc_btnScan = new GridBagConstraints();
-		gbc_btnScan.insets = new Insets(0, 0, 5, 5);
-		gbc_btnScan.gridx = 3;
-		gbc_btnScan.gridy = 2;
-		mainPanel.add(btnScan, gbc_btnScan);
-
-
-
-		lblServerIpAddress = new JLabel("Input peer IP address/ports below (eg 192.12.13.14/2901, etc)");
-		lblServerIpAddress.setEnabled(false);
-		GridBagConstraints gbc_lblServerIpAddress = new GridBagConstraints();
-		gbc_lblServerIpAddress.gridwidth = 4;
-		gbc_lblServerIpAddress.anchor = GridBagConstraints.WEST;
-		gbc_lblServerIpAddress.insets = new Insets(0, 0, 5, 5);
-		gbc_lblServerIpAddress.gridx = 1;
-		gbc_lblServerIpAddress.gridy = 3;
-		mainPanel.add(lblServerIpAddress, gbc_lblServerIpAddress);
-
-		textFieldPort = new JTextField();
-		textFieldPort.setEnabled(false);
-		textFieldPort.setText("127.0.0.1/2901");
-		GridBagConstraints gbc_textFieldPort = new GridBagConstraints();
-		gbc_textFieldPort.gridwidth = 4;
-		gbc_textFieldPort.fill = GridBagConstraints.HORIZONTAL;
-		gbc_textFieldPort.insets = new Insets(0, 0, 5, 5);
-		gbc_textFieldPort.gridx = 1;
-		gbc_textFieldPort.gridy = 4;
-		mainPanel.add(textFieldPort, gbc_textFieldPort);
-
-		rdbtnStartNewSession = new JRadioButton("Start New Session");
-		buttonGroup.add(rdbtnStartNewSession);
-
-		rdbtnStartNewSession.setSelected(true);
-		GridBagConstraints gbc_rdbtnStartNewSession = new GridBagConstraints();
-		gbc_rdbtnStartNewSession.gridwidth = 3;
-		gbc_rdbtnStartNewSession.insets = new Insets(0, 0, 5, 5);
-		gbc_rdbtnStartNewSession.anchor = GridBagConstraints.WEST;
-		gbc_rdbtnStartNewSession.gridx = 0;
-		gbc_rdbtnStartNewSession.gridy = 5;
-		mainPanel.add(rdbtnStartNewSession, gbc_rdbtnStartNewSession);
-		rdbtnStartNewSession.addChangeListener(cl);
-
-
+		gridBagLayout.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+		gridBagLayout.columnWeights = new double[]{0.0, 0.0, 0.0, 1.0};
+		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		subPanel.setLayout(gridBagLayout);
+		
+		newSessionPanel.setLayout(new BorderLayout());
+		newSessionPanel.add(subPanel, BorderLayout.CENTER);
 
 		lblTimeSignature = new JLabel("      Time Signature");
 		lblTimeSignature.setHorizontalAlignment(SwingConstants.LEFT);
@@ -250,31 +203,36 @@ public class ClientSetupGUI_P2P_multiPeer extends JFrame{
 		gbc_lblTimeSignature.anchor = GridBagConstraints.WEST;
 		gbc_lblTimeSignature.gridwidth = 2;
 		gbc_lblTimeSignature.insets = new Insets(0, 0, 5, 5);
-		gbc_lblTimeSignature.gridx = 1;
-		gbc_lblTimeSignature.gridy = 6;
-		mainPanel.add(lblTimeSignature, gbc_lblTimeSignature);
+		gbc_lblTimeSignature.gridx = 0;
+		gbc_lblTimeSignature.gridy = 1;
+		subPanel.add(lblTimeSignature, gbc_lblTimeSignature);
 
 		spinner = new JSpinner();
 		GridBagConstraints gbc_spinner = new GridBagConstraints();
-		gbc_spinner.fill = GridBagConstraints.HORIZONTAL;
+		gbc_spinner.anchor = GridBagConstraints.EAST;
 		gbc_spinner.insets = new Insets(0, 0, 5, 5);
-		gbc_spinner.gridx = 3;
-		gbc_spinner.gridy = 6;
+		gbc_spinner.gridx = 2;
+		gbc_spinner.gridy = 1;
 		spinner.setModel(new SpinnerNumberModel(4,1,64,1));
-		mainPanel.add(spinner, gbc_spinner);
+		subPanel.add(spinner, gbc_spinner);
 		spinner.addChangeListener(changeTimeSignature);
 
 		spinner_1 = new JSpinner();
 		GridBagConstraints gbc_spinner_1 = new GridBagConstraints();
-		gbc_spinner_1.fill = GridBagConstraints.HORIZONTAL;
+		gbc_spinner_1.anchor = GridBagConstraints.EAST;
 		gbc_spinner_1.insets = new Insets(0, 0, 5, 5);
-		gbc_spinner_1.gridx = 4;
-		gbc_spinner_1.gridy = 6;
+		gbc_spinner_1.gridx = 2;
+		gbc_spinner_1.gridy = 2;
 
 		spinner_1.setModel(new SpinnerListModel(new Integer[]{1, 2, 4, 8, 16, 32, 64}));
 		spinner_1.getModel().setValue(4);
-		mainPanel.add(spinner_1, gbc_spinner_1);
+		subPanel.add(spinner_1, gbc_spinner_1);
 		spinner_1.addChangeListener(changeTimeSignature);
+
+		rdbtnBeatsPerMinute = new JRadioButton("Beats Per Minute");
+		buttonGroup_1.add(rdbtnBeatsPerMinute);
+		rdbtnBeatsPerMinute.setSelected(true);
+		rdbtnBeatsPerMinute.addChangeListener(cl);
 
 
 
@@ -285,20 +243,27 @@ public class ClientSetupGUI_P2P_multiPeer extends JFrame{
 		gbc_rdbtnMsPerBeat.gridwidth = 2;
 		gbc_rdbtnMsPerBeat.anchor = GridBagConstraints.WEST;
 		gbc_rdbtnMsPerBeat.insets = new Insets(0, 0, 5, 5);
-		gbc_rdbtnMsPerBeat.gridx = 1;
-		gbc_rdbtnMsPerBeat.gridy = 7;
-		mainPanel.add(rdbtnMsPerBeat, gbc_rdbtnMsPerBeat);
+		gbc_rdbtnMsPerBeat.gridx = 0;
+		gbc_rdbtnMsPerBeat.gridy = 4;
+		subPanel.add(rdbtnMsPerBeat, gbc_rdbtnMsPerBeat);
 		rdbtnMsPerBeat.addChangeListener(cl);
+
 
 		spinner_msPerBeat = new JSpinner();
 		spinner_msPerBeat.setEnabled(false);
 		spinner_msPerBeat.setModel(new SpinnerNumberModel(500, 10, 1000, 10));
+		previewConductor = new Conductor(
+				new ClockSetting(
+						(int)spinner_msPerBeat.getValue(),
+						(int)spinner.getValue(),
+						(int)spinner_1.getValue()));
+		previewConductor.setPreferredSize(new Dimension(300,300));
 		GridBagConstraints gbc_txt_msPerBeat = new GridBagConstraints();
 		gbc_txt_msPerBeat.fill = GridBagConstraints.HORIZONTAL;
 		gbc_txt_msPerBeat.insets = new Insets(0, 0, 5, 5);
-		gbc_txt_msPerBeat.gridx = 3;
-		gbc_txt_msPerBeat.gridy = 7;
-		mainPanel.add(spinner_msPerBeat, gbc_txt_msPerBeat);
+		gbc_txt_msPerBeat.gridx = 2;
+		gbc_txt_msPerBeat.gridy = 4;
+		subPanel.add(spinner_msPerBeat, gbc_txt_msPerBeat);
 
 		spinner_msPerBeat.addChangeListener(new ChangeListener(){
 
@@ -312,42 +277,30 @@ public class ClientSetupGUI_P2P_multiPeer extends JFrame{
 			}
 
 		});
-		GridBagConstraints gbc_panel = new GridBagConstraints();
-		gbc_panel.gridheight = 8;
-		gbc_panel.insets = new Insets(0, 0, 5, 0);
-		gbc_panel.fill = GridBagConstraints.BOTH;
-		gbc_panel.gridx = 5;
-		gbc_panel.gridy = 1;
-
-		previewConductor = new Conductor(
-				new ClockSetting(
-						(int)spinner_msPerBeat.getValue(),
-						(int)spinner.getValue(),
-						(int)spinner_1.getValue()));
-		mainPanel.add(previewConductor, gbc_panel);
-
-		rdbtnBeatsPerMinute = new JRadioButton("Beats Per Minute");
-		buttonGroup_1.add(rdbtnBeatsPerMinute);
-		rdbtnBeatsPerMinute.setSelected(true);
-		rdbtnBeatsPerMinute.addChangeListener(cl);
 
 		GridBagConstraints gbc_rdbtnBeatsPerMinute = new GridBagConstraints();
 		gbc_rdbtnBeatsPerMinute.gridwidth = 2;
 		gbc_rdbtnBeatsPerMinute.anchor = GridBagConstraints.WEST;
 		gbc_rdbtnBeatsPerMinute.insets = new Insets(0, 0, 5, 5);
-		gbc_rdbtnBeatsPerMinute.gridx = 1;
-		gbc_rdbtnBeatsPerMinute.gridy = 8;
-		mainPanel.add(rdbtnBeatsPerMinute, gbc_rdbtnBeatsPerMinute);
-
+		gbc_rdbtnBeatsPerMinute.gridx = 0;
+		gbc_rdbtnBeatsPerMinute.gridy = 5;
+		subPanel.add(rdbtnBeatsPerMinute, gbc_rdbtnBeatsPerMinute);
+		GridBagConstraints gbc_panel = new GridBagConstraints();
+		gbc_panel.gridheight = 7;
+		gbc_panel.insets = new Insets(0, 0, 5, 0);
+		gbc_panel.fill = GridBagConstraints.BOTH;
+		gbc_panel.gridx = 3;
+		gbc_panel.gridy = 1;
+		newSessionPanel.add(previewConductor, BorderLayout.EAST);	
 		txtBPM = new JTextField();
 		txtBPM.setHorizontalAlignment(SwingConstants.RIGHT);
 		txtBPM.setText("120");
 		GridBagConstraints gbc_txtBPM = new GridBagConstraints();
 		gbc_txtBPM.fill = GridBagConstraints.HORIZONTAL;
 		gbc_txtBPM.insets = new Insets(0, 0, 5, 5);
-		gbc_txtBPM.gridx = 3;
-		gbc_txtBPM.gridy = 8;
-		mainPanel.add(txtBPM, gbc_txtBPM);
+		gbc_txtBPM.gridx = 2;
+		gbc_txtBPM.gridy = 5;
+		subPanel.add(txtBPM, gbc_txtBPM);
 		txtBPM.setColumns(1);
 
 		txtBPM.addActionListener(new ActionListener(){
@@ -364,6 +317,7 @@ public class ClientSetupGUI_P2P_multiPeer extends JFrame{
 
 		});
 
+		mainPanel.add(newSessionPanel,BorderLayout.CENTER);
 
 		btnStart = new JButton("Start");
 		getContentPane().add(btnStart, BorderLayout.SOUTH);
@@ -516,7 +470,7 @@ public class ClientSetupGUI_P2P_multiPeer extends JFrame{
 
 
 	public static void main(String arg[]){
-		ClientSetupGUI_P2P_multiPeer gui = new ClientSetupGUI_P2P_multiPeer();
+		ClientSetupGUI gui = new ClientSetupGUI();
 		gui.setVisible(true);
 
 		gui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -555,7 +509,7 @@ public class ClientSetupGUI_P2P_multiPeer extends JFrame{
 						ClockSetting clock = DefaultObjects.bc0;
 						PlaybackManager playback = new PlaybackManager(outputMixer, clock, DefaultObjects.defaultFormat);
 						client = new Client(localPort, displayName, input, playback, clock,webcamThread);
-						String[] entries = gui.textFieldPort.getText().trim().split(",[ \t]*");
+						String[] entries = gui.scanPanel.getSelection().split(",[ \t]*");
 
 						for(String entry : entries){
 							client.joinSessionP2P(entry);

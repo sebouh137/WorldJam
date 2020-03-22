@@ -30,6 +30,7 @@ import worldjam.audio.PlaybackManager;
 import worldjam.audio.AudioSample;
 import worldjam.audio.AudioSubscriber;
 import worldjam.gui.ClientGUI;
+import worldjam.gui.ClientSetupGUI;
 import worldjam.gui.ClientSetupGUI_P2P_multiPeer;
 import worldjam.gui.TimeCalibrationDialog;
 import worldjam.net.WJConstants;
@@ -45,7 +46,7 @@ public class Client implements ClockSubscriber {
 	public static void main(String arg[]) throws LineUnavailableException, UnknownHostException, IOException{
 
 		//if(arg.length >= 1 && arg[0].equals("-g")){
-		ClientSetupGUI_P2P_multiPeer.main(arg);
+		ClientSetupGUI.main(arg);
 
 	}
 

@@ -35,7 +35,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
-import javax.swing.JList;
+//import javax.swing.JList;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -53,7 +53,7 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 	ConductorAndWebcamViewer viewManager;
 	private static final long serialVersionUID = -6893387160409587544L;
 	private Client client;
-	private JMenu mnChannels;
+	//private JMenu mnChannels;
 	private Conductor conductor;
 	//private ViewPanel webcamViewer;
 	public ClientGUI(Client client) {
@@ -80,10 +80,10 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
 
-		JMenu mnPlayback = new JMenu("Playback");
-		menuBar.add(mnPlayback);
-		mnChannels = new JMenu("Channels");
-		mnPlayback.add(mnChannels);		
+		//JMenu mnPlayback = new JMenu("Playback");
+		//menuBar.add(mnPlayback);
+		//mnChannels = new JMenu("Channels");
+		//mnPlayback.add(mnChannels);		
 
 		JMenu mnInput = new JMenu("Input");
 		menuBar.add(mnInput);
@@ -226,16 +226,17 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		JLabel lblSessionName = new JLabel(client.getSessionName());
 		lblSessionName.setFont(infoFont);
 		panel.add(lblSessionName, BorderLayout.WEST);
+		
 		/*JLabel lblUserName = new JLabel(client.getUserName());
 		lblUserName.setFont(infoFont);
 		panel.add(lblUserName, BorderLayout.EAST);*/
 
-		clientList = new JList<ClientListItem>();
-		JPopupMenu popupMenu = new JPopupMenu();
-		clientList.setCellRenderer(new ClientListItem.ClientListItemRenderer());
-		clientList.setComponentPopupMenu(popupMenu);
-		clientList.setFixedCellWidth(130);
-
+		//clientList = new JList<ClientListItem>();
+		//JPopupMenu popupMenu = new JPopupMenu();
+		//clientList.setCellRenderer(new ClientListItem.ClientListItemRenderer());
+		//clientList.setComponentPopupMenu(popupMenu);
+		//clientList.setFixedCellWidth(130);
+		/*
 		JCheckBoxMenuItem muteButton = new JCheckBoxMenuItem("Mute Channel");
 		muteButton.setSelected(false);
 		muteButton.addChangeListener(e->{
@@ -276,12 +277,12 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		clientListModel.addElement(new ClientListItem(client.getUserName(), client.getDescriptor().clientID, true, true));
 
 		clientList.validate();
-		getContentPane().add(clientList, BorderLayout.EAST);
+		getContentPane().add(clientList, BorderLayout.EAST);*/
 
 		//chat = new ChatPanel();
 		//getContentPane().add(chat, BorderLayout.WEST);
 
-
+		getContentPane().add(new MainGuiSidePanel(this.client), BorderLayout.EAST);
 
 		client.getPlaybackManager().addChannelChangeListener(this);
 		client.getPlaybackManager().updateChannels();
@@ -290,8 +291,8 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 
 
 	}
-	JList<ClientListItem> clientList;
-	DefaultListModel<ClientListItem> clientListModel;
+	//JList<ClientListItem> clientList;
+	//DefaultListModel<ClientListItem> clientListModel;
 	Font infoFont = new Font("Lucida Grande", Font.PLAIN, 16);
 	private Component createTimeInfoPanel() {
 		JPanel panel = new JPanel();
@@ -318,7 +319,7 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 	JLabel lblTimeSig, lblBPM, lblMS;
 
 	public void channelsChanged(){
-		mnChannels.removeAll();
+		/*mnChannels.removeAll();
 		boolean listChanged = false;
 		for(Long id : client.getPlaybackManager().getIDs()){
 			//Line line = client.getPlaybackManager().getLine(id);
@@ -365,9 +366,9 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 			ClientListItem item = (ClientListItem)o;
 			item.setMuted(client.getPlaybackManager().getChannel(item.getClientID()).isMuted());
 		}
-		clientList.validate();
-		clientList.repaint();
-
+		//clientList.validate();
+		//clientList.repaint();
+		*/
 	}
 	public void changeClockSettingsNow(ClockSetting clock){
 		if(this.conductor != null)

@@ -63,8 +63,8 @@ public class ClientSetupGUI extends JFrame{
 	private final ButtonGroup buttonGroup = new ButtonGroup();
 	private final ButtonGroup buttonGroup_1 = new ButtonGroup();
 	private JLabel lblTimeSignature;
-	private JSpinner spinner;
-	private JSpinner spinner_1;
+	private JSpinner spinnerNumerator;
+	private JSpinner spinnerDenominator;
 	private JRadioButton rdbtnBeatsPerMinute;
 	private JRadioButton rdbtnMsPerBeat;
 	private JRadioButton rdbtnStartNewSession;
@@ -86,7 +86,7 @@ public class ClientSetupGUI extends JFrame{
 
 	JPanel newSessionPanel;
 	ClientSetupGUI() {
-		this.setSize(542, 388);
+		this.setSize(544, 388);
 		setTitle("WorldJam Client Setup");
 		/*Image image;
 		try {
@@ -100,14 +100,7 @@ public class ClientSetupGUI extends JFrame{
 		this.getContentPane().setLayout(new BorderLayout());
 		this.getContentPane().add(tabs, BorderLayout.CENTER);
 
-		ChangeListener changeTimeSignature = new ChangeListener(){
-
-			@Override
-			public void stateChanged(ChangeEvent e) {
-				ClockSetting clock = previewConductor.getClock().createWithDifferentBeatCount((int)spinner.getValue());
-				previewConductor.changeClockSettingsNow(clock);
-			}
-		};
+		
 		JPanel mainPanel = new JPanel();
 		mainPanel.setLayout(new BorderLayout());
 
@@ -153,18 +146,12 @@ public class ClientSetupGUI extends JFrame{
 				lblTimeSignature.setEnabled(enable);
 				rdbtnBeatsPerMinute.setEnabled(enable);
 				rdbtnMsPerBeat.setEnabled(enable);
-				spinner.setEnabled(enable);
-				spinner_1.setEnabled(enable);
+				spinnerNumerator.setEnabled(enable);
+				spinnerDenominator.setEnabled(enable);
 				txtBPM.setEnabled(enable);
 				spinner_msPerBeat.setEnabled(enable);
 
-				if(rdbtnMsPerBeat.isSelected() && enable){
-					txtBPM.setEnabled(false);
-					spinner_msPerBeat.setEnabled(true);
-				} else if (rdbtnBeatsPerMinute.isSelected() && enable){
-					spinner_msPerBeat.setEnabled(false);
-					txtBPM.setEnabled(true);
-				}
+				
 				enable &= tabs.getSelectedComponent() == newSessionPanel;
 				previewConductor.setMeasureNumberVisible(false);
 				if(rdbtnStartNewSession.isSelected()) {
@@ -179,143 +166,14 @@ public class ClientSetupGUI extends JFrame{
 					mainPanel.add(scanPanel,BorderLayout.CENTER);
 					mainPanel.revalidate();
 					revalidate();
+					repaint();
 				}
 			}
 		};
 		rdbtnStartNewSession.addChangeListener(cl);
 		tabs.addChangeListener(cl);
 
-		newSessionPanel = new JPanel();
-		JPanel subPanel = new JPanel();
-		GridBagLayout gridBagLayout = new GridBagLayout();
-
-		gridBagLayout.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-		gridBagLayout.columnWeights = new double[]{0.0, 0.0, 0.0, 1.0};
-		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
-		subPanel.setLayout(gridBagLayout);
-		
-		newSessionPanel.setLayout(new BorderLayout());
-		newSessionPanel.add(subPanel, BorderLayout.CENTER);
-
-		lblTimeSignature = new JLabel("      Time Signature");
-		lblTimeSignature.setHorizontalAlignment(SwingConstants.LEFT);
-		GridBagConstraints gbc_lblTimeSignature = new GridBagConstraints();
-		gbc_lblTimeSignature.anchor = GridBagConstraints.WEST;
-		gbc_lblTimeSignature.gridwidth = 2;
-		gbc_lblTimeSignature.insets = new Insets(0, 0, 5, 5);
-		gbc_lblTimeSignature.gridx = 0;
-		gbc_lblTimeSignature.gridy = 1;
-		subPanel.add(lblTimeSignature, gbc_lblTimeSignature);
-
-		spinner = new JSpinner();
-		GridBagConstraints gbc_spinner = new GridBagConstraints();
-		gbc_spinner.anchor = GridBagConstraints.EAST;
-		gbc_spinner.insets = new Insets(0, 0, 5, 5);
-		gbc_spinner.gridx = 2;
-		gbc_spinner.gridy = 1;
-		spinner.setModel(new SpinnerNumberModel(4,1,64,1));
-		subPanel.add(spinner, gbc_spinner);
-		spinner.addChangeListener(changeTimeSignature);
-
-		spinner_1 = new JSpinner();
-		GridBagConstraints gbc_spinner_1 = new GridBagConstraints();
-		gbc_spinner_1.anchor = GridBagConstraints.EAST;
-		gbc_spinner_1.insets = new Insets(0, 0, 5, 5);
-		gbc_spinner_1.gridx = 2;
-		gbc_spinner_1.gridy = 2;
-
-		spinner_1.setModel(new SpinnerListModel(new Integer[]{1, 2, 4, 8, 16, 32, 64}));
-		spinner_1.getModel().setValue(4);
-		subPanel.add(spinner_1, gbc_spinner_1);
-		spinner_1.addChangeListener(changeTimeSignature);
-
-		rdbtnBeatsPerMinute = new JRadioButton("Beats Per Minute");
-		buttonGroup_1.add(rdbtnBeatsPerMinute);
-		rdbtnBeatsPerMinute.setSelected(true);
-		rdbtnBeatsPerMinute.addChangeListener(cl);
-
-
-
-
-		rdbtnMsPerBeat = new JRadioButton("ms Per Beat");
-		buttonGroup_1.add(rdbtnMsPerBeat);
-		GridBagConstraints gbc_rdbtnMsPerBeat = new GridBagConstraints();
-		gbc_rdbtnMsPerBeat.gridwidth = 2;
-		gbc_rdbtnMsPerBeat.anchor = GridBagConstraints.WEST;
-		gbc_rdbtnMsPerBeat.insets = new Insets(0, 0, 5, 5);
-		gbc_rdbtnMsPerBeat.gridx = 0;
-		gbc_rdbtnMsPerBeat.gridy = 4;
-		subPanel.add(rdbtnMsPerBeat, gbc_rdbtnMsPerBeat);
-		rdbtnMsPerBeat.addChangeListener(cl);
-
-
-		spinner_msPerBeat = new JSpinner();
-		spinner_msPerBeat.setEnabled(false);
-		spinner_msPerBeat.setModel(new SpinnerNumberModel(500, 10, 1000, 10));
-		previewConductor = new Conductor(
-				new ClockSetting(
-						(int)spinner_msPerBeat.getValue(),
-						(int)spinner.getValue(),
-						(int)spinner_1.getValue()));
-		previewConductor.setPreferredSize(new Dimension(300,300));
-		GridBagConstraints gbc_txt_msPerBeat = new GridBagConstraints();
-		gbc_txt_msPerBeat.fill = GridBagConstraints.HORIZONTAL;
-		gbc_txt_msPerBeat.insets = new Insets(0, 0, 5, 5);
-		gbc_txt_msPerBeat.gridx = 2;
-		gbc_txt_msPerBeat.gridy = 4;
-		subPanel.add(spinner_msPerBeat, gbc_txt_msPerBeat);
-
-		spinner_msPerBeat.addChangeListener(new ChangeListener(){
-
-			@Override
-			public void stateChanged(ChangeEvent e) {
-				int val = (int)spinner_msPerBeat.getValue();
-				val = val-(val%10);
-				spinner_msPerBeat.setValue(val);
-				txtBPM.setText(String.format("%.2f", 60000./val));
-				previewConductor.changeClockSettingsNow(previewConductor.getClock().createWithDifferentTempo(val));
-			}
-
-		});
-
-		GridBagConstraints gbc_rdbtnBeatsPerMinute = new GridBagConstraints();
-		gbc_rdbtnBeatsPerMinute.gridwidth = 2;
-		gbc_rdbtnBeatsPerMinute.anchor = GridBagConstraints.WEST;
-		gbc_rdbtnBeatsPerMinute.insets = new Insets(0, 0, 5, 5);
-		gbc_rdbtnBeatsPerMinute.gridx = 0;
-		gbc_rdbtnBeatsPerMinute.gridy = 5;
-		subPanel.add(rdbtnBeatsPerMinute, gbc_rdbtnBeatsPerMinute);
-		GridBagConstraints gbc_panel = new GridBagConstraints();
-		gbc_panel.gridheight = 7;
-		gbc_panel.insets = new Insets(0, 0, 5, 0);
-		gbc_panel.fill = GridBagConstraints.BOTH;
-		gbc_panel.gridx = 3;
-		gbc_panel.gridy = 1;
-		newSessionPanel.add(previewConductor, BorderLayout.EAST);	
-		txtBPM = new JTextField();
-		txtBPM.setHorizontalAlignment(SwingConstants.RIGHT);
-		txtBPM.setText("120");
-		GridBagConstraints gbc_txtBPM = new GridBagConstraints();
-		gbc_txtBPM.fill = GridBagConstraints.HORIZONTAL;
-		gbc_txtBPM.insets = new Insets(0, 0, 5, 5);
-		gbc_txtBPM.gridx = 2;
-		gbc_txtBPM.gridy = 5;
-		subPanel.add(txtBPM, gbc_txtBPM);
-		txtBPM.setColumns(1);
-
-		txtBPM.addActionListener(new ActionListener(){
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-
-				int val = (int)(60000./Double.parseDouble(txtBPM.getText()));
-				val = val-(val%10);
-				spinner_msPerBeat.setValue(val);
-				txtBPM.setText(String.format("%.2f", 60000./val));
-				previewConductor.changeClockSettingsNow(previewConductor.getClock().createWithDifferentTempo(val));
-			}
-
-		});
+		newSessionPanel = createNewSessionPanel();
 
 		mainPanel.add(newSessionPanel,BorderLayout.CENTER);
 
@@ -432,6 +290,162 @@ public class ClientSetupGUI extends JFrame{
 
 	}
 
+	private JPanel createNewSessionPanel() {
+		newSessionPanel = new JPanel();
+		JPanel subPanel = new JPanel();
+		GridBagLayout gridBagLayout = new GridBagLayout();
+		gridBagLayout.columnWidths = new int[]{148, 65};
+
+		gridBagLayout.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+		gridBagLayout.columnWeights = new double[]{0.0, 0.0};
+		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		subPanel.setLayout(gridBagLayout);
+		
+		newSessionPanel.setLayout(new BorderLayout());
+		newSessionPanel.add(subPanel, BorderLayout.CENTER);
+
+		lblTimeSignature = new JLabel("Time Signature");
+		lblTimeSignature.setHorizontalAlignment(SwingConstants.LEFT);
+		GridBagConstraints gbc_lblTimeSignature = new GridBagConstraints();
+		gbc_lblTimeSignature.fill = GridBagConstraints.HORIZONTAL;
+		gbc_lblTimeSignature.insets = new Insets(0, 0, 5, 5);
+		gbc_lblTimeSignature.gridx = 0;
+		gbc_lblTimeSignature.gridy = 1;
+		subPanel.add(lblTimeSignature, gbc_lblTimeSignature);
+
+		ChangeListener changeTimeSignature = new ChangeListener(){
+
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				ClockSetting clock = previewConductor.getClock().createWithDifferentBeatCount((int)spinnerNumerator.getValue());
+				previewConductor.changeClockSettingsNow(clock);
+			}
+		};
+		
+		spinnerNumerator = new JSpinner();
+		GridBagConstraints gbc_spinner = new GridBagConstraints();
+		gbc_spinner.anchor = GridBagConstraints.EAST;
+		gbc_spinner.insets = new Insets(0, 0, 5, 5);
+		gbc_spinner.gridx = 1;
+		gbc_spinner.gridy = 1;
+		gbc_spinner.fill = GridBagConstraints.HORIZONTAL;
+		spinnerNumerator.setModel(new SpinnerListModel(new Integer[] {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24}));
+		spinnerNumerator.getModel().setValue(4);
+		subPanel.add(spinnerNumerator, gbc_spinner);
+		spinnerNumerator.addChangeListener(changeTimeSignature);
+
+		spinnerDenominator = new JSpinner();
+		GridBagConstraints gbc_spinner_1 = new GridBagConstraints();
+		gbc_spinner_1.anchor = GridBagConstraints.EAST;
+		gbc_spinner_1.insets = new Insets(0, 0, 5, 5);
+		gbc_spinner_1.gridx = 1;
+		gbc_spinner_1.gridy = 2;
+		gbc_spinner_1.fill = GridBagConstraints.HORIZONTAL;
+
+		spinnerDenominator.setModel(new SpinnerListModel(new Integer[]{1, 2, 4, 8, 16}));
+		spinnerDenominator.getModel().setValue(4);
+		subPanel.add(spinnerDenominator, gbc_spinner_1);
+		spinnerDenominator.addChangeListener(changeTimeSignature);
+
+		
+		ChangeListener cl = e->{
+			if(rdbtnMsPerBeat.isSelected()){
+				txtBPM.setEnabled(false);
+				spinner_msPerBeat.setEnabled(true);
+			} else if (rdbtnBeatsPerMinute.isSelected()){
+				spinner_msPerBeat.setEnabled(false);
+				txtBPM.setEnabled(true);
+			}
+		};
+		
+		rdbtnBeatsPerMinute = new JRadioButton("Beats Per Minute");
+		buttonGroup_1.add(rdbtnBeatsPerMinute);
+		rdbtnBeatsPerMinute.setSelected(true);
+		rdbtnBeatsPerMinute.addChangeListener(cl);
+
+
+
+
+		rdbtnMsPerBeat = new JRadioButton("ms Per Beat");
+		buttonGroup_1.add(rdbtnMsPerBeat);
+		GridBagConstraints gbc_rdbtnMsPerBeat = new GridBagConstraints();
+		gbc_rdbtnMsPerBeat.fill = GridBagConstraints.HORIZONTAL;
+		gbc_rdbtnMsPerBeat.insets = new Insets(0, 0, 5, 5);
+		gbc_rdbtnMsPerBeat.gridx = 0;
+		gbc_rdbtnMsPerBeat.gridy = 4;
+		subPanel.add(rdbtnMsPerBeat, gbc_rdbtnMsPerBeat);
+		rdbtnMsPerBeat.addChangeListener(cl);
+
+
+		spinner_msPerBeat = new JSpinner();
+		spinner_msPerBeat.setEnabled(false);
+		spinner_msPerBeat.setModel(new SpinnerNumberModel(500, 10, 1000, 10));
+		previewConductor = new Conductor(
+				new ClockSetting(
+						(int)spinner_msPerBeat.getValue(),
+						(int)spinnerNumerator.getValue(),
+						(int)spinnerDenominator.getValue()));
+		previewConductor.setPreferredSize(new Dimension(280,280));
+		GridBagConstraints gbc_txt_msPerBeat = new GridBagConstraints();
+		gbc_txt_msPerBeat.fill = GridBagConstraints.HORIZONTAL;
+		gbc_txt_msPerBeat.insets = new Insets(0, 0, 5, 5);
+		gbc_txt_msPerBeat.gridx = 1;
+		gbc_txt_msPerBeat.gridy = 4;
+		subPanel.add(spinner_msPerBeat, gbc_txt_msPerBeat);
+
+		spinner_msPerBeat.addChangeListener(new ChangeListener(){
+
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				int val = (int)spinner_msPerBeat.getValue();
+				val = val-(val%10);
+				spinner_msPerBeat.setValue(val);
+				txtBPM.setText(String.format("%.2f", 60000./val));
+				previewConductor.changeClockSettingsNow(previewConductor.getClock().createWithDifferentTempo(val));
+			}
+
+		});
+
+		GridBagConstraints gbc_rdbtnBeatsPerMinute = new GridBagConstraints();
+		gbc_rdbtnBeatsPerMinute.fill = GridBagConstraints.HORIZONTAL;
+		gbc_rdbtnBeatsPerMinute.insets = new Insets(0, 0, 5, 5);
+		gbc_rdbtnBeatsPerMinute.gridx = 0;
+		gbc_rdbtnBeatsPerMinute.gridy = 5;
+		subPanel.add(rdbtnBeatsPerMinute, gbc_rdbtnBeatsPerMinute);
+		GridBagConstraints gbc_panel = new GridBagConstraints();
+		gbc_panel.gridheight = 7;
+		gbc_panel.insets = new Insets(0, 0, 5, 0);
+		gbc_panel.fill = GridBagConstraints.BOTH;
+		gbc_panel.gridx = 3;
+		gbc_panel.gridy = 1;
+		newSessionPanel.add(previewConductor, BorderLayout.EAST);	
+		txtBPM = new JTextField();
+		txtBPM.setHorizontalAlignment(SwingConstants.RIGHT);
+		txtBPM.setText("120");
+		GridBagConstraints gbc_txtBPM = new GridBagConstraints();
+		gbc_txtBPM.fill = GridBagConstraints.HORIZONTAL;
+		gbc_txtBPM.insets = new Insets(0, 0, 5, 5);
+		gbc_txtBPM.gridx = 1;
+		gbc_txtBPM.gridy = 5;
+		subPanel.add(txtBPM, gbc_txtBPM);
+		txtBPM.setColumns(1);
+
+		txtBPM.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+
+				int val = (int)(60000./Double.parseDouble(txtBPM.getText()));
+				val = val-(val%10);
+				spinner_msPerBeat.setValue(val);
+				txtBPM.setText(String.format("%.2f", 60000./val));
+				previewConductor.changeClockSettingsNow(previewConductor.getClock().createWithDifferentTempo(val));
+			}
+
+		});
+		return newSessionPanel;
+	}
+
 	class MixerWrapper {
 		MixerWrapper(Mixer.Info info){
 			this.info = info;
@@ -481,8 +495,8 @@ public class ClientSetupGUI extends JFrame{
 				gui.previewConductor.close();
 
 				String displayName = gui.txtUser.getText();
-				int num = (int)gui.spinner.getModel().getValue();
-				int denom = (int)gui.spinner_1.getModel().getValue();
+				int num = (int)gui.spinnerNumerator.getModel().getValue();
+				int denom = (int)gui.spinnerDenominator.getModel().getValue();
 				int msPerBeat = (int) gui.spinner_msPerBeat.getValue();
 				boolean join = gui.rdbtnJoinExistingSession.isSelected();
 				Mixer inputMixer =  AudioSystem.getMixer(((MixerWrapper)(gui.comboBox.getModel().getSelectedItem())).info);

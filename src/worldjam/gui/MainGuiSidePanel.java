@@ -4,7 +4,9 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.io.OutputStream;
 import java.util.Map;
+import java.util.Dictionary;
 import java.util.HashMap;
+import java.util.Hashtable;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.Control;
@@ -278,29 +280,44 @@ public class MainGuiSidePanel extends JPanel{
 		});
 		
 		this.add(subpanel);
-		JSlider slider = createSliderFromControl((FloatControl)channel.getLine().getControl(FloatControl.Type.MASTER_GAIN));
+		
+		
+		FloatControl masterGain = (FloatControl)channel.getLine().getControl(FloatControl.Type.MASTER_GAIN);
+		JSlider slider = createSliderFromControl(masterGain);
+		slider.setPaintTrack(true);
+		slider.setPaintTicks(true);
+		slider.setPaintLabels(true);
+		//slider.
+		
 		slider.setName("gainSlider");
 		slider.setPreferredSize(new Dimension(130,slider.getPreferredSize().height));
+		
 		GridBagConstraints gbc_slider = new GridBagConstraints();
 		gbc_slider.insets = new Insets(0, 0, 0, 5);
 		gbc_slider.fill = GridBagConstraints.HORIZONTAL;
 		gbc_slider.anchor = GridBagConstraints.NORTH;
 		gbc_slider.gridx = 2;
-		gbc_slider.gridy = 1;
+		gbc_slider.gridy = 0;
+		gbc_slider.gridheight = 2;
 		subpanel.add(slider, gbc_slider);
 		
 		JSlider slider2 = createSliderFromControl((FloatControl)channel.getLine().getControl(FloatControl.Type.BALANCE));
 		slider2.setName("balanceSlider");
+		slider2.setPaintLabels(true);
+		slider2.setPaintTicks(true);
+		slider2.setPaintTrack(true);
 		slider2.setPreferredSize(new Dimension(90,slider2.getPreferredSize().height));
 		GridBagConstraints gbc_slider2 = new GridBagConstraints();
 		gbc_slider2.fill = GridBagConstraints.HORIZONTAL;
 		gbc_slider2.anchor = GridBagConstraints.NORTH;
 		gbc_slider2.gridx = 3;
-		gbc_slider2.gridy = 1;
+		gbc_slider2.gridy = 0;
+		gbc_slider2.gridheight = 2;
 		subpanel.add(slider2, gbc_slider2);
 		channels2panels.put(channel, subpanel);
 		panels2channels.put( subpanel, channel);
 	}
+	Font SMALL_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 10);
 	Map<PlaybackChannel, JPanel> channels2panels = new HashMap();
 	Map<JPanel,PlaybackChannel> panels2channels = new HashMap();
 
@@ -311,6 +328,28 @@ public class MainGuiSidePanel extends JPanel{
 		JSlider slider = new JSlider(0, nPositions, currentPosition);
 		slider.setMinorTickSpacing(1);
 		slider.setMajorTickSpacing(10);
+		Dictionary labels = new Hashtable();
+		//JLabel label = new JLabel();
+		if(control.getType().equals(FloatControl.Type.MASTER_GAIN)) {
+			for(int i = 0; i < 90 ; i++) {
+				JLabel label = new JLabel(i != 0 ? String.format("%d ", -20*i) : "   0 dB");
+				label.setFont(SMALL_FONT);
+				int val = (int)((-control.getMinimum()-20*i)/control.getPrecision());
+				labels.put(val, label);
+			}
+			slider.setMajorTickSpacing((int)(10/control.getPrecision()));
+			slider.setMinorTickSpacing((int)(5/control.getPrecision()));
+		} else if(control.getType().equals(FloatControl.Type.BALANCE)) {
+			JLabel label = new JLabel("L");
+			label.setFont(SMALL_FONT);
+			labels.put(slider.getMinimum(), label);
+			label = new JLabel("R");
+			label.setFont(SMALL_FONT);
+			labels.put(slider.getMaximum(), label);	
+			slider.setMinorTickSpacing((int)(.2/control.getPrecision()));
+			slider.setMajorTickSpacing((int)(1.0/control.getPrecision()));
+		}
+		slider.setLabelTable(labels);
 		slider.addChangeListener(new ChangeListener(){
 			@Override
 			public void stateChanged(ChangeEvent event){

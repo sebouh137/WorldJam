@@ -26,7 +26,6 @@ import worldjam.audio.AudioFilter;
 import worldjam.audio.AudioSample;
 import worldjam.audio.PlaybackChannel;
 import worldjam.exe.Client;
-import worldjam.gui.MainGuiSidePanel.DummyPlaybackChannel;
 import worldjam.time.ClockSetting;
 import worldjam.time.DelaySetting;
 import java.awt.GridBagLayout;
@@ -37,140 +36,7 @@ import java.awt.Color;
 import java.awt.Component;
 
 public class MainGuiSidePanel extends JPanel{
-	public class DummyPlaybackChannel implements PlaybackChannel {
 
-		@Override
-		public double getRMS(double window) {
-			// TODO Auto-generated method stub
-			return 0;
-		}
-
-		@Override
-		public void sampleReceived(AudioSample sample) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void changeDelaySetting(DelaySetting newDelaySetting) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void close() {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void changeClockSettingsNow(ClockSetting beatClock) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public ClockSetting getClock() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Line getLine() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public Mixer getMixer() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public void setFilter(AudioFilter filter) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public AudioFormat getInputFormat() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public AudioFormat getPlaybackFormat() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public AudioFilter getFilter() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public String getChannelName() {
-			return "placeholder";
-		}
-
-		@Override
-		public long getChannelID() {
-			// TODO Auto-generated method stub
-			return 0;
-		}
-
-		@Override
-		public void startRecording(OutputStream output, long startTime) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void stopRecording(long timestamp) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void setMuted(boolean muted) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public boolean isMuted() {
-			// TODO Auto-generated method stub
-			return false;
-		}
-
-		@Override
-		public boolean canBeMuted() {
-			// TODO Auto-generated method stub
-			return false;
-		}
-
-		@Override
-		public int getTotalDelayInMS() {
-			// TODO Auto-generated method stub
-			return 0;
-		}
-
-		@Override
-		public DelaySetting getDelaySetting() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public void validateDelays() {
-			// TODO Auto-generated method stub
-
-		}
-
-	}
 	/**
 	 * 
 	 */
@@ -178,16 +44,13 @@ public class MainGuiSidePanel extends JPanel{
 	private Client client;
 	public MainGuiSidePanel(Client client) {
 		this.client = client;
-		this.setPreferredSize(new Dimension(320, 700));
+		this.setPreferredSize(new Dimension(330, 700));
 		this.setLayout(new FlowLayout());
-		if(client == null) { //dummy channels for design test
-			this.addChannelPanel(new DummyPlaybackChannel());
-			this.addChannelPanel(new DummyPlaybackChannel());
-		} else {
-			for(PlaybackChannel channel : client.getPlaybackManager().getChannels()) {
-				addChannelPanel(channel);
-			}
+
+		for(PlaybackChannel channel : client.getPlaybackManager().getChannels()) {
+			addChannelPanel(channel);
 		}
+
 		//thread that periodically refreshes the list of channels,
 		// and their statuses
 		Thread refresher = new Thread(()-> {
@@ -220,8 +83,10 @@ public class MainGuiSidePanel extends JPanel{
 				changed = true;
 			}
 		}
-		if(changed)
+		if(changed) {
 			this.revalidate();
+			this.repaint();
+		}
 		//update positions of the sliders and the status of the mute button
 		for(JPanel panel : panels2channels.keySet()) {
 			PlaybackChannel channel = panels2channels.get(panel);
@@ -240,9 +105,12 @@ public class MainGuiSidePanel extends JPanel{
 	}
 	void addChannelPanel(PlaybackChannel channel) {
 		JPanel subpanel = new JPanel();
-		subpanel.setBackground(new Color(173, 216, 230));
+		if(!channel.getChannelName().equals("loopback") && !channel.getChannelName().equals("metronome"))
+			subpanel.setBackground(new Color(173, 216, 230));
+		else 
+			subpanel.setBackground(new Color(200, 200, 200));
 		GridBagLayout gbl_subpanel = new GridBagLayout();
-		gbl_subpanel.columnWidths = new int[]{20, 30, 125, 72, 0};
+		gbl_subpanel.columnWidths = new int[]{30, 60, 125, 72, 0};
 		gbl_subpanel.rowHeights = new int[]{29, 20, 0};
 		gbl_subpanel.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		gbl_subpanel.rowWeights = new double[]{0.0, 0.0, Double.MIN_VALUE};
@@ -278,29 +146,29 @@ public class MainGuiSidePanel extends JPanel{
 		settingsButton.addActionListener(e->{
 			new PlaybackChannelControlGUI(channel, channel.getChannelName(), client.getDelayManager()).setVisible(true);
 		});
-		
+
 		this.add(subpanel);
-		
-		
+
+
 		FloatControl masterGain = (FloatControl)channel.getLine().getControl(FloatControl.Type.MASTER_GAIN);
 		JSlider slider = createSliderFromControl(masterGain);
 		slider.setPaintTrack(true);
 		slider.setPaintTicks(true);
 		slider.setPaintLabels(true);
 		//slider.
-		
+
 		slider.setName("gainSlider");
 		slider.setPreferredSize(new Dimension(130,slider.getPreferredSize().height));
-		
+
 		GridBagConstraints gbc_slider = new GridBagConstraints();
-		gbc_slider.insets = new Insets(0, 0, 0, 5);
+		gbc_slider.insets = new Insets(0, 0, 0, 0);
 		gbc_slider.fill = GridBagConstraints.HORIZONTAL;
 		gbc_slider.anchor = GridBagConstraints.NORTH;
 		gbc_slider.gridx = 2;
 		gbc_slider.gridy = 0;
 		gbc_slider.gridheight = 2;
 		subpanel.add(slider, gbc_slider);
-		
+
 		JSlider slider2 = createSliderFromControl((FloatControl)channel.getLine().getControl(FloatControl.Type.BALANCE));
 		slider2.setName("balanceSlider");
 		slider2.setPaintLabels(true);
@@ -316,6 +184,7 @@ public class MainGuiSidePanel extends JPanel{
 		subpanel.add(slider2, gbc_slider2);
 		channels2panels.put(channel, subpanel);
 		panels2channels.put( subpanel, channel);
+		subpanel.setPreferredSize(new Dimension(320, 70));
 	}
 	Font SMALL_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 10);
 	Map<PlaybackChannel, JPanel> channels2panels = new HashMap();
@@ -324,7 +193,7 @@ public class MainGuiSidePanel extends JPanel{
 	private JSlider createSliderFromControl(FloatControl control) {
 		int nPositions = (int)((control.getMaximum()-control.getMinimum())/control.getPrecision());
 		int currentPosition = (int)((control.getValue()-control.getMinimum())/control.getPrecision());
-		
+
 		JSlider slider = new JSlider(0, nPositions, currentPosition);
 		slider.setMinorTickSpacing(1);
 		slider.setMajorTickSpacing(10);
@@ -357,6 +226,7 @@ public class MainGuiSidePanel extends JPanel{
 				control.setValue(value);
 			}
 		});
+		slider.setBackground(Color.LIGHT_GRAY);
 		return slider;
 	}
 

@@ -137,7 +137,7 @@ public class ClientSetupGUI extends JFrame{
 		buttonGroup.add(rdbtnJoinExistingSession);
 		topPanel.add(rdbtnJoinExistingSession);
 
-		JPanel scanPanel = new ScanLocalSessionsGUI();
+		scanPanel = new ScanLocalSessionsGUI();
 
 		
 		ChangeListener cl = new ChangeListener() {

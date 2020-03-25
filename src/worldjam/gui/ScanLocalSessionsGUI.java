@@ -75,7 +75,11 @@ public class ScanLocalSessionsGUI extends JPanel{
 		panel.add(lblNewLabel);
 		
 		textFieldScanRange = new JTextField();
-		textFieldScanRange.setText("192.168.193.0/24");
+		try {
+			textFieldScanRange.setText(String.join(",",ScanForJamSessions.defaultSearchRanges()));
+		} catch (Exception e){
+			e.printStackTrace();
+		}
 		panel.add(textFieldScanRange);
 		textFieldScanRange.setColumns(10);
 		
@@ -113,7 +117,7 @@ public class ScanLocalSessionsGUI extends JPanel{
 		list.setCellRenderer(new DefaultListCellRenderer());
 		dummyListModel.addElement("Scanning for jam sessions");
 		try {
-			ArrayList<SessionConnectionInfo> activeSessions = ScanForJamSessions.scanRange(textFieldScanRange.getText(),DefaultObjects.defaultPort, 1000);
+			java.util.List<SessionConnectionInfo> activeSessions = ScanForJamSessions.scanRange(textFieldScanRange.getText(),DefaultObjects.defaultPort, 1000);
 			if(activeSessions.size() != 0) {
 				DefaultListModel<Object> listModel = new DefaultListModel<Object>();
 				for (SessionConnectionInfo session : activeSessions) {

@@ -16,6 +16,9 @@ public abstract class InputVolumeUtil extends FloatControl
 	private static InputVolumeUtil instance;
 	
 	public static InputVolumeUtil getInstance() {
+		if(instance != null) {
+			return instance;
+		}
 		if(System.getProperty("os.name").toLowerCase().contains("mac")) {
 			instance = new MacInputVolumeUtil();
 		}

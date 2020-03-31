@@ -80,17 +80,6 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
 
-		//JMenu mnPlayback = new JMenu("Playback");
-		//menuBar.add(mnPlayback);
-		//mnChannels = new JMenu("Channels");
-		//mnPlayback.add(mnChannels);		
-
-		JMenu mnInput = new JMenu("Input");
-		menuBar.add(mnInput);
-
-		JMenuItem mntmInputMonitor = new JMenuItem("Input Monitor...");
-		mnInput.add(mntmInputMonitor);
-
 		JMenu mnOtherSettings = new JMenu("Timing");
 		menuBar.add(mnOtherSettings);
 
@@ -194,17 +183,6 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 			}
 		});
 		menuBar.add(btnClose);*/
-		if(client.getInput() == null){
-			mntmInputMonitor.setEnabled(false);
-		}
-		mntmInputMonitor.addActionListener(new ActionListener(){
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				new InputMonitor(client.getInput(), "Input").setVisible(true);;
-			}
-
-		});
 
 
 		this.conductor = new Conductor(client.getBeatClock());

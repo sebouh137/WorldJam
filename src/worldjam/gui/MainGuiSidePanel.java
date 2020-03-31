@@ -13,17 +13,20 @@ import javax.sound.sampled.Control;
 import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.Line;
 import javax.sound.sampled.Mixer;
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
+import javax.swing.JTextArea;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import worldjam.audio.AudioFilter;
 import worldjam.audio.AudioSample;
+import worldjam.audio.InputThread;
 import worldjam.audio.PlaybackChannel;
 import worldjam.exe.Client;
 import worldjam.time.ClockSetting;
@@ -44,9 +47,10 @@ public class MainGuiSidePanel extends JPanel{
 	private Client client;
 	public MainGuiSidePanel(Client client) {
 		this.client = client;
-		this.setPreferredSize(new Dimension(330, 700));
+		this.setPreferredSize(new Dimension(310, 700));
 		this.setLayout(new FlowLayout());
-
+		this.setBackground(new Color(100,100,100));
+		addInputPanel(client.getInput());
 		for(PlaybackChannel channel : client.getPlaybackManager().getChannels()) {
 			addChannelPanel(channel);
 		}
@@ -103,12 +107,94 @@ public class MainGuiSidePanel extends JPanel{
 			}
 		}
 	}
+	void addInputPanel(InputThread input){
+		JPanel subpanel = new JPanel();
+		subpanel.setBackground(new Color(190, 190, 204));
+		subpanel.setBorder(BorderFactory.createRaisedBevelBorder());
+		GridBagLayout gbl_subpanel = new GridBagLayout();
+		gbl_subpanel.columnWidths = new int[]{30, 60, 125, 72, 0};
+		gbl_subpanel.rowHeights = new int[]{29, 20, 0};
+		gbl_subpanel.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_subpanel.rowWeights = new double[]{0.0, 0.0, Double.MIN_VALUE};
+		subpanel.setLayout(gbl_subpanel);
+		JLabel label = new JLabel("input");
+		label.setFont(new Font("Lucida Grande", Font.ITALIC, 15));
+		GridBagConstraints gbc_label = new GridBagConstraints();
+		gbc_label.anchor = GridBagConstraints.SOUTHWEST;
+		gbc_label.gridwidth = 2;
+		gbc_label.insets = new Insets(0, 3, 5, 2);
+		gbc_label.gridx = 0;
+		gbc_label.gridy = 0;
+		subpanel.add(label, gbc_label);
+		JButton muteButton = new JButton(input.isMuted() ? mutedMicIcon : unmutedMicIcon);
+		muteButton.setName("muteButton");
+		muteButton.addActionListener(e->{
+			input.setMuted(!input.isMuted());
+			muteButton.setIcon(input.isMuted()? mutedMicIcon : unmutedMicIcon);
+		});
+		GridBagConstraints gbc_muteButton = new GridBagConstraints();
+		gbc_muteButton.anchor = GridBagConstraints.WEST;
+		gbc_muteButton.insets = new Insets(0, 2, 0, 2);
+		gbc_muteButton.gridx = 0;
+		gbc_muteButton.gridy = 1;
+		subpanel.add(muteButton, gbc_muteButton);
+		JButton settingsButton = new JButton(settingsIcon);
+		GridBagConstraints gbc_settingsButton = new GridBagConstraints();
+		gbc_settingsButton.anchor = GridBagConstraints.WEST;
+		gbc_settingsButton.insets = new Insets(0, 2, 0, 2);
+		gbc_settingsButton.gridx = 1;
+		gbc_settingsButton.gridy = 1;
+		subpanel.add(settingsButton, gbc_settingsButton);
+		settingsButton.addActionListener(e->{
+			new InputMonitor(input, "Input").setVisible(true);
+		});
+
+		FloatControl inputVolume = input.inputVolumeControl();
+		if(inputVolume != null) {
+			JSlider slider = createSliderFromControl(inputVolume);
+			slider.setPaintTrack(true);
+			slider.setPaintTicks(true);
+			slider.setPaintLabels(true);
+			//slider.
+
+			slider.setName("gainSlider");
+			slider.setPreferredSize(new Dimension(130,slider.getPreferredSize().height));
+
+			GridBagConstraints gbc_slider = new GridBagConstraints();
+			gbc_slider.insets = new Insets(0, 0, 0, 10);
+			gbc_slider.fill = GridBagConstraints.HORIZONTAL;
+			gbc_slider.anchor = GridBagConstraints.NORTH;
+			gbc_slider.gridx = 2;
+			gbc_slider.gridy = 0;
+			gbc_slider.gridheight = 2;
+			gbc_slider.gridwidth = 2;
+			subpanel.add(slider, gbc_slider);
+		} else {
+			JTextArea warning = new JTextArea("[Java cannot access audio input volume controls]");
+			warning.setLineWrap(true);
+			warning.setFont(SMALL_FONT);
+			warning.setEditable(false);
+			GridBagConstraints gbc_slider = new GridBagConstraints();
+			gbc_slider.insets = new Insets(0, 0, 0, 0);
+			gbc_slider.fill = GridBagConstraints.HORIZONTAL;
+			gbc_slider.anchor = GridBagConstraints.NORTH;
+			gbc_slider.gridx = 2;
+			gbc_slider.gridy = 0;
+			gbc_slider.gridheight = 2;
+			subpanel.add(warning, gbc_slider);
+		}
+
+		subpanel.setPreferredSize(new Dimension(300, 65));
+		this.add(subpanel);
+	}
+
 	void addChannelPanel(PlaybackChannel channel) {
 		JPanel subpanel = new JPanel();
 		if(!channel.getChannelName().equals("loopback") && !channel.getChannelName().equals("metronome"))
 			subpanel.setBackground(new Color(173, 216, 230));
 		else 
-			subpanel.setBackground(new Color(200, 200, 200));
+			subpanel.setBackground(new Color(214, 214, 206));
+		subpanel.setBorder(BorderFactory.createRaisedBevelBorder());
 		GridBagLayout gbl_subpanel = new GridBagLayout();
 		gbl_subpanel.columnWidths = new int[]{30, 60, 125, 72, 0};
 		gbl_subpanel.rowHeights = new int[]{29, 20, 0};
@@ -120,7 +206,7 @@ public class MainGuiSidePanel extends JPanel{
 		GridBagConstraints gbc_label = new GridBagConstraints();
 		gbc_label.anchor = GridBagConstraints.SOUTHWEST;
 		gbc_label.gridwidth = 2;
-		gbc_label.insets = new Insets(0, 0, 5, 5);
+		gbc_label.insets = new Insets(0, 2, 5, 3);
 		gbc_label.gridx = 0;
 		gbc_label.gridy = 0;
 		subpanel.add(label, gbc_label);
@@ -132,14 +218,14 @@ public class MainGuiSidePanel extends JPanel{
 		});
 		GridBagConstraints gbc_muteButton = new GridBagConstraints();
 		gbc_muteButton.anchor = GridBagConstraints.WEST;
-		gbc_muteButton.insets = new Insets(0, 0, 0, 5);
+		gbc_muteButton.insets = new Insets(0, 2, 0, 2);
 		gbc_muteButton.gridx = 0;
 		gbc_muteButton.gridy = 1;
 		subpanel.add(muteButton, gbc_muteButton);
 		JButton settingsButton = new JButton(settingsIcon);
 		GridBagConstraints gbc_settingsButton = new GridBagConstraints();
 		gbc_settingsButton.anchor = GridBagConstraints.WEST;
-		gbc_settingsButton.insets = new Insets(0, 0, 0, 5);
+		gbc_settingsButton.insets = new Insets(0, 2, 0, 2);
 		gbc_settingsButton.gridx = 1;
 		gbc_settingsButton.gridy = 1;
 		subpanel.add(settingsButton, gbc_settingsButton);
@@ -184,7 +270,7 @@ public class MainGuiSidePanel extends JPanel{
 		subpanel.add(slider2, gbc_slider2);
 		channels2panels.put(channel, subpanel);
 		panels2channels.put( subpanel, channel);
-		subpanel.setPreferredSize(new Dimension(320, 70));
+		subpanel.setPreferredSize(new Dimension(300, 65));
 	}
 	Font SMALL_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 10);
 	Map<PlaybackChannel, JPanel> channels2panels = new HashMap();
@@ -206,6 +292,15 @@ public class MainGuiSidePanel extends JPanel{
 				int val = (int)((-control.getMinimum()-20*i)/control.getPrecision());
 				labels.put(val, label);
 			}
+			slider.setMajorTickSpacing((int)(10/control.getPrecision()));
+			slider.setMinorTickSpacing((int)(5/control.getPrecision()));
+		} else if(control.getType().equals(FloatControl.Type.VOLUME)) {
+			JLabel label = new JLabel("0");
+			label.setFont(SMALL_FONT);
+			labels.put(slider.getMinimum(), label);
+			label = new JLabel("100%");
+			label.setFont(SMALL_FONT);
+			labels.put(slider.getMaximum(), label);
 			slider.setMajorTickSpacing((int)(10/control.getPrecision()));
 			slider.setMinorTickSpacing((int)(5/control.getPrecision()));
 		} else if(control.getType().equals(FloatControl.Type.BALANCE)) {
@@ -233,6 +328,9 @@ public class MainGuiSidePanel extends JPanel{
 	private static ImageIcon mutedIcon = new ImageIcon(ClientListItem.class.getResource("/worldjam/gui/icons/mute.png"));
 	private static ImageIcon unmutedIcon = new ImageIcon(ClientListItem.class.getResource("/worldjam/gui/icons/unmute.png"));
 	private static ImageIcon settingsIcon = new ImageIcon(ClientListItem.class.getResource("/worldjam/gui/icons/settings.png"));
+
+	private ImageIcon mutedMicIcon = new ImageIcon(ClientListItem.class.getResource("/worldjam/gui/icons/mutedmic.png"));;
+	private ImageIcon unmutedMicIcon = new ImageIcon(ClientListItem.class.getResource("/worldjam/gui/icons/mic.png"));;
 	public static void main(String arg[]) {
 		JFrame frame = new JFrame();
 		frame.getContentPane().add(new MainGuiSidePanel(null));

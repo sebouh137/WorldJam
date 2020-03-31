@@ -1,11 +1,15 @@
 package worldjam.audio;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Random;
 
 import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.Control;
 import javax.sound.sampled.DataLine;
+import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.Line;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.Mixer;
@@ -75,11 +79,15 @@ public class InputThread extends Thread implements RMS, ClockSubscriber{
 		//time = (time*format.getFrameSize())/format.getFrameSize();
 		while(alive){
 			tdl.read(buffer, 0, buffer.length);
+			if(muted) {
+				Arrays.fill(buffer, (byte)0); // software muting of the line.   
+			}
 			AudioSample message = new AudioSample();
 			message.sampleData = buffer.clone();
 			message.sourceID = this.lineID;
 			message.sampleStartTime = timestamp-timeCalibration;
 			timestamp+= nMsPerLoop;
+			
 			System.arraycopy(buffer, 0, buffer2, 0, buffer.length);
 			for(AudioSubscriber subscriber : subscribers)
 				subscriber.sampleReceived(message);
@@ -138,5 +146,24 @@ public class InputThread extends Thread implements RMS, ClockSubscriber{
 	}
 	public void removeSubscriber(AudioSubscriber sub) {
 		this.subscribers.remove(sub);
+	}
+	
+	public FloatControl inputVolumeControl() {
+		if (tdl.isControlSupported(FloatControl.Type.MASTER_GAIN))
+			return (FloatControl) tdl.getControl(FloatControl.Type.MASTER_GAIN);
+		else if(tdl.isControlSupported(FloatControl.Type.VOLUME))
+			return (FloatControl) tdl.getControl(FloatControl.Type.VOLUME);
+		else 
+			return InputVolumeUtil.getInstance();
+		 
+	}
+
+	public boolean isMuted() {
+		return muted;
+	}
+    boolean muted;
+    float prevVol = 0;
+	public void setMuted(boolean b) {
+		this.muted=b;
 	}
 }

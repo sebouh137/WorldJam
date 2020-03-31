@@ -106,6 +106,14 @@ public class MainGuiSidePanel extends JPanel{
 				}
 			}
 		}
+		for(Component comp : inputPanel.getComponents()) {
+			if(comp.getName() == "muteButton") {
+				((JButton)comp).setIcon(client.getInput().isMuted() ? mutedIcon : unmutedIcon);
+			} else if (comp.getName() == "gainSlider") {
+				FloatControl control = client.getInput().inputVolumeControl();
+				((JSlider)comp).setValue((int)((control.getValue()-control.getMinimum())/control.getPrecision()));
+			} 
+		}
 	}
 	void addInputPanel(InputThread input){
 		JPanel subpanel = new JPanel();
@@ -186,7 +194,9 @@ public class MainGuiSidePanel extends JPanel{
 
 		subpanel.setPreferredSize(new Dimension(300, 65));
 		this.add(subpanel);
+		this.inputPanel = subpanel;
 	}
+	JPanel inputPanel;
 
 	void addChannelPanel(PlaybackChannel channel) {
 		JPanel subpanel = new JPanel();

@@ -56,11 +56,21 @@ public class SoundLevelBar extends Canvas{
 		double level = rms.getRMS(200);
 		int divisions = 10;
 		double yellowThreshold = 1, redThreshold = 1;
-		if (useDB && level != 0){
-			 double levelDB = Math.log(level)*20/log10;
-			 double minDB = 120;
+		if (useDB){
+			double minDB = 120;
+			 double levelDB = -minDB;
+			 if(level > 0)
+				 levelDB = Math.log(level)*20/log10;
+			 
+			 if(level == 0 || levelDB<=-minDB)
+				 levelDB = -minDB;
+			 if(levelDB>=0)
+				 levelDB = 0;
 			 level = (levelDB + minDB)/minDB;
 			 divisions = (int)(minDB/10);
+			 if(getHeight()<40 && orientation == VERTICAL || getWidth()<40 && orientation == HORIZONTAL) {
+				 divisions = (int)(minDB/20);
+			 }
 			 redThreshold = (minDB-9)/minDB;
 			 yellowThreshold = (minDB-18)/minDB;
 		}

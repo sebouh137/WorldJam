@@ -108,7 +108,7 @@ public class MainGuiSidePanel extends JPanel{
 		}
 		for(Component comp : inputPanel.getComponents()) {
 			if(comp.getName() == "muteButton") {
-				((JButton)comp).setIcon(client.getInput().isMuted() ? mutedIcon : unmutedIcon);
+				((JButton)comp).setIcon(client.getInput().isMuted() ? mutedMicIcon : unmutedMicIcon);
 			} else if (comp.getName() == "gainSlider") {
 				FloatControl control = client.getInput().inputVolumeControl();
 				((JSlider)comp).setValue((int)((control.getValue()-control.getMinimum())/control.getPrecision()));
@@ -120,16 +120,16 @@ public class MainGuiSidePanel extends JPanel{
 		subpanel.setBackground(new Color(190, 190, 204));
 		subpanel.setBorder(BorderFactory.createRaisedBevelBorder());
 		GridBagLayout gbl_subpanel = new GridBagLayout();
-		gbl_subpanel.columnWidths = new int[]{30, 60, 125, 72, 0};
+		gbl_subpanel.columnWidths = new int[]{30, 30, 30, 125, 72, 0};
 		gbl_subpanel.rowHeights = new int[]{29, 20, 0};
-		gbl_subpanel.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_subpanel.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		gbl_subpanel.rowWeights = new double[]{0.0, 0.0, Double.MIN_VALUE};
 		subpanel.setLayout(gbl_subpanel);
 		JLabel label = new JLabel("input");
 		label.setFont(new Font("Lucida Grande", Font.ITALIC, 15));
 		GridBagConstraints gbc_label = new GridBagConstraints();
 		gbc_label.anchor = GridBagConstraints.SOUTHWEST;
-		gbc_label.gridwidth = 2;
+		gbc_label.gridwidth = 3;
 		gbc_label.insets = new Insets(0, 3, 5, 2);
 		gbc_label.gridx = 0;
 		gbc_label.gridy = 0;
@@ -157,6 +157,16 @@ public class MainGuiSidePanel extends JPanel{
 			new InputMonitor(input, "Input").setVisible(true);
 		});
 
+		SoundLevelBar slb = new SoundLevelBar(input, SoundLevelBar.VERTICAL);
+		slb.setPreferredSize(new Dimension(25,25));
+		slb.setMinimumSize(new Dimension(25, 25));
+		GridBagConstraints gbc_slb = new GridBagConstraints();
+		gbc_slb.anchor = GridBagConstraints.WEST;
+		gbc_slb.insets = new Insets(0, 2, 0, 2);
+		gbc_slb.gridx = 2;
+		gbc_slb.gridy = 1;
+		subpanel.add(slb, gbc_slb);
+
 		FloatControl inputVolume = input.inputVolumeControl();
 		if(inputVolume != null) {
 			JSlider slider = createSliderFromControl(inputVolume);
@@ -172,7 +182,7 @@ public class MainGuiSidePanel extends JPanel{
 			gbc_slider.insets = new Insets(0, 0, 0, 10);
 			gbc_slider.fill = GridBagConstraints.HORIZONTAL;
 			gbc_slider.anchor = GridBagConstraints.NORTH;
-			gbc_slider.gridx = 2;
+			gbc_slider.gridx = 3;
 			gbc_slider.gridy = 0;
 			gbc_slider.gridheight = 2;
 			gbc_slider.gridwidth = 2;
@@ -186,7 +196,7 @@ public class MainGuiSidePanel extends JPanel{
 			gbc_slider.insets = new Insets(0, 0, 0, 0);
 			gbc_slider.fill = GridBagConstraints.HORIZONTAL;
 			gbc_slider.anchor = GridBagConstraints.NORTH;
-			gbc_slider.gridx = 2;
+			gbc_slider.gridx = 3;
 			gbc_slider.gridy = 0;
 			gbc_slider.gridheight = 2;
 			subpanel.add(warning, gbc_slider);
@@ -206,19 +216,21 @@ public class MainGuiSidePanel extends JPanel{
 			subpanel.setBackground(new Color(214, 214, 206));
 		subpanel.setBorder(BorderFactory.createRaisedBevelBorder());
 		GridBagLayout gbl_subpanel = new GridBagLayout();
-		gbl_subpanel.columnWidths = new int[]{30, 60, 125, 72, 0};
+		gbl_subpanel.columnWidths = new int[]{30, 30,30, 125, 72, 0};
 		gbl_subpanel.rowHeights = new int[]{29, 20, 0};
-		gbl_subpanel.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_subpanel.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		gbl_subpanel.rowWeights = new double[]{0.0, 0.0, Double.MIN_VALUE};
 		subpanel.setLayout(gbl_subpanel);
 		JLabel label = new JLabel(channel.getChannelName());
 		label.setFont(new Font("Lucida Grande", Font.ITALIC, 15));
 		GridBagConstraints gbc_label = new GridBagConstraints();
+
 		gbc_label.anchor = GridBagConstraints.SOUTHWEST;
-		gbc_label.gridwidth = 2;
+		gbc_label.gridwidth = 3;
 		gbc_label.insets = new Insets(0, 2, 5, 3);
 		gbc_label.gridx = 0;
 		gbc_label.gridy = 0;
+		gbc_label.fill = GridBagConstraints.BOTH;
 		subpanel.add(label, gbc_label);
 		JButton muteButton = new JButton(channel.isMuted() ? mutedIcon : unmutedIcon);
 		muteButton.setName("muteButton");
@@ -245,39 +257,81 @@ public class MainGuiSidePanel extends JPanel{
 
 		this.add(subpanel);
 
+		SoundLevelBar slb = new SoundLevelBar(channel, SoundLevelBar.VERTICAL);
+		slb.setPreferredSize(new Dimension(25,25));
+		slb.setMinimumSize(new Dimension(25, 25));
+		GridBagConstraints gbc_slb = new GridBagConstraints();
+		gbc_slb.anchor = GridBagConstraints.WEST;
+		gbc_slb.insets = new Insets(0, 2, 0, 2);
+		gbc_slb.gridx = 2;
+		gbc_slb.gridy = 1;
+		subpanel.add(slb, gbc_slb);
 
+		//master gain control
 		FloatControl masterGain = (FloatControl)channel.getLine().getControl(FloatControl.Type.MASTER_GAIN);
-		JSlider slider = createSliderFromControl(masterGain);
-		slider.setPaintTrack(true);
-		slider.setPaintTicks(true);
-		slider.setPaintLabels(true);
-		//slider.
+		if(masterGain != null) {
+			JSlider slider = createSliderFromControl(masterGain);
+			slider.setPaintTrack(true);
+			slider.setPaintTicks(true);
+			slider.setPaintLabels(true);
+			//slider.
 
-		slider.setName("gainSlider");
-		slider.setPreferredSize(new Dimension(130,slider.getPreferredSize().height));
+			slider.setName("gainSlider");
+			slider.setPreferredSize(new Dimension(130,slider.getPreferredSize().height));
 
-		GridBagConstraints gbc_slider = new GridBagConstraints();
-		gbc_slider.insets = new Insets(0, 0, 0, 0);
-		gbc_slider.fill = GridBagConstraints.HORIZONTAL;
-		gbc_slider.anchor = GridBagConstraints.NORTH;
-		gbc_slider.gridx = 2;
-		gbc_slider.gridy = 0;
-		gbc_slider.gridheight = 2;
-		subpanel.add(slider, gbc_slider);
-
-		JSlider slider2 = createSliderFromControl((FloatControl)channel.getLine().getControl(FloatControl.Type.BALANCE));
-		slider2.setName("balanceSlider");
-		slider2.setPaintLabels(true);
-		slider2.setPaintTicks(true);
-		slider2.setPaintTrack(true);
-		slider2.setPreferredSize(new Dimension(90,slider2.getPreferredSize().height));
-		GridBagConstraints gbc_slider2 = new GridBagConstraints();
-		gbc_slider2.fill = GridBagConstraints.HORIZONTAL;
-		gbc_slider2.anchor = GridBagConstraints.NORTH;
-		gbc_slider2.gridx = 3;
-		gbc_slider2.gridy = 0;
-		gbc_slider2.gridheight = 2;
-		subpanel.add(slider2, gbc_slider2);
+			GridBagConstraints gbc_slider = new GridBagConstraints();
+			gbc_slider.insets = new Insets(0, 0, 0, 0);
+			gbc_slider.fill = GridBagConstraints.HORIZONTAL;
+			gbc_slider.anchor = GridBagConstraints.NORTH;
+			gbc_slider.gridx = 3;
+			gbc_slider.gridy = 0;
+			gbc_slider.gridheight = 2;
+			subpanel.add(slider, gbc_slider);
+		} else {
+			JTextArea warning = new JTextArea("[Java cannot access channel gain controls]");
+			warning.setLineWrap(true);
+			warning.setFont(SMALL_FONT);
+			warning.setEditable(false);
+			GridBagConstraints gbc_slider = new GridBagConstraints();
+			gbc_slider.insets = new Insets(0, 0, 0, 0);
+			gbc_slider.fill = GridBagConstraints.HORIZONTAL;
+			gbc_slider.anchor = GridBagConstraints.NORTH;
+			gbc_slider.gridx = 3;
+			gbc_slider.gridy = 0;
+			gbc_slider.gridheight = 2;
+			subpanel.add(warning, gbc_slider);
+		}
+		
+		// balance control
+		FloatControl balanceControl = (FloatControl)channel.getLine().getControl(FloatControl.Type.BALANCE);
+		if(balanceControl != null) {
+			JSlider slider2 = createSliderFromControl(balanceControl);
+			slider2.setName("balanceSlider");
+			slider2.setPaintLabels(true);
+			slider2.setPaintTicks(true);
+			slider2.setPaintTrack(true);
+			slider2.setPreferredSize(new Dimension(90,slider2.getPreferredSize().height));
+			GridBagConstraints gbc_slider2 = new GridBagConstraints();
+			gbc_slider2.fill = GridBagConstraints.HORIZONTAL;
+			gbc_slider2.anchor = GridBagConstraints.NORTH;
+			gbc_slider2.gridx = 4;
+			gbc_slider2.gridy = 0;
+			gbc_slider2.gridheight = 2;
+			subpanel.add(slider2, gbc_slider2);
+		} else {
+			JTextArea warning = new JTextArea("[Java cannot access channel balance controls]");
+			warning.setLineWrap(true);
+			warning.setFont(SMALL_FONT);
+			warning.setEditable(false);
+			GridBagConstraints gbc_slider = new GridBagConstraints();
+			gbc_slider.insets = new Insets(0, 0, 0, 0);
+			gbc_slider.fill = GridBagConstraints.HORIZONTAL;
+			gbc_slider.anchor = GridBagConstraints.NORTH;
+			gbc_slider.gridx = 4;
+			gbc_slider.gridy = 0;
+			gbc_slider.gridheight = 2;
+			subpanel.add(warning, gbc_slider);
+		}
 		channels2panels.put(channel, subpanel);
 		panels2channels.put( subpanel, channel);
 		subpanel.setPreferredSize(new Dimension(300, 65));

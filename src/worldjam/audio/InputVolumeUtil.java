@@ -28,6 +28,9 @@ public abstract class InputVolumeUtil extends FloatControl
 		if(System.getProperty("os.name").toLowerCase().contains("nix")) {
 			instance = null; //not implemented for unix yet
 		}
+		if(System.getProperty("os.name").toLowerCase().contains("nix")) {
+			instance = null; //not implemented for linux yet
+		}
 		return instance;
 	}
 	

@@ -1,0 +1,1 @@
+WorldJam uses the library webcam-capture. See lib-licenses/webcam-capture-LICENSE.txt

@@ -45,7 +45,22 @@ public class PlaybackManager implements AudioSubscriber, ClockSubscriber{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+		TuningFork tuningFork = new TuningFork();
+		PlaybackChannel tuningForkChannel;
+		long tuningForkChanID = 440;
+		try {
+			tuningForkChannel = new PlaybackThread(mixer, format, clock, "tuning fork", 
+					tuningForkChanID, this, tuningFork);
+			channels.put(tuningForkChanID, tuningForkChannel);
+			channelNames.put(tuningForkChanID, "tuning fork");
+			channelsChanged();
+			Thread.sleep(300);
+			//mute the metronome by default
+			tuningForkChannel.setMuted(true);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 	}
 	Mixer mixer;

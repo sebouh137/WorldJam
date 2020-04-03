@@ -210,7 +210,9 @@ public class MainGuiSidePanel extends JPanel{
 
 	void addChannelPanel(PlaybackChannel channel) {
 		JPanel subpanel = new JPanel();
-		if(!channel.getChannelName().equals("loopback") && !channel.getChannelName().equals("metronome"))
+		if(!channel.getChannelName().equals("loopback") && 
+				!channel.getChannelName().equals("metronome") &&
+				 !channel.getChannelName().equals("tuning fork"))
 			subpanel.setBackground(new Color(173, 216, 230));
 		else 
 			subpanel.setBackground(new Color(214, 214, 206));

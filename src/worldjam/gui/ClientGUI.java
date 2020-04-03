@@ -5,6 +5,7 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 
 import worldjam.exe.Client;
 import worldjam.gui.conductor.Conductor;
@@ -52,6 +53,33 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 
 	ConductorAndWebcamViewer viewManager;
 	private static final long serialVersionUID = -6893387160409587544L;
+	private static final Object ABOUT_TEXT = 
+			"WorldJam \n"
+			+ "\n"
+			+ "Copyright (c) 2020- Sebouh Paul\n\n"
+			+ "World Jam includes the library webcam-capture, which is under MIT license (see below):\n"
+			+ "\n"
+			+ "The MIT License (MIT)\n" + 
+			"\n" + 
+			"Copyright (c) 2012 - 2015 Bartosz Firyn and Contributors\n" + 
+			"\n" + 
+			"Permission is hereby granted, free of charge, to any person obtaining a copy\n" + 
+			"of this software and associated documentation files (the \"Software\"), to deal\n" + 
+			"in the Software without restriction, including without limitation the rights\n" + 
+			"to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n" + 
+			"copies of the Software, and to permit persons to whom the Software is\n" + 
+			"furnished to do so, subject to the following conditions:\n" + 
+			"\n" + 
+			"The above copyright notice and this permission notice shall be included in all\n" + 
+			"copies or substantial portions of the Software.\n" + 
+			"\n" + 
+			"THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n" + 
+			"IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n" + 
+			"FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n" + 
+			"AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n" + 
+			"LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n" + 
+			"OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n" + 
+			"SOFTWARE.";
 	private Client client;
 	//private JMenu mnChannels;
 	private Conductor conductor;
@@ -168,6 +196,15 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		
 		JMenuItem mnVideo = new JMenuItem("Video...");
 		mnTools.add(mnVideo);
+		
+		JMenu mnHelp = new JMenu("Help");
+		menuBar.add(mnHelp);
+		
+		JMenuItem mntmAbout = new JMenuItem("About this program...");
+		mnHelp.add(mntmAbout);
+		mntmAbout.addActionListener(e->{
+			JOptionPane.showMessageDialog(this, ABOUT_TEXT);
+		});
 		
 		mnVideo.addActionListener(e->{
 			new WebcamControlDialog(client).setVisible(true);

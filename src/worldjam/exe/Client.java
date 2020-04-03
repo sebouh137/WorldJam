@@ -31,12 +31,13 @@ import worldjam.audio.AudioSample;
 import worldjam.audio.AudioSubscriber;
 import worldjam.gui.ClientGUI;
 import worldjam.gui.ClientSetupGUI;
-import worldjam.gui.ClientSetupGUI_P2P_multiPeer;
 import worldjam.gui.TimeCalibrationDialog;
 import worldjam.net.WJConstants;
 import worldjam.time.ClockSetting;
 import worldjam.time.ClockSubscriber;
 import worldjam.time.DelayManager;
+import worldjam.util.ByteCountDataInputStream;
+import worldjam.util.ByteCountDataOutputStream;
 import worldjam.util.DefaultObjects;
 import worldjam.video.VideoFrame;
 import worldjam.video.WebcamThread;
@@ -112,7 +113,7 @@ public class Client implements ClockSubscriber {
 	private long sessionID;
 
 	private Map<Long,Connection> connections = new HashMap<Long,Connection>();
-	void addConnection(ClientDescriptor peer, Socket socket, DataInputStream dis, DataOutputStream dos, boolean isServer){
+	void addConnection(ClientDescriptor peer, Socket socket, ByteCountDataInputStream dis, ByteCountDataOutputStream dos, boolean isServer){
 		delayManager.addChannel(peer.clientID, peer.displayName);
 		try {
 			if(playback != null){
@@ -142,6 +143,44 @@ public class Client implements ClockSubscriber {
 		if(gui != null){
 			//gui.getChat().
 		}
+	}
+	
+	public float sampleInputByteRate(long sampleDuration) {
+		long totBefore = 0;
+		for(Connection con : connections.values()) {
+			totBefore += con.dis.bytesProcessed();
+		}
+		try {
+			Thread.sleep(sampleDuration);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		long totAfter = 0;
+		for(Connection con : connections.values()) {
+			totAfter += con.dis.bytesProcessed();
+		}
+		return (totAfter-totBefore)*1000.f/sampleDuration;
+		
+	}
+	
+	public float sampleOutputByteRate(long sampleDuration) {
+		long totBefore = 0;
+		for(Connection con : connections.values()) {
+			totBefore += con.dos.bytesProcessed();
+		}
+		try {
+			Thread.sleep(sampleDuration);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		long totAfter = 0;
+		for(Connection con : connections.values()) {
+			totAfter += con.dos.bytesProcessed();
+		}
+		return (totAfter-totBefore)*1000.f/sampleDuration;
+		
 	}
 
 	private ClockSetting beatClock;
@@ -224,7 +263,7 @@ public class Client implements ClockSubscriber {
 	 */
 	private class Connection{
 
-		Connection(Socket socket, DataInputStream dis, DataOutputStream dos, ClientDescriptor peer, boolean isToServer){
+		Connection(Socket socket, ByteCountDataInputStream dis, ByteCountDataOutputStream dos, ClientDescriptor peer, boolean isToServer){
 			this.dis = dis;
 			this.dos = dos;
 			this.socket = socket;
@@ -236,8 +275,8 @@ public class Client implements ClockSubscriber {
 
 		boolean alive = true;
 		boolean isToServer;
-		private DataOutputStream dos;
-		private DataInputStream dis;
+		private ByteCountDataOutputStream dos;
+		private ByteCountDataInputStream dis;
 		private Socket socket;
 
 		private class ReceiverThread extends Thread{
@@ -250,7 +289,7 @@ public class Client implements ClockSubscriber {
 					while(alive){
 						synchronized(dis){
 							byte code;
-							code = dis.readByte();
+							code = dis.readByte(); 
 							if(code == WJConstants.VIDEO_FRAME){
 								//System.out.println("recevied video frame");
 								//long senderID = dis.readLong();
@@ -471,7 +510,7 @@ public class Client implements ClockSubscriber {
 
 	public void broadcastClockChange(){
 		for(Connection con : connections.values()){
-			DataOutputStream dos = con.dos;
+			ByteCountDataOutputStream dos = con.dos;
 			synchronized(dos){
 				try {
 					dos.writeByte(WJConstants.TIME_CHANGED);
@@ -509,8 +548,8 @@ public class Client implements ClockSubscriber {
 					Socket socket = serverSocket.accept();
 					System.out.println("socket accepted");
 
-					DataInputStream dis = new DataInputStream(socket.getInputStream());
-					DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
+					ByteCountDataInputStream dis = new ByteCountDataInputStream(socket.getInputStream());
+					ByteCountDataOutputStream dos = new ByteCountDataOutputStream(socket.getOutputStream());
 					byte firstByte = dis.readByte();
 					if(firstByte == WJConstants.COMMAND_JOIN){
 						ClientDescriptor peer = ClientDescriptor.readFromStream(dis);
@@ -566,8 +605,8 @@ public class Client implements ClockSubscriber {
 	private void joinSessionP2P(String peerIpAddress, int port) throws UnknownHostException, IOException{
 		Socket socket = new Socket(peerIpAddress, port);
 		System.out.println("socket connected");
-		DataInputStream dis = new DataInputStream(socket.getInputStream());
-		DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
+		ByteCountDataInputStream dis = new ByteCountDataInputStream(socket.getInputStream());
+		ByteCountDataOutputStream dos = new ByteCountDataOutputStream(socket.getOutputStream());
 		dos.writeByte(WJConstants.COMMAND_JOIN);
 		selfDescriptor.writeToStream(dos);
 		dis.readByte();
@@ -615,6 +654,11 @@ public class Client implements ClockSubscriber {
 			gui.videoFrameReceived(frame);
 		});
 		webcamThread.start();
+		this.webcamThread = webcamThread;
+	}
+	WebcamThread webcamThread;
+	public WebcamThread getWebcamThread() {
+		return webcamThread;
 	}
 	private void broadcastVideoFrame(VideoFrame frame){
 		//System.out.println("subs send frame");
@@ -642,7 +686,7 @@ public class Client implements ClockSubscriber {
 		return delayManager;
 	}
 	Object recordingLock = new Object();
-	DataOutputStream recordToFile;
+	ByteCountDataOutputStream recordToFile;
 
 	private boolean recordVideo;
 
@@ -656,7 +700,7 @@ public class Client implements ClockSubscriber {
 		synchronized(recordingLock){
 			this.recordVideo = recordVideo;
 			this.recordAudio = recordAudio;
-			this.recordToFile = new DataOutputStream(new FileOutputStream(file));
+			this.recordToFile = new ByteCountDataOutputStream(new FileOutputStream(file));
 			try {
 				recordToFile.writeByte(WJConstants.TIME_CHANGED);
 				beatClock.writeToStream(recordToFile);

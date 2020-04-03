@@ -11,7 +11,7 @@ import worldjam.time.ClockSubscriber;
 import worldjam.time.DelayChangeListener;
 import worldjam.time.DelaySetting;
 
-public interface PlaybackChannel extends RMS, AudioSubscriber, ClockSubscriber, DelayChangeListener{
+public interface PlaybackChannel extends HasAudioLevelStats, AudioSubscriber, ClockSubscriber, DelayChangeListener{
 	public void close();
 	public void changeClockSettingsNow(ClockSetting beatClock);
 	public ClockSetting getClock();

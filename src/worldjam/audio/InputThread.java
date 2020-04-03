@@ -20,7 +20,7 @@ import worldjam.time.ClockSubscriber;
 import worldjam.util.Configurations;
 import worldjam.util.DigitalAnalogConverter;
 
-public class InputThread extends Thread implements RMS, ClockSubscriber{
+public class InputThread extends Thread implements HasAudioLevelStats, ClockSubscriber{
 	static Random random = new Random();
 	private long lineID = random.nextLong();
 	private TargetDataLine tdl;
@@ -110,7 +110,11 @@ public class InputThread extends Thread implements RMS, ClockSubscriber{
 	public void changeClockSettingsNow(ClockSetting beatClock) {
 		this.clock = beatClock;
 	}
+	
+	DigitalAnalogConverter dac;
 	public double getRMS(double windowInMS){
+		if(dac == null)
+			dac = new DigitalAnalogConverter(format);
 		long t = System.currentTimeMillis()-(int)(windowInMS/10)-timestamp;
 		int offsetInBytes = (((int) (t*format.getFrameRate()/1000.))*format.getFrameSize())%buffer.length;
 
@@ -118,7 +122,6 @@ public class InputThread extends Thread implements RMS, ClockSubscriber{
 		double sumSqr = 0;
 		double max = 0;
 		int posOfMax = 0;
-		DigitalAnalogConverter dac = new DigitalAnalogConverter(format);
 		for(int i = 3; i<nSamples; i++){
 			int index = offsetInBytes/(format.getSampleSizeInBits()/8)-i;
 			if(index <0)
@@ -165,5 +168,40 @@ public class InputThread extends Thread implements RMS, ClockSubscriber{
     float prevVol = 0;
 	public void setMuted(boolean b) {
 		this.muted=b;
+	}
+
+	@Override
+	public double getPeakAmp(double windowInMS) {
+		if(dac == null)
+			dac = new DigitalAnalogConverter(format);
+		long t = System.currentTimeMillis()-(int)(windowInMS/10)-timestamp;
+		int offsetInBytes = (((int) (t*format.getFrameRate()/1000.))*format.getFrameSize())%buffer.length;
+
+		int nSamples = (int)(windowInMS/1000.*format.getSampleRate());
+
+		int sampleSizeInBytes = format.getSampleSizeInBits()/8;
+		if(offsetInBytes/sampleSizeInBytes > nSamples)
+			return dac.getPeak(buffer2, offsetInBytes/sampleSizeInBytes-nSamples, offsetInBytes/sampleSizeInBytes-3);
+		else { //for wrap around
+			double max1 = dac.getPeak(buffer2, 0, offsetInBytes/sampleSizeInBytes);
+			double max2 = dac.getPeak(buffer2, 
+					buffer2.length/sampleSizeInBytes-(nSamples-offsetInBytes), 
+					buffer2.length/sampleSizeInBytes-1);
+			return Math.max(max1, max2);
+		}
+		/*int sampleSizeBytes = format.getSampleSizeInBits()/8;
+		for(int i = 3; i<nSamples; i++){
+			int index = offsetInBytes/sampleSizeBytes-i;
+			if(index <0)
+				index+= buffer2.length/(sampleSizeBytes);
+			double x = Math.abs(dac.getConvertedSample(buffer2, index));
+			
+			if(x>max){
+				max = x;
+			}
+			
+		}*/
+		//System.out.println(max + " " + posOfMax);
+		//return max;
 	}
 }

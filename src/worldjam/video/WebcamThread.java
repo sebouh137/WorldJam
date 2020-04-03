@@ -21,6 +21,9 @@ public class WebcamThread extends Thread{
 		try{
 			
 			while(true){
+				Thread.sleep(msBetweenFrames);
+				if(!enabled)
+					continue;
 				long timestamp = System.currentTimeMillis();
 				
 				BufferedImage image = webcam.getImage();
@@ -36,7 +39,6 @@ public class WebcamThread extends Thread{
 						sub.imageReceived(frame);
 					}
 				}
-				Thread.sleep(msBetweenFrames);
 			}
 		} catch(Exception e){
 			e.printStackTrace();
@@ -45,5 +47,16 @@ public class WebcamThread extends Thread{
 	private List<VideoSubscriber> subscribers = new ArrayList();
 	public void addSubscriber(VideoSubscriber sub){
 		this.subscribers.add(sub);
+	}
+	public Webcam getWebcam() {
+		return webcam;
+	}
+	
+	public void setWebcam(Webcam webcam) {
+		this.webcam = webcam;
+	}
+	boolean enabled = true;
+	public void setEnabled(boolean val) {
+		enabled = val;
 	}
 }

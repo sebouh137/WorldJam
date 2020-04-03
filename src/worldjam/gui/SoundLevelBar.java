@@ -8,8 +8,8 @@ import java.awt.Graphics;
 import javax.sound.sampled.LineUnavailableException;
 import javax.swing.JFrame;
 
+import worldjam.audio.HasAudioLevelStats;
 import worldjam.audio.InputThread;
-import worldjam.audio.RMS;
 import worldjam.util.DefaultObjects;
 
 public class SoundLevelBar extends Canvas{
@@ -19,9 +19,9 @@ public class SoundLevelBar extends Canvas{
 	private static final long serialVersionUID = -4132565555186420933L;
 	public static final int VERTICAL = 0;
 	public static final int HORIZONTAL = 1;
-	private RMS rms;
-	public SoundLevelBar(RMS rms, int orientation){
-		this.rms = rms;
+	private HasAudioLevelStats stats;
+	public SoundLevelBar(HasAudioLevelStats stats, int orientation){
+		this.stats = stats;
 		this.setMinimumSize(new Dimension(30, 100));
 		this.setPreferredSize(new Dimension(30, 100));
 		
@@ -34,6 +34,8 @@ public class SoundLevelBar extends Canvas{
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
+
+					level = useRMS ? stats.getRMS(200) : stats.getPeakAmp(200);
 					repaint();
 				}
 			}
@@ -45,22 +47,23 @@ public class SoundLevelBar extends Canvas{
 	public void stop(){
 		stopped = true;
 	}
+	boolean useRMS = false;
 	
 	Color darkRed = new Color(127, 0, 0);
 	Color darkYellow = new Color(127, 127, 0);
 	Color darkGreen = new Color(0, 127, 0);
 	double log10 = Math.log(10);
 	private boolean useDB = true;
+	double level;
 	public void paint(Graphics g){
 		super.paint(g);
-		double level = rms.getRMS(200);
 		int divisions = 10;
 		double yellowThreshold = 1, redThreshold = 1;
 		if (useDB){
-			double minDB = 120;
+			double minDB = 100;
 			 double levelDB = -minDB;
 			 if(level > 0)
-				 levelDB = Math.log(level)*20/log10;
+				 levelDB = 20*fastLog10(level);
 			 
 			 if(level == 0 || levelDB<=-minDB)
 				 levelDB = -minDB;
@@ -135,6 +138,19 @@ public class SoundLevelBar extends Canvas{
 		}
 	}
 	
+	private double fastLog10(double level) {
+		if(level == 0)
+			return -Double.MAX_VALUE;
+		if(level > 1)
+			return 0;
+		double ret = 0;
+		while (level <= 1) {
+			ret -= .1;
+			level *= 1.258; //tenth root of 10;
+		}
+		return ret;
+	}
+
 	void fill(Graphics g, double minLevel, double maxLevel){
 		g.fillRect(getWidth()/4, (int)((.9-.8*maxLevel)*getHeight()), getWidth()/2, (int)(.8*(maxLevel-minLevel)*getHeight())+1);
 	}

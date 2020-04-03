@@ -26,11 +26,12 @@ public class NetworkInfoWindow extends JFrame{
 		this.client = client;
 		setTitle("WorldJam: Network Info");
 		this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-		
+
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		getContentPane().add(tabbedPane, BorderLayout.CENTER);
 		tabbedPane.addTab("Network Interfaces", createNetworksPanel());
 		tabbedPane.addTab("Session", createSessionPanel(client));
+		tabbedPane.addTab("I/O Rates", createDataRatePanel());
 		this.setSize(700, 500);
 		this.setVisible(true);
 	}
@@ -42,9 +43,9 @@ public class NetworkInfoWindow extends JFrame{
 		textArea.setAutoscrolls(true);
 		JScrollPane jsp = new JScrollPane(textArea);
 		panel.add(jsp, BorderLayout.CENTER);
-		
+
 		String info = client.getFormattedSessionStatusString();
-		
+
 		textArea.setText(info);
 		JButton refresh = new JButton("Refresh");
 		refresh.addActionListener((e)->{
@@ -57,17 +58,17 @@ public class NetworkInfoWindow extends JFrame{
 	private Component createNetworksPanel() {
 		JPanel panel = new JPanel();
 		panel.setLayout(new BorderLayout(0, 0));
-		
+
 		JCheckBox chckbxNewCheckBox = new JCheckBox("Show All");
 		chckbxNewCheckBox.setToolTipText("Display addresses that are loopback or link-local (which are by default hidden)");
 		JPanel panel2 = new JPanel();
 		panel2.add(chckbxNewCheckBox);
 		JButton buttonRefresh = new JButton("Refresh");
-		
-		
+
+
 		panel2.add(buttonRefresh);
 		panel.add(panel2, BorderLayout.SOUTH);
-		
+
 		JTextArea textArea = new JTextArea();
 		textArea.setAutoscrolls(true);
 		JScrollPane jsp = new JScrollPane(textArea);
@@ -80,8 +81,34 @@ public class NetworkInfoWindow extends JFrame{
 			}
 		};
 		a.actionPerformed(null);
-		
+
 		chckbxNewCheckBox.addActionListener(a);
+		buttonRefresh.addActionListener(a);
+		return panel;
+	}
+
+	private Component createDataRatePanel() {
+		JPanel panel = new JPanel();
+		panel.setLayout(new BorderLayout(0, 0));
+
+		JPanel panel2 = new JPanel();
+		JButton buttonRefresh = new JButton("Refresh");
+
+
+		panel2.add(buttonRefresh);
+		panel.add(panel2, BorderLayout.SOUTH);
+
+		JTextArea textArea = new JTextArea();
+		textArea.setAutoscrolls(true);
+		JScrollPane jsp = new JScrollPane(textArea);
+		panel.add(jsp, BorderLayout.CENTER);
+		ActionListener a = (e)->{
+			textArea.setText(String.format("Input: %.0f kBps\nOutput: %.0f kBps",
+					client.sampleInputByteRate(1000)/1000.,
+					client.sampleOutputByteRate(1000)/1000.));
+
+		};
+		a.actionPerformed(null);
 		buttonRefresh.addActionListener(a);
 		return panel;
 	}
@@ -90,5 +117,5 @@ public class NetworkInfoWindow extends JFrame{
 	 * 
 	 */
 	private static final long serialVersionUID = -2126560197829519642L;
-	
+
 }

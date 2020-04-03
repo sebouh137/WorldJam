@@ -9,6 +9,75 @@ public class DigitalAnalogConverter {
 		this.format = format;
 	}
 
+	/**
+	 * Determine the peak value in the range of bytes.  
+	 * Don't convert to floating point until the end,
+	 * in order to save time 
+	 * @param bytes
+	 * @param i
+	 * @return
+	 */
+	public double getPeak(byte[] bytes, int min, int max){
+		int peak = 0;
+		switch(format.getSampleSizeInBits()){
+		case 8:
+			for(int i = min; i<max; i++) {
+				byte val = bytes[i];
+				if(val>peak)
+					peak = val;
+				else if (-val>peak)
+					peak = -val;
+			}
+			return peak/128.;
+		case 16:
+			if (!format.isBigEndian()) {
+				for(int i = min; i<max; i++) {
+					int val = ((bytes[2*i+1] << 8) | (bytes[2*i] & 0xff));
+					if(val>peak)
+						peak = val;
+					else if (-val>peak)
+						peak = -val;
+				}
+				return peak/(32768.);
+			}
+			else {
+				for(int i = min; i<max; i++) {
+					int val = ((bytes[2*i] << 8) | (bytes[2*i+1] & 0xff));
+					if(val>peak)
+						peak = val;
+					else if (-val>peak)
+						peak = -val;
+				}
+				return peak/(32768.);
+			}
+		case 24:
+			if (!format.isBigEndian()) {
+				for(int i = min; i<max; i++) {
+					int val = ((bytes[3*i+2] << 16) | ((bytes[3*i+1]& 0xff) << 8) | (bytes[3*i] & 0xff));
+					if(val>peak)
+						peak = val;
+					else if (-val>peak)
+						peak = -val;
+				}
+				return peak/8388608.;
+			}
+			else {
+				for(int i = min; i<max; i++) {
+					int val = ((bytes[3*i] << 16) | ((bytes[3*i+1]& 0xff) << 8) | (bytes[3*i+2] & 0xff));
+					if(val>peak)
+						peak = val;
+					else if (-val>peak)
+						peak = -val;
+				}
+				return peak/8388608.;
+			}
+		}
+		return Double.NaN;
+	}
+	
+	
+	
+	
 	public double getConvertedSample(byte[] bytes, int i){
 		switch(format.getSampleSizeInBits()){
 		case 8:

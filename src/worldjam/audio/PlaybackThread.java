@@ -32,11 +32,11 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 	private String channelName;
 	private long channelID;
 	private PlaybackManager manager;
-	
+
 	public PlaybackThread(Mixer mixer, AudioFormat inputFormat, ClockSetting clock, String sourceName, long senderID, PlaybackManager manager) throws LineUnavailableException{
 		this(mixer, inputFormat, clock, sourceName, senderID, manager, null);
 	}
-		
+
 	public PlaybackThread(Mixer mixer, AudioFormat inputFormat, ClockSetting clock, String sourceName, long senderID, PlaybackManager manager, LoopBuilder loopBuilder) throws LineUnavailableException{
 		this.manager = manager;
 		this.channelName = sourceName;
@@ -134,9 +134,9 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 	//recycled byte array
 	private boolean recycleStereoByteArray = true;
 	private byte stereoConverted[];
-	
+
 	protected byte[] stereoConvert(byte[] mono) {
-		
+
 		byte[] stereo;
 		if(!recycleStereoByteArray) {
 			stereo = new byte[mono.length*2];
@@ -259,7 +259,7 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 	public AudioFormat getInputFormat(){
 		return inputFormat;
 	}
-	
+
 	private byte [] generatedLoop;
 
 	public void changeClockSettingsNow(ClockSetting clock) {
@@ -269,9 +269,9 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 			byte[] byteBuffer = new byte[floatBuffer.length*inputFormat.getFrameSize()];
 			new DigitalAnalogConverter(inputFormat).convert(floatBuffer,byteBuffer);
 			this.generatedLoop = stereoConvert(byteBuffer);
-			
+
 		}
-		
+
 		this.validateDelays();
 	}
 	@Override
@@ -287,7 +287,7 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 			int total_offset_ms = (delaySetting.getMeasuresDelay()*clock.beatsPerMeasure)*clock.msPerBeat+
 					delaySetting.getAdditionalDelayAudio()+manager.getTimeCalibration();
 			replayOffsetInBytes = (int) (total_offset_ms*playbackFormat.getFrameRate()/1000.)*playbackFormat.getFrameSize();
-			
+
 		}
 	}
 
@@ -312,6 +312,8 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 	}
 
 	public double getRMS(double windowInMS){
+		if(dac == null)
+			dac = new DigitalAnalogConverter(playbackFormat);
 		long t = System.currentTimeMillis()-loopStartTime;
 		int offsetInBytes = (((int) (t*playbackFormat.getFrameRate()/1000.))*playbackFormat.getFrameSize())%buffer.length;
 
@@ -327,7 +329,7 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 			sumSqr += sqr;
 		}
 		return Math.sqrt(sumSqr)/nSamples;
-		
+
 	}
 
 	/*public int getAddDelayMeasures(){
@@ -342,7 +344,7 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 		return offset_ms;
 	}*/
 
-	
+
 
 	public ClockSetting getClock() {
 		return clock;
@@ -391,10 +393,10 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 	}
 	@Override
 	public void changeDelaySetting(DelaySetting newDelaySetting) {
-		
+
 		this.delaySetting = newDelaySetting;
 		validateDelays();
-		
+
 	}
 	private DelaySetting delaySetting;
 
@@ -406,6 +408,43 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 	@Override
 	public DelaySetting getDelaySetting() {
 		return this.delaySetting;
+	}
+
+	DigitalAnalogConverter dac;
+	@Override
+	public double getPeakAmp(double windowInMS) {
+		if(dac == null)
+			dac = new DigitalAnalogConverter(playbackFormat);
+		long t = System.currentTimeMillis()-loopStartTime;
+		int offsetInBytes = (((int) (t*playbackFormat.getFrameRate()/1000.))*playbackFormat.getFrameSize())%buffer.length;
+
+		int nSamples = (int)(windowInMS/1000.*playbackFormat.getSampleRate());
+		
+		int sampleSizeInBytes = playbackFormat.getSampleSizeInBits()/8;
+		if(offsetInBytes/sampleSizeInBytes > nSamples)
+			return dac.getPeak(buffer, 
+					offsetInBytes/sampleSizeInBytes - nSamples, 
+					offsetInBytes/sampleSizeInBytes);
+		else {
+			double max1 = dac.getPeak(buffer, 
+					0, 
+					offsetInBytes/sampleSizeInBytes);
+
+			double max2= dac.getPeak(buffer, 
+					buffer.length/sampleSizeInBytes+offsetInBytes/sampleSizeInBytes-nSamples,
+					buffer.length/sampleSizeInBytes-1);
+			return Math.max(max1,max2);
+		}
+		/*for(int i = 0; i<nSamples; i++){
+			int index = offsetInBytes/(sampleSizeInBytes)-i;
+			if(index <0)
+				index+= buffer.length/(sampleSizeInBytes);
+			double x = Math.abs(dac.getConvertedSample(buffer, index));
+			if (x>max)
+				max = x;
+
+		}
+		return max;*/
 	}
 
 }

@@ -7,7 +7,6 @@ import worldjam.util.DefaultObjects;
 import worldjam.util.DigitalAnalogConverter;
 
 public class Metronome implements LoopBuilder{
-	long channelID = 10;
 	@Override
 	public float[] createSamples(double frameRate, ClockSetting clock) {
 		System.out.println("generating metronome for clock setting " + clock);
@@ -15,7 +14,7 @@ public class Metronome implements LoopBuilder{
 		float floatBuffer[] = new float[nSamples];
 
 		double f1 = 1760;
-		double A = .3;
+		double A = .2;
 		double tau = .005;
 		double shape_pow = 1;
 		double factor = Math.pow(shape_pow, shape_pow)*Math.exp(-shape_pow);

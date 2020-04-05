@@ -244,6 +244,10 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 	private boolean rebuildLoopFlag;
 	private LoopBuilder loopBuilder;
 
+	public LoopBuilder getLoopBuilder() {
+		return this.loopBuilder;
+	}
+	
 	public Line getLine(){
 		return sdl;
 	}

@@ -29,14 +29,14 @@ public class NoiseGateFilter extends GeneralizedCompressorFilter {
 
 	private double pow = 0;
 	@Override
-	protected double rescale(double runningRMS2) {
+	protected double rescaled(double runningRMS2, double x) {
 		double y =  runningRMS2/threshold2;
 		if(pow == 0){
-			return y>1 ? 1 : 0;
+			return y>1 ? x : 0;
 		}
 		else {
 			double py = Math.pow(y, pow);
-			return py/(py+1);	
+			return py/(py+1)*x;	
 		}
 	}
 

@@ -22,19 +22,23 @@ public abstract class GeneralizedCompressorFilter extends AudioFilter{
 	private double tau = .05;
 	private double runningRMS2;
 	protected byte[] process(byte[] sampleData, AudioFormat format){
-		for(int i = 0; i< sampleData.length/(format.getFrameSize()/format.getChannels()); i++){
+		double a = (tau*format.getFrameRate());
+		int N = sampleData.length/(format.getFrameSize()/format.getChannels());
+		for(int i = 0; i< N; i++){
 			double x = dac.getConvertedSample(sampleData, i);
-			runningRMS2+=(x*x-runningRMS2)/(tau*format.getFrameRate());
-			x *= rescale(runningRMS2);
-			dac.setConvertedSample(sampleData, i, x);
+			runningRMS2+=(x*x-runningRMS2)/a;
+			double xnew = rescaled(runningRMS2,x);
+			if (xnew != x)
+				dac.setConvertedSample(sampleData, i, x);
 			
 		}
 		return sampleData;
 	}
 	/**
-	 * factor by which to scale the samples
+	 * returns the rescaled sample value, given the current running RMS
 	 * @param runningRMS22
+	 * @param the current value
 	 * @return
 	 */
-	protected abstract double rescale(double runningRMS22);
+	protected abstract double rescaled(double runningRMS22, double x);
 }

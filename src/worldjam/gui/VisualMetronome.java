@@ -85,7 +85,7 @@ public abstract class VisualMetronome extends JComponent {
 	}
 	@Override
 	public void paintComponent(Graphics g){
-		paint((Graphics2D)g.create(), System.currentTimeMillis());
+		paint((Graphics2D)g, System.currentTimeMillis());
 	}
 
 	public abstract void paint(Graphics2D g, long time); 

@@ -43,11 +43,14 @@ import worldjam.video.VideoFrame;
 import worldjam.video.WebcamThread;
 
 public class Client implements ClockSubscriber {
-
-	public static void main(String arg[]) throws LineUnavailableException, UnknownHostException, IOException{
-
-		//if(arg.length >= 1 && arg[0].equals("-g")){
-		ClientSetupGUI.main(arg);
+	public static boolean enableDevFeatures;
+	public static void main(String args[]) throws LineUnavailableException, UnknownHostException, IOException{
+		for(String arg : args) {
+			if(arg.equals("--dev")) {
+				enableDevFeatures = true;
+			}
+		}
+		ClientSetupGUI.main(args);
 
 	}
 
@@ -153,7 +156,6 @@ public class Client implements ClockSubscriber {
 		try {
 			Thread.sleep(sampleDuration);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		long totAfter = 0;
@@ -172,7 +174,6 @@ public class Client implements ClockSubscriber {
 		try {
 			Thread.sleep(sampleDuration);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		long totAfter = 0;

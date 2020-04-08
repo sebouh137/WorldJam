@@ -29,16 +29,17 @@ public abstract class GeneralizedCompressorFilter extends AudioFilter{
 			runningRMS2+=(x*x-runningRMS2)/a;
 			double xnew = rescaled(runningRMS2,x);
 			if (xnew != x)
-				dac.setConvertedSample(sampleData, i, x);
+				dac.setConvertedSample(sampleData, i, xnew);
 			
 		}
+		System.out.println(runningRMS2);
 		return sampleData;
 	}
 	/**
 	 * returns the rescaled sample value, given the current running RMS
-	 * @param runningRMS22
+	 * @param runningRMS2
 	 * @param the current value
 	 * @return
 	 */
-	protected abstract double rescaled(double runningRMS22, double x);
+	protected abstract double rescaled(double runningRMS2, double x);
 }

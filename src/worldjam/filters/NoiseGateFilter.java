@@ -14,10 +14,11 @@ public class NoiseGateFilter extends GeneralizedCompressorFilter {
 	}
 	
 	public void setThresholdDB(double thresholdDB){
-		this.threshold2 = (Math.pow(10,thresholdDB/10.));
+		this.threshold2 = (Math.pow(10,thresholdDB/20.));
+		System.out.println(" " +threshold2);
 	}
 	public double getThresholdDB(){
-		return Math.log10(threshold2)/20;
+		return Math.log10(threshold2)*20;
 	}
 	
 	public double getPow() {

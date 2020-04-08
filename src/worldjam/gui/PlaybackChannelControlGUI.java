@@ -299,7 +299,7 @@ public class PlaybackChannelControlGUI extends JFrame {
 
 	private JPanel createNoiseGateControls(PlaybackChannel channel){
 		NoiseGateFilter filter;
-		if(channel.getFilter() == null || !(channel.getFilter() instanceof WfsoPitchShift))
+		if(channel.getFilter() == null || !(channel.getFilter() instanceof NoiseGateFilter))
 			filter = new NoiseGateFilter(channel.getInputFormat());
 		else
 			filter = (NoiseGateFilter)channel.getFilter();

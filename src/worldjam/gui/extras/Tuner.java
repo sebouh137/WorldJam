@@ -11,10 +11,19 @@ import java.awt.Stroke;
 import javax.sound.sampled.LineUnavailableException;
 import javax.swing.JFrame;
 
+import worldjam.audio.AudioSample;
 import worldjam.audio.InputThread;
 import worldjam.util.DefaultObjects;
 
 public class Tuner extends SpectrumVisualizer{
+	
+	@Override
+	public void sampleReceived(AudioSample sample) {
+		super.sampleReceived(sample);
+		if(auto) {
+			selectedNote = autoDetectNote();
+		}
+	}
 
 	/**
 	 * 
@@ -27,7 +36,10 @@ public class Tuner extends SpectrumVisualizer{
 
 	private Tuning tuning = new Equi12Tuning();
 
-
+	public Tuner() {
+		super(10, 36, 6);
+	}
+	
 	public void paint(Graphics g1){
 		Graphics2D g = (Graphics2D)g1;
 		super.paint(g);
@@ -40,9 +52,7 @@ public class Tuner extends SpectrumVisualizer{
 		int d = divisionsPerSemitone;
 
 		//determine which note best matches the one being played,
-		if(auto) {
-			selectedNote = autoDetectNote();
-		}
+		
 
 
 		double weights[] = new double[12*d];

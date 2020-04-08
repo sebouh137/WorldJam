@@ -42,7 +42,6 @@ public abstract class SpectrumVisualizer extends JPanel implements AudioSubscrib
 				fmin, fmax, nOctaves*12*divisionsPerSemitone, true);
 	}
 	AudioFormat format = DefaultObjects.defaultFormat;
-
 	public SpectrumVisualizer(){
 		this(10, 36, 6);
 	}
@@ -68,9 +67,10 @@ public abstract class SpectrumVisualizer extends JPanel implements AudioSubscrib
 	public void sampleReceived(AudioSample sample) {
 		if(dac == null)
 			dac = new DigitalAnalogConverter(format);
-		int N = sample.sampleData.length/(format.getSampleSizeInBits()/8);
+		byte [] sampleData = sample.sampleData;
+		int N = sampleData.length/(format.getSampleSizeInBits()/8);
 		for (int i = 0; i< N; i++){
-			double val = dac.getConvertedSample(sample.sampleData, i);
+			double val = dac.getConvertedSample(sampleData, i);
 			fourier.nextSample(val);
 		}
 		refreshFourierResults();

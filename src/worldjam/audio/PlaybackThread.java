@@ -13,7 +13,6 @@ import javax.sound.sampled.SourceDataLine;
 import worldjam.time.ClockSetting;
 import worldjam.time.DelayChangeListener;
 import worldjam.time.DelaySetting;
-import worldjam.util.Configurations;
 import worldjam.util.DigitalAnalogConverter;
 
 public class PlaybackThread extends Thread implements PlaybackChannel, DelayChangeListener{

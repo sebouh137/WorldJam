@@ -1,7 +1,5 @@
 package worldjam.time;
 
-import worldjam.util.Configurations;
-
 public class DelaySetting {
 	private int measures = 1;
 	public int getAdditionalDelayGlobal() {
@@ -28,16 +26,16 @@ public class DelaySetting {
 	
 	public DelaySetting(int measures){
 		this.measures = measures;
-		additionalDelayMS_global = Configurations.getIntValue("calib.delays.global");
-		additionalDelayMS_visual = Configurations.getIntValue("calib.delays.video");
-		additionalDelayMS_audio = Configurations.getIntValue("calib.delays.audio");
+		additionalDelayMS_global = 0;//Configurations.getIntValue("calib.delays.global");
+		additionalDelayMS_visual = 0;//Configurations.getIntValue("calib.delays.video");
+		additionalDelayMS_audio = 0;//Configurations.getIntValue("calib.delays.audio");
 	}
 	
 	public DelaySetting(int measures, int global){
 		this.measures = measures;
 		additionalDelayMS_global = global;
-		additionalDelayMS_visual = Configurations.getIntValue("calib.delays.video");
-		additionalDelayMS_audio = Configurations.getIntValue("calib.delays.audio");
+		additionalDelayMS_visual = 0;//Configurations.getIntValue("calib.delays.video");
+		additionalDelayMS_audio = 0;//Configurations.getIntValue("calib.delays.audio");
 	}
 	
 	public DelaySetting(int measures, int global, int audio, int visual){

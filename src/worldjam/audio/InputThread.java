@@ -1,13 +1,10 @@
 package worldjam.audio;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Random;
 
 import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.Control;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.Line;
@@ -17,7 +14,7 @@ import javax.sound.sampled.TargetDataLine;
 
 import worldjam.time.ClockSetting;
 import worldjam.time.ClockSubscriber;
-import worldjam.util.Configurations;
+import worldjam.util.ConfigurationsXML;
 import worldjam.util.DigitalAnalogConverter;
 
 public class InputThread extends Thread implements HasAudioLevelStats, ClockSubscriber{
@@ -38,8 +35,7 @@ public class InputThread extends Thread implements HasAudioLevelStats, ClockSubs
 		this.mixer = mixer;
 		this.clock = clock;
 		this.nMsPerLoop = nMsPerLoop;
-		this.timeCalibration = Configurations.getDefaultTimingCalibration(
-				Configurations.AUDIO_INPUT, mixer.getMixerInfo().getName());
+		this.timeCalibration = ConfigurationsXML.getInputTimeCalib(mixer.getMixerInfo().getName());
 		
 		Line.Info info = new DataLine.Info(TargetDataLine.class, format);
 		tdl = (TargetDataLine)mixer.getLine(info);

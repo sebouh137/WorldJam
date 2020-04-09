@@ -32,7 +32,7 @@ import worldjam.audio.PlaybackManager;
 import worldjam.exe.Client;
 import worldjam.gui.conductor.Conductor;
 import worldjam.time.ClockSetting;
-import worldjam.util.Configurations;
+import worldjam.util.ConfigurationsXML;
 import worldjam.util.DefaultObjects;
 import worldjam.video.WebcamThread;
 
@@ -116,7 +116,7 @@ public class ClientSetupGUI extends JFrame{
 		topPanel.setPreferredSize(new Dimension(370,70));
 
 		txtUser = new JTextField();
-		txtUser.setText(Configurations.getDefaultUsername());
+		txtUser.setText(ConfigurationsXML.getDefaultUserName());
 		topPanel.add(txtUser);
 		txtUser.setColumns(10);
 		lblLocalPort = new JLabel("Local Port");

@@ -17,7 +17,7 @@ import javax.sound.sampled.Mixer;
 
 import worldjam.time.ClockSetting;
 import worldjam.time.ClockSubscriber;
-import worldjam.util.Configurations;
+import worldjam.util.ConfigurationsXML;
 
 public class PlaybackManager implements AudioSubscriber, ClockSubscriber{
 	
@@ -27,8 +27,8 @@ public class PlaybackManager implements AudioSubscriber, ClockSubscriber{
 		this.clock = clock;
 		this.format = format;
 		
-		this.calibrationInMs = Configurations.getDefaultTimingCalibration(
-				Configurations.AUDIO_OUTPUT, mixer.getMixerInfo().getName());
+		this.calibrationInMs = ConfigurationsXML.getOutputTimeCalib(
+				mixer.getMixerInfo().getName());
 		
 		Metronome metronome = new Metronome(); 
 		long metronomeChanID = 1234;

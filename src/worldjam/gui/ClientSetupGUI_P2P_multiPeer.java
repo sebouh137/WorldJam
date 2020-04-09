@@ -32,7 +32,7 @@ import worldjam.audio.PlaybackManager;
 import worldjam.exe.Client;
 import worldjam.gui.conductor.Conductor;
 import worldjam.time.ClockSetting;
-import worldjam.util.Configurations;
+import worldjam.util.ConfigurationsXML;
 import worldjam.util.DefaultObjects;
 import worldjam.video.WebcamThread;
 
@@ -129,7 +129,7 @@ public class ClientSetupGUI_P2P_multiPeer extends JFrame{
 		mainPanel.add(lblDisplayName, gbc_lblDisplayName);
 
 		txtUser = new JTextField();
-		txtUser.setText(Configurations.getDefaultUsername());
+		txtUser.setText(ConfigurationsXML.getDefaultUserName());
 		GridBagConstraints gbc_txtUser = new GridBagConstraints();
 		gbc_txtUser.fill = GridBagConstraints.HORIZONTAL;
 		gbc_txtUser.gridwidth = 2;

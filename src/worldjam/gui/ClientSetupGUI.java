@@ -156,7 +156,7 @@ public class ClientSetupGUI extends JFrame{
 		getContentPane().add(btnStart, BorderLayout.SOUTH);
 
 		JPanel tabAudioIO = new JPanel(); 
-		tabs.addTab("Audio/Video IO", tabAudioIO);
+		tabs.addTab(Client.enableDevFeatures ? "Audio/Video IO" : "Audio IO", tabAudioIO);
 		GridBagLayout gbl_tabAudioIO = new GridBagLayout();
 		gbl_tabAudioIO.columnWidths = new int[]{122, 44, 0};
 		gbl_tabAudioIO.rowHeights = new int[]{27, 0, 0, 0, 0, 0};
@@ -199,66 +199,67 @@ public class ClientSetupGUI extends JFrame{
 		gbc_comboBox_1.gridx = 1;
 		gbc_comboBox_1.gridy = 1;
 		tabAudioIO.add(comboBox_1, gbc_comboBox_1);
+		if(Client.enableDevFeatures) {
+			lblVideoInput = new JLabel("Video Input");
+			GridBagConstraints gbc_lblVideoInput = new GridBagConstraints();
+			gbc_lblVideoInput.anchor = GridBagConstraints.EAST;
+			gbc_lblVideoInput.insets = new Insets(0, 0, 5, 5);
+			gbc_lblVideoInput.gridx = 0;
+			gbc_lblVideoInput.gridy = 3;
+			tabAudioIO.add(lblVideoInput, gbc_lblVideoInput);
 
-		lblVideoInput = new JLabel("Video Input");
-		GridBagConstraints gbc_lblVideoInput = new GridBagConstraints();
-		gbc_lblVideoInput.anchor = GridBagConstraints.EAST;
-		gbc_lblVideoInput.insets = new Insets(0, 0, 5, 5);
-		gbc_lblVideoInput.gridx = 0;
-		gbc_lblVideoInput.gridy = 3;
-		tabAudioIO.add(lblVideoInput, gbc_lblVideoInput);
-
-		List<Webcam> webcams = Webcam.getWebcams();
-		List<String> webcamNames = new ArrayList();
-		webcamNames.add(NO_WEBCAM);
-		for(Webcam webcam : webcams){
-			webcamNames.add(webcam.getName());
-		}
-
-		comboBoxWebcams = new JComboBox();
-		comboBoxWebcams.setModel(new DefaultComboBoxModel(webcamNames.toArray()));
-		GridBagConstraints gbc_comboBox_2 = new GridBagConstraints();
-		gbc_comboBox_2.insets = new Insets(0, 0, 5, 0);
-		gbc_comboBox_2.fill = GridBagConstraints.HORIZONTAL;
-		gbc_comboBox_2.gridx = 1;
-		gbc_comboBox_2.gridy = 3;
-		tabAudioIO.add(comboBoxWebcams, gbc_comboBox_2);
-
-		lblVideoResolution = new JLabel("Video Resolution");
-		GridBagConstraints gbc_lblVideoResolution = new GridBagConstraints();
-		gbc_lblVideoResolution.anchor = GridBagConstraints.EAST;
-		gbc_lblVideoResolution.insets = new Insets(0, 0, 0, 5);
-		gbc_lblVideoResolution.gridx = 0;
-		gbc_lblVideoResolution.gridy = 4;
-		tabAudioIO.add(lblVideoResolution, gbc_lblVideoResolution);
-
-		comboBoxResolutions = new JComboBox();
-		gbc_comboBox_2 = new GridBagConstraints();
-		gbc_comboBox_2.fill = GridBagConstraints.HORIZONTAL;
-		gbc_comboBox_2.gridx = 1;
-		gbc_comboBox_2.gridy = 4;
-		tabAudioIO.add(comboBoxResolutions, gbc_comboBox_2);
-
-		comboBoxWebcams.addActionListener(e->{
-			if(comboBoxWebcams.getSelectedItem() == NO_WEBCAM){
-				comboBoxResolutions.setEnabled(false);
-				lblVideoResolution.setEnabled(false);
+			List<Webcam> webcams = Webcam.getWebcams();
+			List<String> webcamNames = new ArrayList();
+			webcamNames.add(NO_WEBCAM);
+			for(Webcam webcam : webcams){
+				webcamNames.add(webcam.getName());
 			}
-			else{
-				lblVideoResolution.setEnabled(true);
-				comboBoxResolutions.setEnabled(true);
-				Vector<String> strings = new Vector();
 
-				Webcam cam = Webcam.getWebcamByName((String)comboBoxWebcams.getSelectedItem());
-				for(Dimension dim : cam.getViewSizes()){
-					strings.add(dim.width + "x" + dim.height);
+			comboBoxWebcams = new JComboBox();
+			comboBoxWebcams.setModel(new DefaultComboBoxModel(webcamNames.toArray()));
+			GridBagConstraints gbc_comboBox_2 = new GridBagConstraints();
+			gbc_comboBox_2.insets = new Insets(0, 0, 5, 0);
+			gbc_comboBox_2.fill = GridBagConstraints.HORIZONTAL;
+			gbc_comboBox_2.gridx = 1;
+			gbc_comboBox_2.gridy = 3;
+			tabAudioIO.add(comboBoxWebcams, gbc_comboBox_2);
+
+			lblVideoResolution = new JLabel("Video Resolution");
+			GridBagConstraints gbc_lblVideoResolution = new GridBagConstraints();
+			gbc_lblVideoResolution.anchor = GridBagConstraints.EAST;
+			gbc_lblVideoResolution.insets = new Insets(0, 0, 0, 5);
+			gbc_lblVideoResolution.gridx = 0;
+			gbc_lblVideoResolution.gridy = 4;
+			tabAudioIO.add(lblVideoResolution, gbc_lblVideoResolution);
+
+			comboBoxResolutions = new JComboBox();
+			gbc_comboBox_2 = new GridBagConstraints();
+			gbc_comboBox_2.fill = GridBagConstraints.HORIZONTAL;
+			gbc_comboBox_2.gridx = 1;
+			gbc_comboBox_2.gridy = 4;
+			tabAudioIO.add(comboBoxResolutions, gbc_comboBox_2);
+
+			comboBoxWebcams.addActionListener(e->{
+				if(comboBoxWebcams.getSelectedItem() == NO_WEBCAM){
+					comboBoxResolutions.setEnabled(false);
+					lblVideoResolution.setEnabled(false);
 				}
-				comboBoxResolutions.setModel(new DefaultComboBoxModel<String>(strings));
-				comboBoxResolutions.setSelectedItem(cam.getViewSize().width + "x" + cam.getViewSize().height);
+				else{
+					lblVideoResolution.setEnabled(true);
+					comboBoxResolutions.setEnabled(true);
+					Vector<String> strings = new Vector();
 
-				System.out.println(strings);
-			}
-		});
+					Webcam cam = Webcam.getWebcamByName((String)comboBoxWebcams.getSelectedItem());
+					for(Dimension dim : cam.getViewSizes()){
+						strings.add(dim.width + "x" + dim.height);
+					}
+					comboBoxResolutions.setModel(new DefaultComboBoxModel<String>(strings));
+					comboBoxResolutions.setSelectedItem(cam.getViewSize().width + "x" + cam.getViewSize().height);
+
+					System.out.println(strings);
+				}
+			});
+		}
 
 
 

@@ -1,0 +1,28 @@
+<?xml version="1.0"?>  
+<config>
+  <!--Insert user name below-->
+  <userName>User</userName>
+
+  <!--
+      For each audio device, include the name of the device
+      or a regex pattern matching the device name,
+      and the input and/or output time calibration constants,
+      as applicable, in ms.  The following are examples that I have
+      obtained for some exampled devices which I have tested myself:
+      Galaxy Buds wireless headphones,
+      and the builtin speakers and microphone of my MacBook Pro 2016.   
+  -->
+  <audioDevice name="Galaxy Buds (4D80)">
+    <outputTimeCalib>-710</outputTimeCalib>
+    <inputTimeCalib>-1060</inputTimeCalib>
+  </audioDevice>
+  
+  <audioDevice name="Built-in Output">
+    <outputTimeCalib>-450</outputTimeCalib>
+  </audioDevice>
+
+  <audioDevice name="Built-in Microphone">
+    <inputTimeCalib>-1060</inputTimeCalib>
+  </audioDevice>
+  
+</config>  

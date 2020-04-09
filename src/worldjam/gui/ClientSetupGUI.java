@@ -553,7 +553,7 @@ public class ClientSetupGUI extends JFrame{
 
 				
 				if(gui.chckbxNewCheckBox.isSelected()) {
-					ConfigurationsXML.setDefaultUserName(gui.txtUser.getText());
+					ConfigurationsXML.saveDefaultUserName(gui.txtUser.getText());
 				}
 				String displayName = gui.txtUser.getText();
 				int num = (int)gui.spinnerNumerator.getModel().getValue();

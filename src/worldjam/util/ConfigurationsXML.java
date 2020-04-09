@@ -13,7 +13,6 @@ import javax.sound.sampled.DataLine;
 import javax.sound.sampled.Mixer;
 import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.TargetDataLine;
-import javax.swing.JTextField;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -70,7 +69,7 @@ public class ConfigurationsXML {
 				if (node.getNodeType() == Node.ELEMENT_NODE)   
 				{  
 					Element eElement = (Element) node; 
-					String name = eElement.getElementsByTagName("name").item(0).getTextContent();
+					String name = eElement.getAttribute("name");
 					System.out.println(name);
 					int inputTimeCalib = 0;
 					int outputTimeCalib = 0;
@@ -101,41 +100,44 @@ public class ConfigurationsXML {
 	}
 
 	private static String userName;
-	
+
 
 
 	private static final String defaultAudioDevice = "Default Audio Device";
 	public static int getInputTimeCalib(String deviceName) {
-		if(deviceName.equals(defaultAudioDevice)) {
-			deviceName = getDefaultMixerName(true);
-		}
+		deviceName = getActualMixerName(deviceName,true);
 		for(AudioDeviceConfig conf : audioDeviceConfigs) {
-			if(deviceName.matches(conf.name)) {
+			if(deviceName.equals(conf.name)) {
 				return conf.inputTimeCalib;
 			}
 		}
 		return 0;
 	}
-	
+
 	public static int getOutputTimeCalib(String deviceName) {
-		if(deviceName.equals(defaultAudioDevice)) {
-			deviceName = getDefaultMixerName(false);
-		}
+		deviceName = getActualMixerName(deviceName,false);
 		for(AudioDeviceConfig conf : audioDeviceConfigs) {
-			if(deviceName.matches(conf.name)) {
+			if(deviceName.equals(conf.name)) {
 				return conf.outputTimeCalib;
 			}
 		}
 		return 0;
 	}
-	
+
+	public static String getActualMixerName(String mixerName, boolean isInput) {
+		if(mixerName.equals(defaultAudioDevice)) {
+			mixerName = getDefaultMixerName(isInput);
+		}
+		return mixerName;
+	}
+
 	/**
 	 * Get the actual name of the default mixer (patches a quirk in Mac OS
 	 * @param var
 	 * @return
 	 */
 	private static String getDefaultMixerName(boolean isInput) {
-		
+
 		for(Mixer.Info info : AudioSystem.getMixerInfo()) {
 			System.out.println(info);
 			if(info.getName().equals(defaultAudioDevice))
@@ -150,7 +152,7 @@ public class ConfigurationsXML {
 
 		return "Default Audio Device";
 	}
-	
+
 	public static String getDefaultUserName() {
 		if(userName != null)
 			return userName;
@@ -160,19 +162,21 @@ public class ConfigurationsXML {
 			return System.getProperty("user.name");
 		return "user1";
 	}
-	
+
 	static {
 		loadConfigs();
 	}
-	
+
 	public static void main(String args[]) {
 		loadConfigs();
+
+		saveCalibrationConstants("Built-in Microphone", true, -1060);
 	}
 	/**
 	 * modify the entry in the config.xml file for the userName
 	 * @param txtUser
 	 */
-	public static void setDefaultUserName(String userName) {
+	public static void saveDefaultUserName(String userName) {
 		File file = new File(FILE_LOCATION);
 		Scanner scanner;
 		StringBuilder sb = new StringBuilder();
@@ -190,11 +194,61 @@ public class ConfigurationsXML {
 			pw.print(sb.toString());
 			pw.close();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		
-		
+
+
+
 	}
+
+	public static void saveCalibrationConstants(String mixerName, boolean isInput, int value) {
+		File file = new File(FILE_LOCATION);
+		Scanner scanner;
+		StringBuilder sb = new StringBuilder();
+		String io = isInput ? "input" : "output";
+		System.out.println("saving time calibration constants " + mixerName + " " + io + " " + value);
+		try {
+			scanner = new Scanner(file);
+			boolean nameMatches = false;
+			boolean lineChanged = false;
+			while(scanner.hasNextLine()) {
+				String line = scanner.nextLine();
+				if(line.matches(".*<audioDevice +name *= *\".*\">.*")) {
+					if(line.substring(line.indexOf('"')+1, line.lastIndexOf('"')).equals(mixerName)) {
+						nameMatches=true;
+					}
+				}
+				if(nameMatches && line.matches(".*<"+io+"TimeCalib>.*")) {
+					continue;
+				}
+				if(line.matches(".*</audioDevice>")) {
+					if(nameMatches) {
+						sb.append("    <" + io + "TimeCalib>" + value + "</" + io + "TimeCalib>\n");
+						lineChanged = true;
+					}
+					nameMatches=false;
+				}
+				//reached the end of the config file.  Must add new entry before the end
+				if(line.matches(".*</config>.*")) {
+					System.out.println("reached final line of xml");
+					if(!lineChanged) {
+						sb.append("\n  <audioDevice name=\"" + mixerName + "\">\n");
+						sb.append("    <" + io + "TimeCalib>" + value + "</" + io + "TimeCalib>\n");
+						sb.append("  </audioDevice>\n");
+					}
+				}
+
+				sb.append(line + "\n");
+			}
+			System.out.println(sb.toString());
+			scanner.close();
+			PrintWriter pw = new PrintWriter(file);
+			pw.print(sb.toString());
+			pw.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+
+
 }

@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Scanner;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
@@ -25,6 +26,7 @@ import javax.swing.SwingConstants;
 
 import worldjam.audio.PlaybackChannel;
 import worldjam.exe.Client;
+import worldjam.util.ConfigurationsXML;
 
 public class TimeCalibrationDialog extends JFrame{
 	/**
@@ -36,8 +38,12 @@ public class TimeCalibrationDialog extends JFrame{
 	private JButton nextButton;
 	private JTextArea instructions;
 	private Map<Long,Boolean> initialMuting = new HashMap();
+	private JCheckBox checkbox;
 	public TimeCalibrationDialog(Client client) {
 		this.client = client;
+		
+		inputMixerName = ConfigurationsXML.getActualMixerName(client.getInput().getMixer().getMixerInfo().getName(),true);
+		outputMixerName = ConfigurationsXML.getActualMixerName(client.getPlaybackManager().getMixer().getMixerInfo().getName(),false);
 		// keep track of which channels are initially muted, and then bring it back to 
 		// the original setting after the calibration is done.
 		for(PlaybackChannel channel : client.getPlaybackManager().getChannels()) {
@@ -64,15 +70,19 @@ public class TimeCalibrationDialog extends JFrame{
 					boolean muted = entry.getValue();
 					client.getPlaybackManager().getChannel(id).setMuted(muted);
 				}
+				if(checkbox.isSelected())
+					saveCurrentCalibrations();
 				client.getGUI().channelsChanged();
 			}
 
 		});
 
 		setTitle("Timing Calibration");
-		setSize(400,250);
+		setSize(400,300);
 		setLayout(new BorderLayout());
-		instructions = new JTextArea(outputCalibInstructions);
+		instructions = new JTextArea("Output timing calibration for:  " + 
+				outputMixerName + 
+				"\n\n" + outputCalibInstructions);
 		instructions.setEditable(false);
 		instructions.setLineWrap(true);
 		instructions.setWrapStyleWord(true);
@@ -123,29 +133,46 @@ public class TimeCalibrationDialog extends JFrame{
 			if(mode==0) {
 				setMode(1);
 			} else {
+				if(checkbox.isSelected()) {
+					saveCurrentCalibrations();
+				}
 				dispose();
 			}
 		});
+		checkbox = new JCheckBox("Save these settings for future sessions                     ");
+		buttonPanel.add(checkbox);
 		buttonPanel.add(prevButton);
 		buttonPanel.add(nextButton);
+		buttonPanel.setPreferredSize(new Dimension((int)checkbox.getPreferredSize().getWidth() + 5,
+				(int)buttonPanel.getPreferredSize().getHeight()*2));
 		JPanel mainPanel = new JPanel();
 		mainPanel.setLayout(new BorderLayout());
 		mainPanel.add(instructions, BorderLayout.CENTER);
 		mainPanel.add(inputPanel, BorderLayout.SOUTH);
+		
 
 		getContentPane().add(mainPanel, BorderLayout.CENTER);
 		getContentPane().add(buttonPanel, BorderLayout.SOUTH);
 		//getContentPane().add(tabbedPane, BorderLayout.CENTER);
 	}
 
-	private Client client;
+	private void saveCurrentCalibrations() {
+		ConfigurationsXML.saveCalibrationConstants(outputMixerName, false, getOutputCalibration());
+		ConfigurationsXML.saveCalibrationConstants(inputMixerName, true, getInputCalibration());
+		
+	}
 
+	private Client client;
+	private String inputMixerName;
+	private String outputMixerName;
 	private void setMode(int i) {
 		if (i == 1) { 
 			prevButton.setEnabled(true);
 			mode = 1;
 			nextButton.setText("Done");
-			instructions.setText(inputCalibInstructions);
+			instructions.setText("Input timing calibration for:  " + 
+					inputMixerName + 
+					"\n\n" + inputCalibInstructions);
 			inputField.setText(Integer.toString(getInputCalibration()));
 			if(client != null) {
 				client.getPlaybackManager().getChannelByName("metronome").setMuted(false);
@@ -156,7 +183,9 @@ public class TimeCalibrationDialog extends JFrame{
 			prevButton.setEnabled(false);
 			mode = 0;
 			nextButton.setText("Next");
-			instructions.setText(outputCalibInstructions);
+			instructions.setText("Output timing calibration for:  " + 
+					outputMixerName + 
+					"\n\n" + outputCalibInstructions);
 			inputField.setText(Integer.toString(getOutputCalibration()));
 			if(client != null) {
 				client.getPlaybackManager().getChannelByName("metronome").setMuted(false);

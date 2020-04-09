@@ -190,5 +190,8 @@ public class PlaybackManager implements AudioSubscriber, ClockSubscriber{
 		return calibrationInMs;
 	}
 	private int calibrationInMs;
+	public Mixer getMixer() {
+		return mixer;
+	}
 	
 }

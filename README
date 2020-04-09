@@ -1,10 +1,25 @@
+1)  Compiling:
+
 To compile, type into the commandline:
 mvn -o clean package appbundle:bundle
 
-To run start the server locally:
-java -cp target/WorldJam-x.x.x-SNAPSHOT.jar worldjam.exe.Server [-p port]
-where x.x.x-SNAPSHOT is replaced with the current release or snapshot.
+2)  Setup prior to running:
 
+VPN:
+It is necessary to use a VPN to connect to users outside of the LAN.  I recommend the VPN ZeroTier, and I have set up a network, 3efa5cb78a60df8f "World Jam Test" for this.  See zerotier.com for more details, and to download the VPN software.
+
+Firewall:
+It may be necessary to modify the settings for the firewall in order to allow incoming connections.  
+
+Windows:
+Control Panel -> Windows Defender Firewall -> Allow an app or feature through Windows Defender Firewall.  Select both public and private for Java.
+
+MacOS:
+System Preferences -> Security & Privacy -> Firewall -> Firewall Options.  Add WorldJam to the list of applications.
+
+
+
+3)  Running WorldJam:
 
 To run client as an application (this brings up the client setup window):
 
@@ -16,10 +31,7 @@ double click on the icon in target/WorldJam.exe
 
 
 Any operating system (Linux, MacOS, or Windows), using the command-line:
-java -jar target/WorldJam-x.x.x-SNAPSHOT.jar
+java -jar target/WorldJam-x.x.x-SNAPSHOT-shaded.jar
 
-Firewall Stuff:
-if connection does not work, disable unnecessary stuff in the firewall.  Here is some info about how to do this in Windows:
 
-http://www.tomshardware.com/faq/id-3114787/open-firewall-ports-windows.html
-https://tunecomp.net/allow-incoming-ping-echo-request-without-disabling-windows-10-firewall/
+

@@ -85,6 +85,7 @@ public class ClientSetupGUI extends JFrame{
 	protected ScanLocalSessionsGUI scanPanel;
 
 	JPanel newSessionPanel;
+	private JCheckBox chckbxNewCheckBox;
 	ClientSetupGUI() {
 		this.setSize(544, 388);
 		setTitle("WorldJam Client Setup");
@@ -100,46 +101,17 @@ public class ClientSetupGUI extends JFrame{
 		this.getContentPane().setLayout(new BorderLayout());
 		this.getContentPane().add(tabs, BorderLayout.CENTER);
 
-		
+
 		JPanel mainPanel = new JPanel();
 		mainPanel.setLayout(new BorderLayout());
 
-		JPanel topPanel = new JPanel();
+		JPanel topPanel = createTopPanel(); 
+
 		mainPanel.add(topPanel, BorderLayout.NORTH);
 
 		tabs.addTab("General", mainPanel);
-		
 
-		JLabel lblDisplayName = new JLabel("  Display Name");
 
-		topPanel.add(lblDisplayName);
-		topPanel.setPreferredSize(new Dimension(370,70));
-
-		txtUser = new JTextField();
-		txtUser.setText(ConfigurationsXML.getDefaultUserName());
-		topPanel.add(txtUser);
-		txtUser.setColumns(10);
-		lblLocalPort = new JLabel("Local Port");
-		topPanel.add(lblLocalPort);
-
-		jtfLocalPort = new JTextField(Integer.toString(DefaultObjects.defaultPort));
-		topPanel.add(jtfLocalPort);
-		jtfLocalPort.setColumns(5);
-
-		rdbtnStartNewSession = new JRadioButton("Start New Session");
-		buttonGroup.add(rdbtnStartNewSession);
-
-		rdbtnStartNewSession.setSelected(true);
-		GridBagConstraints gbc_rdbtnStartNewSession = new GridBagConstraints();
-		topPanel.add(rdbtnStartNewSession, gbc_rdbtnStartNewSession);
-
-		rdbtnJoinExistingSession = new JRadioButton("Join Existing Session");
-		buttonGroup.add(rdbtnJoinExistingSession);
-		topPanel.add(rdbtnJoinExistingSession);
-
-		scanPanel = new ScanLocalSessionsGUI();
-
-		
 		ChangeListener cl = new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				boolean enable = rdbtnStartNewSession.isSelected();
@@ -151,7 +123,7 @@ public class ClientSetupGUI extends JFrame{
 				txtBPM.setEnabled(enable);
 				spinner_msPerBeat.setEnabled(enable);
 
-				
+
 				enable &= tabs.getSelectedComponent() == newSessionPanel;
 				previewConductor.setMeasureNumberVisible(false);
 				if(rdbtnStartNewSession.isSelected()) {
@@ -172,6 +144,9 @@ public class ClientSetupGUI extends JFrame{
 		};
 		rdbtnStartNewSession.addChangeListener(cl);
 		tabs.addChangeListener(cl);
+
+
+		scanPanel = new ScanLocalSessionsGUI();
 
 		newSessionPanel = createNewSessionPanel();
 
@@ -290,17 +265,99 @@ public class ClientSetupGUI extends JFrame{
 
 	}
 
+	private JPanel createTopPanel() {
+		JPanel topPanel = new JPanel();
+		GridBagLayout gbl_topPanel = new GridBagLayout();
+		gbl_topPanel.columnWidths = new int[]{75, 95, 74, 82, 62, 70, 0};
+		gbl_topPanel.rowHeights = new int[]{26, 23, 31, 0};
+		gbl_topPanel.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_topPanel.rowWeights = new double[]{0.0, 0.0, 0.0, Double.MIN_VALUE};
+		topPanel.setLayout(gbl_topPanel);
+
+		JLabel lblDisplayName = new JLabel("  Display Name");
+
+		GridBagConstraints gbc_lblDisplayName = new GridBagConstraints();
+		gbc_lblDisplayName.anchor = GridBagConstraints.WEST;
+		gbc_lblDisplayName.insets = new Insets(0, 0, 5, 5);
+		gbc_lblDisplayName.gridx = 0;
+		gbc_lblDisplayName.gridy = 0;
+		topPanel.add(lblDisplayName, gbc_lblDisplayName);
+
+		txtUser = new JTextField();
+		txtUser.setText(ConfigurationsXML.getDefaultUserName());
+		GridBagConstraints gbc_txtUser = new GridBagConstraints();
+		gbc_txtUser.fill = GridBagConstraints.HORIZONTAL;
+		gbc_txtUser.anchor = GridBagConstraints.NORTH;
+		gbc_txtUser.insets = new Insets(0, 0, 5, 5);
+		gbc_txtUser.gridwidth = 2;
+		gbc_txtUser.gridx = 1;
+		gbc_txtUser.gridy = 0;
+		topPanel.add(txtUser, gbc_txtUser);
+		txtUser.setColumns(10);
+		lblLocalPort = new JLabel("Local Port");
+		GridBagConstraints gbc_lblLocalPort = new GridBagConstraints();
+		gbc_lblLocalPort.anchor = GridBagConstraints.WEST;
+		gbc_lblLocalPort.insets = new Insets(0, 0, 5, 5);
+		gbc_lblLocalPort.gridx = 4;
+		gbc_lblLocalPort.gridy = 0;
+		topPanel.add(lblLocalPort, gbc_lblLocalPort);
+
+		jtfLocalPort = new JTextField(Integer.toString(DefaultObjects.defaultPort));
+		GridBagConstraints gbc_jtfLocalPort = new GridBagConstraints();
+		gbc_jtfLocalPort.fill = GridBagConstraints.HORIZONTAL;
+		gbc_jtfLocalPort.anchor = GridBagConstraints.NORTH;
+		gbc_jtfLocalPort.insets = new Insets(0, 0, 5, 0);
+		gbc_jtfLocalPort.gridx = 5;
+		gbc_jtfLocalPort.gridy = 0;
+		topPanel.add(jtfLocalPort, gbc_jtfLocalPort);
+		jtfLocalPort.setColumns(5);
+		topPanel.setPreferredSize(new Dimension(370,100));
+		
+		chckbxNewCheckBox = new JCheckBox("Remember my name for future sessions");
+		GridBagConstraints gbc_chckbxNewCheckBox = new GridBagConstraints();
+		gbc_chckbxNewCheckBox.anchor = GridBagConstraints.WEST;
+		gbc_chckbxNewCheckBox.gridwidth = 3;
+		gbc_chckbxNewCheckBox.insets = new Insets(0, 0, 5, 5);
+		gbc_chckbxNewCheckBox.gridx = 0;
+		gbc_chckbxNewCheckBox.gridy = 1;
+		topPanel.add(chckbxNewCheckBox, gbc_chckbxNewCheckBox);
+		
+
+		rdbtnStartNewSession = new JRadioButton("Start New Session");
+		buttonGroup.add(rdbtnStartNewSession);
+
+		rdbtnStartNewSession.setSelected(true);
+		GridBagConstraints gbc_rdbtnStartNewSession_1 = new GridBagConstraints();
+		gbc_rdbtnStartNewSession_1.anchor = GridBagConstraints.SOUTHWEST;
+		gbc_rdbtnStartNewSession_1.insets = new Insets(0, 0, 0, 5);
+		gbc_rdbtnStartNewSession_1.gridwidth = 2;
+		gbc_rdbtnStartNewSession_1.gridx = 0;
+		gbc_rdbtnStartNewSession_1.gridy = 2;
+		topPanel.add(rdbtnStartNewSession, gbc_rdbtnStartNewSession_1);
+
+		rdbtnJoinExistingSession = new JRadioButton("Join Existing Session");
+		buttonGroup.add(rdbtnJoinExistingSession);
+		GridBagConstraints gbc_rdbtnJoinExistingSession = new GridBagConstraints();
+		gbc_rdbtnJoinExistingSession.insets = new Insets(0, 0, 0, 5);
+		gbc_rdbtnJoinExistingSession.anchor = GridBagConstraints.SOUTHWEST;
+		gbc_rdbtnJoinExistingSession.gridwidth = 3;
+		gbc_rdbtnJoinExistingSession.gridx = 2;
+		gbc_rdbtnJoinExistingSession.gridy = 2;
+		topPanel.add(rdbtnJoinExistingSession, gbc_rdbtnJoinExistingSession);;
+		return topPanel;
+	}
+
 	private JPanel createNewSessionPanel() {
 		newSessionPanel = new JPanel();
 		JPanel subPanel = new JPanel();
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{148, 65};
 
-		gridBagLayout.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+		gridBagLayout.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0};
 		gridBagLayout.columnWeights = new double[]{0.0, 0.0};
-		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		subPanel.setLayout(gridBagLayout);
-		
+
 		newSessionPanel.setLayout(new BorderLayout());
 		newSessionPanel.add(subPanel, BorderLayout.CENTER);
 
@@ -321,7 +378,7 @@ public class ClientSetupGUI extends JFrame{
 				previewConductor.changeClockSettingsNow(clock);
 			}
 		};
-		
+
 		spinnerNumerator = new JSpinner();
 		GridBagConstraints gbc_spinner = new GridBagConstraints();
 		gbc_spinner.anchor = GridBagConstraints.EAST;
@@ -347,7 +404,7 @@ public class ClientSetupGUI extends JFrame{
 		subPanel.add(spinnerDenominator, gbc_spinner_1);
 		spinnerDenominator.addChangeListener(changeTimeSignature);
 
-		
+
 		ChangeListener cl = e->{
 			if(rdbtnMsPerBeat.isSelected()){
 				txtBPM.setEnabled(false);
@@ -357,7 +414,7 @@ public class ClientSetupGUI extends JFrame{
 				txtBPM.setEnabled(true);
 			}
 		};
-		
+
 		rdbtnBeatsPerMinute = new JRadioButton("Beats Per Minute");
 		buttonGroup_1.add(rdbtnBeatsPerMinute);
 		rdbtnBeatsPerMinute.setSelected(true);
@@ -494,6 +551,10 @@ public class ClientSetupGUI extends JFrame{
 			public void actionPerformed(ActionEvent e) {
 				gui.previewConductor.close();
 
+				
+				if(gui.chckbxNewCheckBox.isSelected()) {
+					ConfigurationsXML.setDefaultUserName(gui.txtUser.getText());
+				}
 				String displayName = gui.txtUser.getText();
 				int num = (int)gui.spinnerNumerator.getModel().getValue();
 				int denom = (int)gui.spinnerDenominator.getModel().getValue();

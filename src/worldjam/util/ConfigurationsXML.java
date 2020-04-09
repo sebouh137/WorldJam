@@ -1,15 +1,19 @@
 package worldjam.util;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.Mixer;
 import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.TargetDataLine;
+import javax.swing.JTextField;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -163,5 +167,34 @@ public class ConfigurationsXML {
 	
 	public static void main(String args[]) {
 		loadConfigs();
+	}
+	/**
+	 * modify the entry in the config.xml file for the userName
+	 * @param txtUser
+	 */
+	public static void setDefaultUserName(String userName) {
+		File file = new File(FILE_LOCATION);
+		Scanner scanner;
+		StringBuilder sb = new StringBuilder();
+		try {
+			scanner = new Scanner(file);
+			while(scanner.hasNextLine()) {
+				String line = scanner.nextLine();
+				if(line.matches(".*<userName>.*</userName>.*")) {
+					line = "  <userName>"+userName+"</userName>";
+				}
+				sb.append(line + "\n");
+			}
+			scanner.close();
+			PrintWriter pw = new PrintWriter(file);
+			pw.print(sb.toString());
+			pw.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		
 	}
 }

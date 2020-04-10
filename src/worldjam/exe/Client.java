@@ -40,6 +40,7 @@ import worldjam.util.ByteCountDataInputStream;
 import worldjam.util.ByteCountDataOutputStream;
 import worldjam.util.DefaultObjects;
 import worldjam.video.VideoFrame;
+import worldjam.video.WebcamInterface;
 import worldjam.video.WebcamThread;
 
 public class Client implements ClockSubscriber {
@@ -63,7 +64,8 @@ public class Client implements ClockSubscriber {
 		this.debug = debug;
 	}
 
-	public Client(int listeningPort, String displayName, InputThread input, PlaybackManager playback, ClockSetting clock,WebcamThread webcamThread) 
+	public Client(int listeningPort, String displayName, InputThread input, 
+			PlaybackManager playback, ClockSetting clock,WebcamInterface webcamInterface) 
 			throws LineUnavailableException, UnknownHostException, IOException{
 		this.selfDescriptor = new ClientDescriptor(displayName, displayName.hashCode());
 		this.displayName = displayName;
@@ -100,8 +102,8 @@ public class Client implements ClockSubscriber {
 		this.checkForTimeoutThread = new CheckForTimeoutThread();
 		checkForTimeoutThread.start();
 		this.changeClockSettingsNow(clock);
-		if(webcamThread != null){
-			attachWebcam(webcamThread);
+		if(webcamInterface != null){
+			attachWebcam(webcamInterface);
 		}
 		for (PlaybackChannel pbc : playback.getChannels()) {
 			delayManager.addChannel(pbc.getChannelID(), pbc.getChannelName());
@@ -647,19 +649,19 @@ public class Client implements ClockSubscriber {
 			System.out.println(t.getClass());
 		}
 	}
-	public void attachWebcam(WebcamThread webcamThread){
-		webcamThread.addSubscriber((frame)->{
+	public void attachWebcam(WebcamInterface webcamInterface){
+		webcamInterface.addSubscriber((frame)->{
 			frame.setSourceID(this.selfDescriptor.clientID);
 			broadcastVideoFrame(frame);
 			frame.setSourceID(0L);
 			gui.videoFrameReceived(frame);
 		});
-		webcamThread.start();
-		this.webcamThread = webcamThread;
+		//webcamInterface.start();
+		this.webcamInterface = webcamInterface;
 	}
-	WebcamThread webcamThread;
-	public WebcamThread getWebcamThread() {
-		return webcamThread;
+	WebcamInterface webcamInterface;
+	public WebcamInterface getWebcamInterface() {
+		return webcamInterface;
 	}
 	private void broadcastVideoFrame(VideoFrame frame){
 		//System.out.println("subs send frame");

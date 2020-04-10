@@ -15,7 +15,7 @@ import worldjam.exe.Client;
 import worldjam.time.DelaySetting;
 import worldjam.util.DefaultObjects;
 import worldjam.video.ViewPanel;
-import worldjam.video.WebcamThread;
+import worldjam.video.WebcamInterface;
 
 import java.awt.GridBagLayout;
 import javax.swing.JLabel;
@@ -51,15 +51,15 @@ public class WebcamControlDialog extends JFrame {
 		});
 	}
 
-	WebcamThread webcamThread;
+	WebcamInterface webcamInterface;
 	/**
 	 * Create the frame.
 	 */
 	public WebcamControlDialog(Client client) {
 		Webcam selectedWebcam = null;
-		if (client != null) webcamThread = client.getWebcamThread();
-		if(webcamThread != null)
-			selectedWebcam = webcamThread.getWebcam();
+		if (client != null) webcamInterface = client.getWebcamInterface();
+		if(webcamInterface != null)
+			selectedWebcam = webcamInterface.getWebcam();
 		setTitle("WorldJam: Video Input Settings");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		this.setSize(500, 300);
@@ -141,24 +141,24 @@ public class WebcamControlDialog extends JFrame {
 				Webcam cam = Webcam.getWebcamByName((String)cmbxWebcams.getSelectedItem());
 				cam.close();
 				
-				if(webcamThread == null) {
-					webcamThread = new WebcamThread(cam);
-					client.attachWebcam(webcamThread);
-					webcamThread.setEnabled(true);
+				if(webcamInterface == null) {
+					webcamInterface = new WebcamInterface(cam);
+					client.attachWebcam(webcamInterface);
+					webcamInterface.setEnabled(true);
 				} else {
 					
 				}
-				webcamThread.setWebcam(cam);
+				webcamInterface.setWebcam(cam);
 				String[] selectedResStr = ((String)cmbxResolution.getSelectedItem()).split("x");
 				
 				cam.setViewSize(new Dimension(Integer.parseInt(selectedResStr[0]),Integer.parseInt(selectedResStr[1])));
 				if(!cam.isOpen())
 					cam.open(false);
-				webcamThread.setEnabled(true);
+				webcamInterface.setEnabled(true);
 			} else { //disable webcam
-				if(client.getWebcamThread() != null) {
-					client.getWebcamThread().setEnabled(false);
-					Webcam cam = client.getWebcamThread().getWebcam();
+				if(client.getWebcamInterface() != null) {
+					client.getWebcamInterface().setEnabled(false);
+					Webcam cam = client.getWebcamInterface().getWebcam();
 					cam.close();
 				}
 			}

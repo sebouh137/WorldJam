@@ -34,6 +34,7 @@ import worldjam.gui.conductor.Conductor;
 import worldjam.time.ClockSetting;
 import worldjam.util.ConfigurationsXML;
 import worldjam.util.DefaultObjects;
+import worldjam.video.WebcamInterface;
 import worldjam.video.WebcamThread;
 
 import javax.swing.JSpinner;
@@ -578,13 +579,13 @@ public class ClientSetupGUI extends JFrame{
 						webcam.setViewSize(viewSize);
 					}
 					if(webcam != null)
-						webcam.open();
-					WebcamThread webcamThread = webcam != null ? new WebcamThread(webcam) : null;
+						webcam.open(true);
+					WebcamInterface webcamInterface = webcam != null ? new WebcamInterface(webcam) : null;
 					if(join){
 						InputThread input = new InputThread(inputMixer, DefaultObjects.defaultFormat, DefaultObjects.bc0);
 						ClockSetting clock = DefaultObjects.bc0;
 						PlaybackManager playback = new PlaybackManager(outputMixer, clock, DefaultObjects.defaultFormat);
-						client = new Client(localPort, displayName, input, playback, clock,webcamThread);
+						client = new Client(localPort, displayName, input, playback, clock,webcamInterface);
 						String[] entries = gui.scanPanel.getSelection().split(",[ \t]*");
 
 						for(String entry : entries){
@@ -595,7 +596,7 @@ public class ClientSetupGUI extends JFrame{
 						InputThread input = new InputThread(inputMixer, DefaultObjects.defaultFormat, clock);
 						PlaybackManager playback = new PlaybackManager(outputMixer, clock, DefaultObjects.defaultFormat);
 						System.out.println("user name is " + displayName);
-						client = new Client(localPort, displayName, input, playback, clock, webcamThread);
+						client = new Client(localPort, displayName, input, playback, clock, webcamInterface);
 						client.generateRandomSessionID();
 						/*clock.beatsPerMeasure = num;
 					clock.beatDenominator = denom;

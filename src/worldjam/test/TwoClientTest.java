@@ -13,7 +13,7 @@ import worldjam.audio.PlaybackManager;
 import worldjam.exe.Client;
 import worldjam.time.ClockSetting;
 import worldjam.util.DefaultObjects;
-import worldjam.video.WebcamThread;
+import worldjam.video.WebcamInterface;
 
 public class TwoClientTest {
 
@@ -75,11 +75,11 @@ public class TwoClientTest {
 							input = null;
 						PlaybackManager playback = new PlaybackManager(outputMixer, defaultClock, DefaultObjects.defaultFormat);
 						Client client;
-						WebcamThread webcamThread = null;
+						WebcamInterface webcamThread = null;
 						if(useWebcam) {
 							Webcam webcam = Webcam.getDefault();
 							webcam.open(true);
-							webcamThread = new WebcamThread(webcam);
+							webcamThread = new WebcamInterface(webcam);
 						}
 						client = new Client(localPort, displayName, input, playback, defaultClock,webcamThread);
 						String serverIP = "127.0.0.1";

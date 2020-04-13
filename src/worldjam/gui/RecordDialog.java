@@ -60,6 +60,11 @@ public class RecordDialog extends JFrame {
 			e.printStackTrace();
 		}
 	}
+	
+	private void stopRecording() {
+		// TODO Auto-generated method stub
+		
+	}
 
 	/**
 	 * Create the dialog.
@@ -71,21 +76,23 @@ public class RecordDialog extends JFrame {
 			@Override
 			public void windowOpened(WindowEvent e) {
 				// TODO Auto-generated method stub
-				
+
 			}
 
 			@Override
 			public void windowClosing(WindowEvent e) {
 				if(isRecording){
-					client.stopRecording();
+					stopRecording();
 					isRecording = false;
 				}
 			}
 
+			
+
 			@Override
 			public void windowClosed(WindowEvent e) {
 				if(isRecording){
-					client.stopRecording();
+					stopRecording();
 					isRecording = false;
 				}
 			}
@@ -93,27 +100,27 @@ public class RecordDialog extends JFrame {
 			@Override
 			public void windowIconified(WindowEvent e) {
 				// TODO Auto-generated method stub
-				
+
 			}
 
 			@Override
 			public void windowDeiconified(WindowEvent e) {
 				// TODO Auto-generated method stub
-				
+
 			}
 
 			@Override
 			public void windowActivated(WindowEvent e) {
 				// TODO Auto-generated method stub
-				
+
 			}
 
 			@Override
 			public void windowDeactivated(WindowEvent e) {
 				// TODO Auto-generated method stub
-				
+
 			}
-			
+
 		});
 		setTitle("Record to file");
 		setBounds(100, 100, 505, 174);
@@ -199,27 +206,18 @@ public class RecordDialog extends JFrame {
 				recordButton.setIcon(RECORD_ICON);
 				recordButton.addActionListener(e->{
 					if (!isRecording){
-						if(client != null){
-							try {
+						startRecording(new File(textField.getText()),
+								chckbxRecordVideo.isSelected(), 
+								chckbxRecordAudio.isSelected());
+						outputFile = new File(textField.getText());
 
-								client.startRecording(new File(textField.getText()),
-										chckbxRecordVideo.isSelected(), 
-										chckbxRecordAudio.isSelected());
-								outputFile = new File(textField.getText());
-							} catch (FileNotFoundException e1) {
-								// TODO Auto-generated catch block
-								e1.printStackTrace();
-							}
-						}
 						isRecording = true;
 						timeStartRecording = System.currentTimeMillis();
 						new RefreshStatsThread().start();
 						recordButton.setIcon(STOP_ICON);
 					} else {
 						isRecording = false;
-						if(client != null){
-							client.stopRecording();
-						}
+						stopRecording();
 						recordButton.setIcon(RECORD_ICON);
 					}
 				});
@@ -233,7 +231,12 @@ public class RecordDialog extends JFrame {
 			}
 		}
 	}
-	
+
+	private void startRecording(File file, boolean selected, boolean selected2) {
+		// TODO Auto-generated method stub
+		
+	}
+
 	class RefreshStatsThread extends Thread{
 		public void run(){
 			while(isRecording){
@@ -268,11 +271,11 @@ public class RecordDialog extends JFrame {
 					else 
 						filesizeTxt = String.format("%4d GB", filesize/(1024*1024*1024));
 				lblTime.setText(String.format("    %02d:%02d:%02d   ", hours, minutes,seconds) + filesizeTxt);
-				
+
 			}
 		}
 	}
-	
+
 	long timeStartRecording;
 	boolean isRecording;
 

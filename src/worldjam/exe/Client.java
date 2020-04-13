@@ -301,29 +301,11 @@ public class Client implements ClockSubscriber {
 								//BufferedImage image = ImageIO.read(dis);
 								VideoFrame frame = VideoFrame.readFromStream(dis);
 								gui.videoFrameReceived(frame);
-								synchronized(recordingLock){
-									if(recordToFile != null && recordVideo){
-										try{
-											dos.write(WJConstants.VIDEO_FRAME);
-											frame.writeToStream(dos, baos);
-										}catch(IOException e){
-											e.printStackTrace();
-										}
-									}
-								}
+								
 							} else if(code == WJConstants.AUDIO_SAMPLE){								
 								AudioSample sample = AudioSample.readFromStream(dis);
 								audioSampleReceived(sample);
-								synchronized(recordingLock){
-									if(recordToFile != null  && recordAudio){
-										try{
-											recordToFile.writeByte(WJConstants.AUDIO_SAMPLE);
-											sample.writeToStream(recordToFile);
-										}catch(IOException e){
-											e.printStackTrace();
-										}
-									}
-								}
+								
 							} else if(code == WJConstants.LIST_CLIENTS){
 								int N = dis.readInt();
 								ArrayList<ClientDescriptor> clientList = new ArrayList<ClientDescriptor>();
@@ -337,16 +319,7 @@ public class Client implements ClockSubscriber {
 								ClockSetting beatClock = ClockSetting.readFromStream(dis);
 								System.out.println(displayName + ": received clock " + beatClock);
 								changeClockSettingsNow(beatClock);
-								synchronized(recordingLock){
-									if(recordToFile != null && recordVideo){
-										try{
-											recordToFile.writeByte(WJConstants.TIME_CHANGED);
-											beatClock.writeToStream(recordToFile);
-										}catch(IOException e){
-											e.printStackTrace();
-										}
-									}
-								}
+								
 							} else throw new Exception("unrecognized code " + (char)code + " (" +(int)code + ")");
 
 						}
@@ -448,17 +421,6 @@ public class Client implements ClockSubscriber {
 				continue;
 			connection.sendAudioSample(sample);
 		}
-		synchronized(recordingLock){
-			if(recordToFile != null && recordAudio){
-				sample.sourceID = selfDescriptor.clientID;
-				try {
-					recordToFile.writeByte(WJConstants.AUDIO_SAMPLE);
-					sample.writeToStream(recordToFile);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		}
 	}
 
 	ClientDescriptor selfDescriptor;
@@ -518,16 +480,6 @@ public class Client implements ClockSubscriber {
 				try {
 					dos.writeByte(WJConstants.TIME_CHANGED);
 					beatClock.writeToStream(dos);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-		synchronized(recordingLock){
-			if(recordToFile != null){
-				try {
-					recordToFile.writeByte(WJConstants.TIME_CHANGED);
-					beatClock.writeToStream(recordToFile);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -670,16 +622,6 @@ public class Client implements ClockSubscriber {
 			con.sendVideoFrame(frame);
 		}
 		
-		synchronized(recordingLock){
-			if(recordToFile != null && recordVideo){
-				try {
-					recordToFile.write(WJConstants.VIDEO_FRAME);
-					frame.writeToStream(recordToFile, baosForRecording);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		}
 		//gui.videoFrameReceived(0, timestamp, image);
 	}
 
@@ -688,43 +630,7 @@ public class Client implements ClockSubscriber {
 		
 		return delayManager;
 	}
-	Object recordingLock = new Object();
-	ByteCountDataOutputStream recordToFile;
-
-	private boolean recordVideo;
-
-	private boolean recordAudio;
-	/*
-	 * Begin recording all signals sent to/from this client, and write to a file  
-	 * I will later need to create a program that merges the recorded signals to an audio or video file. 
-	 */
-	public void startRecording(File file, boolean recordVideo, boolean recordAudio) throws FileNotFoundException{
-
-		synchronized(recordingLock){
-			this.recordVideo = recordVideo;
-			this.recordAudio = recordAudio;
-			this.recordToFile = new ByteCountDataOutputStream(new FileOutputStream(file));
-			try {
-				recordToFile.writeByte(WJConstants.TIME_CHANGED);
-				beatClock.writeToStream(recordToFile);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
-		}
-	}
-
-	public void stopRecording(){
-		synchronized(recordingLock){
-			try {
-				recordToFile.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			this.recordToFile = null;
-		}
-
-	}
+	
 
 	/**
 	 * 

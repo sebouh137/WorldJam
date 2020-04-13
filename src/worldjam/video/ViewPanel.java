@@ -24,7 +24,7 @@ import worldjam.time.ClockSubscriber;
 import worldjam.time.DelayChangeListener;
 import worldjam.time.DelaySetting;
 public class ViewPanel extends JComponent implements VideoSubscriber, DelayChangeListener, ClockSubscriber{
-	private DataInputStream inputStream;
+	
 	int delayMS = 2000;
 
 
@@ -44,6 +44,8 @@ public class ViewPanel extends JComponent implements VideoSubscriber, DelayChang
 
 
 	public void imageReceived(VideoFrame frame){
+		if(disable)
+			return;
 		BufferedImage image = frame.getImage();
 		long timestamp = frame.getTimestamp();
 		image = makeCompatible(image);  
@@ -112,6 +114,7 @@ public class ViewPanel extends JComponent implements VideoSubscriber, DelayChang
 	});
 
 	long prevRenderTime; 
+	boolean disable = false;
 	public void paintComponent(Graphics g){
 		super.paintComponent(g);
 		//long currentInvoc = System.currentTimeMillis();
@@ -120,8 +123,7 @@ public class ViewPanel extends JComponent implements VideoSubscriber, DelayChang
 		Graphics2D g2 = (Graphics2D)g;
 
 
-
-		if(currentImage != null)
+		if(currentImage != null && !disable)
 		{
 			g2.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_OFF);
 			g2.setRenderingHint(KEY_RENDERING, VALUE_RENDER_SPEED);

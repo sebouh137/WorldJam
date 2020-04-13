@@ -30,18 +30,14 @@ public class WebcamInterface implements WebcamListener {
 	public void setEnabled(boolean val) {
 		enabled = val;
 	}
+	
+	
 	@Override
-	public void webcamOpen(WebcamEvent we) {
-		// TODO Auto-generated method stub	
-	}
+	public void webcamOpen(WebcamEvent we) { }
 	@Override
-	public void webcamClosed(WebcamEvent we) {
-		// TODO Auto-generated method stub
-	}
+	public void webcamClosed(WebcamEvent we) { }
 	@Override
-	public void webcamDisposed(WebcamEvent we) {
-		// TODO Auto-generated method stub
-	}
+	public void webcamDisposed(WebcamEvent we) { }
 	@Override
 	public void webcamImageObtained(WebcamEvent we) {
 		BufferedImage image = we.getImage();

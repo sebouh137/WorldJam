@@ -117,6 +117,9 @@ public class MainGuiSidePanel extends JPanel{
 	}
 	void addInputPanel(InputThread input){
 		JPanel subpanel = new JPanel();
+		//this only happens in some minimalist tests;
+		if(input == null)
+			return; 
 		subpanel.setBackground(new Color(190, 190, 204));
 		subpanel.setBorder(BorderFactory.createRaisedBevelBorder());
 		GridBagLayout gbl_subpanel = new GridBagLayout();

@@ -13,7 +13,7 @@ public class TuningFork implements LoopBuilder{
 	public double getFrequency() {
 		return freq;
 	}
-	this is a test to see if uncompilable code can be committed to github
+	
 	private double freq = 440;
 	
 	@Override

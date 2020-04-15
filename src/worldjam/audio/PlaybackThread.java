@@ -268,15 +268,21 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 	public void changeClockSettingsNow(ClockSetting clock) {
 		this.clock = clock;
 		if(this.loopBuilder != null) {
-			float[] floatBuffer =loopBuilder.createSamples(inputFormat.getFrameRate(), clock);
-			byte[] byteBuffer = new byte[floatBuffer.length*inputFormat.getFrameSize()];
-			new DigitalAnalogConverter(inputFormat).convert(floatBuffer,byteBuffer);
-			this.generatedLoop = stereoConvert(byteBuffer);
+			rebuildLoop();
 
 		}
-
+		else 
+			this.validateDelays();
+	}
+	@Override
+	public void rebuildLoop() {
+		float[] floatBuffer =loopBuilder.createSamples(inputFormat.getFrameRate(), clock);
+		byte[] byteBuffer = new byte[floatBuffer.length*inputFormat.getFrameSize()];
+		new DigitalAnalogConverter(inputFormat).convert(floatBuffer,byteBuffer);
+		this.generatedLoop = stereoConvert(byteBuffer);
 		this.validateDelays();
 	}
+
 	@Override
 	public void validateDelays() {
 		// Different mechanisms are used for delaying streamed versus looped channels.

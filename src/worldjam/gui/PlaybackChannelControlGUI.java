@@ -16,6 +16,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import worldjam.audio.PlaybackChannel;
+import worldjam.audio.TuningFork;
 import worldjam.filters.NoiseGateFilter;
 import worldjam.filters.pitchshift.PitchShift;
 import worldjam.filters.pitchshift.WfsoPitchShift;
@@ -76,6 +77,10 @@ public class PlaybackChannelControlGUI extends JFrame {
 			tabbedPane.addTab("Transpose", null, createTransposeControls(playbackChannel), null);
 			tabbedPane.addTab("Noise Gate", null, createNoiseGateControls(playbackChannel), null);
 			tabbedPane.addTab("Delay", null, createDelayControls(playbackChannel,dm), null);
+		} else if (playbackChannel.getLoopBuilder() instanceof TuningFork) {
+			TuningForkControls tfc = new TuningForkControls();
+			tfc.setChannel(playbackChannel);
+			tabbedPane.addTab("Tuning Fork", null, tfc, null);
 		}
 		tabbedPane.addTab("Info", null, createInfoPanel(playbackChannel), null);
 

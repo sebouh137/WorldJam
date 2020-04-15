@@ -7,7 +7,7 @@ public class TuningFork implements LoopBuilder{
 	
 	public void setFrequency(double freq) {
 		this.freq = freq;
-		
+		System.out.println("setting frequency " + freq);
 	}
 	
 	public double getFrequency() {
@@ -23,7 +23,7 @@ public class TuningFork implements LoopBuilder{
 
 		double A = .7;
 	
-		double tau = clock.msPerBeat/1000.;
+		double tau = 2*clock.msPerBeat/1000.;
 		double attack = .01; 
 		//double shape_pow = 3;
 		//double factor = Math.pow(shape_pow, shape_pow)*Math.exp(-shape_pow);

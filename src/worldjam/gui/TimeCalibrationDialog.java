@@ -78,8 +78,8 @@ public class TimeCalibrationDialog extends JFrame{
 		});
 
 		setTitle("Timing Calibration");
-		setSize(400,300);
-		setLayout(new BorderLayout());
+		setSize(400,339);
+		getContentPane().setLayout(new BorderLayout());
 		instructions = new JTextArea("Output timing calibration for:  " + 
 				outputMixerName + 
 				"\n\n" + outputCalibInstructions);

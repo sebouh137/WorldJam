@@ -1,2 +1,6 @@
 Step 2:  Adjust the offset between the input and playback:
-Make a quick percussive sound (such as a finger-snap) into the audio input device on the first beat of the measure.  You will then hear it played back at the start of the next measure.  If the sound arrives early, then increase the offset using the right buttons to increase the offset.  If it arrives late, then use the left buttons to decrease the offset.  
+Make a quick percussive sound (such as a finger-snap) into the audio input device on the first beat of the measure.  You should then hear it played back at the start of the next measure.
+
+If the sound arrives early, then decrease the offset using the left buttons.
+
+If it arrives late, then use the right buttons to increase the offset.  

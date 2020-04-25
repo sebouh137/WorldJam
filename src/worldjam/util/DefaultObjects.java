@@ -14,8 +14,8 @@ import worldjam.time.ClockSetting;
 
 public class DefaultObjects {
 	public static ClockSetting bc0 = new ClockSetting(500, 4, 4, System.currentTimeMillis());
-	public static AudioFormat defaultFormat = new AudioFormat(44100, 16, 1, true, true);
-	public static AudioFormat playbackFormat = new AudioFormat(44100, 16, 2, true, true);
+	public static AudioFormat defaultFormat = new AudioFormat(48000, 16, 1, true, true);
+	public static AudioFormat playbackFormat = new AudioFormat(48000, 16, 2, true, true);
 	//public static AudioFormat defaultFormat = new AudioFormat(Encoding.ALAW, 44100, 8, 1, 1, 44100, false);
 	//public static AudioFormat playbackFormat = new AudioFormat(Encoding.ALAW, 88200, 8, 2, 2, 44100, false);
 	

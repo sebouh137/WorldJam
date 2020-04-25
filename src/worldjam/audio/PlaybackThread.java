@@ -1,6 +1,8 @@
 package worldjam.audio;
 
 import java.io.OutputStream;
+import java.lang.reflect.Array;
+import java.util.Arrays;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.BooleanControl;
@@ -220,6 +222,25 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 			}
 			sdl.write(buff, bufferPos, bytesToBePlayed);
 
+			// back-sweep:
+			// if anything goes wrong at the source of the signal (for instance,
+			// a peer leaves the session, but the playback channel is still active)
+			// we don't want to have the playback continually looping the past few measures. 
+			// This includes an offset so that the stats on 
+			if(loopBuilder == null) {
+				int startSweepback = bufferPos;
+				int endSweepback = bufferPos + bytesToBePlayed;
+				int offset = (int)(.5*playbackFormat.getFrameRate()*playbackFormat.getFrameSize());
+				startSweepback -= offset;
+				endSweepback -= offset;
+				if(startSweepback >= 0)
+					Arrays.fill(buff, startSweepback, endSweepback, (byte)0);
+				else {
+					Arrays.fill(buff, len + startSweepback, len, (byte)0);
+					Arrays.fill(buff, 0, endSweepback, (byte)0);
+				}
+			}
+			
 			if (rebuildLoopFlag) {
 				this.buffer = replacementBuffer;
 				long now = System.currentTimeMillis();
@@ -231,15 +252,15 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 				replacementBuffer = null;
 				rebuildLoopFlag = false;
 			}
-			if (resyncFlag) {
+			/*if (resyncFlag) {
 				long now = System.currentTimeMillis();
 				int framePos = (int)(((now-this.loopStartTime)%clock.getMsPerMeasure())*playbackFormat.getFrameRate()/1000.);
 				// TODO include code to resync the playback with System.currentTimeMillis()
-				resyncFlag = true;
-			}
+				resyncFlag = false;
+			}*/
 		}
 	}
-	private boolean resyncFlag;
+	//private boolean resyncFlag;
 	private boolean rebuildLoopFlag;
 	private LoopBuilder loopBuilder;
 

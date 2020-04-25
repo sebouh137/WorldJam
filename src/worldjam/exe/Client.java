@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.Random;
 
 import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.Mixer;
 
 import worldjam.audio.InputThread;
 import worldjam.audio.PlaybackChannel;
@@ -38,10 +37,8 @@ import worldjam.time.ClockSubscriber;
 import worldjam.time.DelayManager;
 import worldjam.util.ByteCountDataInputStream;
 import worldjam.util.ByteCountDataOutputStream;
-import worldjam.util.DefaultObjects;
 import worldjam.video.VideoFrame;
 import worldjam.video.WebcamInterface;
-import worldjam.video.WebcamThread;
 
 public class Client implements ClockSubscriber {
 	public static boolean enableDevFeatures;
@@ -55,7 +52,6 @@ public class Client implements ClockSubscriber {
 
 	}
 
-	private Mixer inputMixer, outputMixer;
 
 	private boolean debug;
 
@@ -69,11 +65,8 @@ public class Client implements ClockSubscriber {
 			throws LineUnavailableException, UnknownHostException, IOException{
 		this.selfDescriptor = new ClientDescriptor(displayName, displayName.hashCode());
 		this.displayName = displayName;
-		//setup the playback
-		if(playback != null){
-			this.playback = playback;
-			reactors.add(playback);
-		}
+		
+		this.playback = playback;
 		//now setup the input
 		this.input = input;
 		if(input != null){
@@ -223,26 +216,12 @@ public class Client implements ClockSubscriber {
 		if(clock == null)
 			throw new NullPointerException();
 		this.beatClock = clock;
-		if(playback == null){
-			playback = new PlaybackManager(outputMixer, beatClock, DefaultObjects.defaultFormat);
-			reactors.add(playback);
-			//System.out.println("playback initialized");
-		}
-		else{
+		if(playback != null)
 			playback.changeClockSettingsNow(beatClock);
-		}
-		if(input == null && inputMixer != null){
-			try {
-				input = new InputThread(inputMixer, DefaultObjects.defaultFormat, beatClock);
-			} catch (LineUnavailableException e) {
-				e.printStackTrace();
-			}
-			input.addSubscriber(sample -> {this.broadcastAudioSample(sample);});
-			input.start();
-			
-		}else{
-			if(input != null) input.changeClockSettingsNow(beatClock);
-		}
+		
+		
+		if(input != null) input.changeClockSettingsNow(beatClock);
+		
 		if(gui == null){
 			gui = new ClientGUI(this);
 			gui.setVisible(true);
@@ -304,7 +283,7 @@ public class Client implements ClockSubscriber {
 								
 							} else if(code == WJConstants.AUDIO_SAMPLE){								
 								AudioSample sample = AudioSample.readFromStream(dis);
-								audioSampleReceived(sample);
+								audioSampleReceivedFromPeer(sample);
 								
 							} else if(code == WJConstants.LIST_CLIENTS){
 								int N = dis.readInt();
@@ -387,16 +366,11 @@ public class Client implements ClockSubscriber {
 		ClientDescriptor peer;
 
 	}
-
-	public void audioSampleReceived(AudioSample sample) {
-		for(AudioSubscriber reactor: reactors){
-			reactor.sampleReceived(sample);
-
-		}
+	
+	private void audioSampleReceivedFromPeer(AudioSample sample){
+		playback.sampleReceived(sample);
 	}
-	//list of objects that react to new audio samples received
-	ArrayList<AudioSubscriber> reactors = new ArrayList();
-
+	
 	private String displayName;
 	private String sessionName; 
 	public String getUserName(){

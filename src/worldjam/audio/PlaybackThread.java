@@ -246,7 +246,7 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 	public LoopBuilder getLoopBuilder() {
 		return this.loopBuilder;
 	}
-	
+
 	public Line getLine(){
 		return sdl;
 	}
@@ -382,20 +382,20 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 	}
 	@Override
 	public void setMuted(boolean muted) {
-		BooleanControl muteControl = (BooleanControl) this.getLine().getControl(BooleanControl.Type.MUTE);
-		if(muteControl != null){
+		if(this.getLine().isControlSupported(BooleanControl.Type.MUTE)) {
+			BooleanControl muteControl = (BooleanControl) this.getLine().getControl(BooleanControl.Type.MUTE);
 			muteControl.setValue(muted);
 		}
 	}
 
 	@Override
 	public boolean canBeMuted(){
-		return (BooleanControl) this.getLine().getControl(BooleanControl.Type.MUTE) != null;
+		return this.getLine().isControlSupported(BooleanControl.Type.MUTE);
 	}
 	@Override
 	public boolean isMuted() {
-		BooleanControl muteControl = (BooleanControl) this.getLine().getControl(BooleanControl.Type.MUTE);
-		if (muteControl != null){
+		if(this.getLine().isControlSupported(BooleanControl.Type.MUTE)) {
+			BooleanControl muteControl = (BooleanControl) this.getLine().getControl(BooleanControl.Type.MUTE);
 			return muteControl.getValue();
 		}
 		return false;
@@ -428,7 +428,7 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 		int offsetInBytes = (((int) (t*playbackFormat.getFrameRate()/1000.))*playbackFormat.getFrameSize())%buffer.length;
 
 		int nSamples = (int)(windowInMS/1000.*playbackFormat.getSampleRate());
-		
+
 		int sampleSizeInBytes = playbackFormat.getSampleSizeInBits()/8;
 		if(offsetInBytes/sampleSizeInBytes > nSamples)
 			return dac.getPeak(buffer, 

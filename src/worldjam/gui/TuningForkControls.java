@@ -8,6 +8,8 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +28,16 @@ public class TuningForkControls extends JPanel{
 	private JButton btnApply;
 	private JSpinner spinner;
 	private JSpinner spinner_1;
+	private JLabel lblNewLabel_2;
+	private ChangeListener al;
 	public TuningForkControls() {
+
+		al = e->{
+			textField.setText(String.format("%.2f", ((NamedPitch)spinner.getValue()).freq*
+					Math.pow(2, ((Integer)spinner_1.getValue())/12000.)));
+			btnApply.setEnabled(true);
+		};
+
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{0, 0, 121, 0, 0};
 		gridBagLayout.rowHeights = new int[]{0, 0, 0, 0, 0, 0};
@@ -68,14 +79,23 @@ public class TuningForkControls extends JPanel{
 		gbc_spinner.gridy = 2;
 		add(spinner, gbc_spinner);
 
+		lblNewLabel_2 = new JLabel("Cents");
+		GridBagConstraints gbc_lblNewLabel_2 = new GridBagConstraints();
+		gbc_lblNewLabel_2.anchor = GridBagConstraints.WEST;
+		gbc_lblNewLabel_2.insets = new Insets(0, 0, 5, 5);
+		gbc_lblNewLabel_2.gridx = 1;
+		gbc_lblNewLabel_2.gridy = 3;
+		add(lblNewLabel_2, gbc_lblNewLabel_2);
+
 		spinner_1 = new JSpinner();
 		spinner_1.setMinimumSize(new Dimension(70, (int) spinner_1.getPreferredSize().getHeight()));
 		GridBagConstraints gbc_spinner_1 = new GridBagConstraints();
-		gbc_spinner_1.insets = new Insets(0, 0, 5, 0);
+		gbc_spinner_1.insets = new Insets(0, 0, 5, 5);
 		gbc_spinner_1.fill = GridBagConstraints.HORIZONTAL;
-		gbc_spinner_1.gridx = 3;
-		gbc_spinner_1.gridy = 2;
+		gbc_spinner_1.gridx = 2;
+		gbc_spinner_1.gridy = 3;
 		add(spinner_1, gbc_spinner_1);
+		spinner_1.addChangeListener(al);
 
 
 
@@ -83,23 +103,37 @@ public class TuningForkControls extends JPanel{
 		btnApply = new JButton("Apply");
 		GridBagConstraints gbc_btnApply = new GridBagConstraints();
 		gbc_btnApply.gridwidth = 3;
-		gbc_btnApply.insets = new Insets(0, 0, 0, 5);
 		gbc_btnApply.gridx = 1;
 		gbc_btnApply.gridy = 4;
 		add(btnApply, gbc_btnApply);
 
 
-		ChangeListener al = e->{
-			textField.setText(String.format("%.2f", ((NamedPitch)spinner.getValue()).freq*
-					Math.pow(2, ((Integer)spinner_1.getValue())/12000.)));
-			btnApply.setEnabled(true);
-		};
+
 		spinner.addChangeListener(al);
-		spinner_1.addChangeListener(al);
 
 		textField.addActionListener(e->{
 			updateSpinners();
 			btnApply.setEnabled(true);
+		});
+		textField.addKeyListener(new KeyListener() {
+
+			@Override
+			public void keyTyped(KeyEvent e) {
+				btnApply.setEnabled(true);
+			}
+
+			@Override
+			public void keyPressed(KeyEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void keyReleased(KeyEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
 		});
 	}
 	private void updateSpinners() {

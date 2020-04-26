@@ -14,6 +14,7 @@ import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.Line;
 import javax.sound.sampled.Mixer;
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -249,7 +250,14 @@ public class MainGuiSidePanel extends JPanel{
 		gbc_muteButton.gridx = 0;
 		gbc_muteButton.gridy = 1;
 		subpanel.add(muteButton, gbc_muteButton);
-		JButton settingsButton = new JButton(settingsIcon);
+		Icon icon = settingsIcon;
+		if(channel.getChannelName().equals("metronome"))
+			icon = metronomeSettingsIcon;
+		else if(channel.getChannelName().equals("loopback"))
+			icon =loopbackSettingsIcon;
+		else if(channel.getChannelName().equals("tuning fork"))
+			icon = tuningforkSettingsIcon;
+		JButton settingsButton = new JButton(icon);
 		GridBagConstraints gbc_settingsButton = new GridBagConstraints();
 		gbc_settingsButton.anchor = GridBagConstraints.WEST;
 		gbc_settingsButton.insets = new Insets(0, 2, 0, 2);
@@ -397,7 +405,12 @@ public class MainGuiSidePanel extends JPanel{
 	private static ImageIcon mutedIcon = new ImageIcon(ClientListItem.class.getResource("/worldjam/gui/icons/mute.png"));
 	private static ImageIcon unmutedIcon = new ImageIcon(ClientListItem.class.getResource("/worldjam/gui/icons/unmute.png"));
 	private static ImageIcon settingsIcon = new ImageIcon(ClientListItem.class.getResource("/worldjam/gui/icons/settings.png"));
+	private static ImageIcon metronomeSettingsIcon = new ImageIcon(ClientListItem.class.getResource("/worldjam/gui/icons/metronome_settings.png"));
+	private static ImageIcon tuningforkSettingsIcon = new ImageIcon(ClientListItem.class.getResource("/worldjam/gui/icons/tuningfork_settings.png"));
+	private static ImageIcon loopbackSettingsIcon = new ImageIcon(ClientListItem.class.getResource("/worldjam/gui/icons/loopback_settings.png"));
 
+	
+	
 	private ImageIcon mutedMicIcon = new ImageIcon(ClientListItem.class.getResource("/worldjam/gui/icons/mutedmic.png"));;
 	private ImageIcon unmutedMicIcon = new ImageIcon(ClientListItem.class.getResource("/worldjam/gui/icons/mic.png"));;
 	public static void main(String arg[]) {

@@ -1,7 +1,6 @@
 package worldjam.audio;
 
 import java.io.OutputStream;
-import java.lang.reflect.Array;
 import java.util.Arrays;
 
 import javax.sound.sampled.AudioFormat;

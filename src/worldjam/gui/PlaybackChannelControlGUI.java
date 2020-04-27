@@ -15,6 +15,7 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import worldjam.audio.Metronome;
 import worldjam.audio.PlaybackChannel;
 import worldjam.audio.TuningFork;
 import worldjam.filters.NoiseGateFilter;
@@ -65,7 +66,7 @@ public class PlaybackChannelControlGUI extends JFrame {
 
 
 		setTitle(title);
-		setSize(413, 300);
+		setSize(460, 300);
 		setVisible(true);
 
 
@@ -81,6 +82,9 @@ public class PlaybackChannelControlGUI extends JFrame {
 			TuningForkControls tfc = new TuningForkControls();
 			tfc.setChannel(playbackChannel);
 			tabbedPane.addTab("Tuning Fork", null, tfc, null);
+		} else if (playbackChannel.getLoopBuilder() instanceof Metronome) {
+			MetronomeControls mc = new MetronomeControls(playbackChannel);
+			tabbedPane.addTab("metronome", mc);
 		}
 		tabbedPane.addTab("Info", null, createInfoPanel(playbackChannel), null);
 

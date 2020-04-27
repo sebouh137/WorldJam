@@ -38,7 +38,7 @@ public class PlaybackManager implements AudioSubscriber, ClockSubscriber{
 			channels.put(metronomeChanID, metronomeChannel);
 			channelNames.put(metronomeChanID, "metronome");
 			channelsChanged();
-			Thread.sleep(300);
+			Thread.sleep(500);
 			//mute the metronome by default
 			metronomeChannel.setMuted(true);
 		} catch (Exception e) {
@@ -54,8 +54,8 @@ public class PlaybackManager implements AudioSubscriber, ClockSubscriber{
 			channels.put(tuningForkChanID, tuningForkChannel);
 			channelNames.put(tuningForkChanID, "tuning fork");
 			channelsChanged();
-			Thread.sleep(300);
-			//mute the metronome by default
+			Thread.sleep(500);
+			//mute the tuning fork by default
 			tuningForkChannel.setMuted(true);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

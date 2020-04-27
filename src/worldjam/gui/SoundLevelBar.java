@@ -25,7 +25,7 @@ public class SoundLevelBar extends Canvas{
 		this.setMinimumSize(new Dimension(30, 100));
 		this.setPreferredSize(new Dimension(30, 100));
 		
-		new Thread(){
+		new Thread("sound-level-bar-updater"){
 			public void run(){
 				while(!stopped){
 					try {

@@ -24,7 +24,7 @@ public abstract class VisualMetronome extends JComponent {
 	int MS_PER_FRAME= 16;
 	public VisualMetronome(ClockSetting clock){
 		changeClockSettingsNow(clock);
-		Thread th = new Thread(){
+		Thread th = new Thread("beat-visualizer-updater"){
 			public void run(){
 				while(!closed){
 					try {

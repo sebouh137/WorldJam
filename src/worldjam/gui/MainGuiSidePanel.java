@@ -67,7 +67,7 @@ public class MainGuiSidePanel extends JPanel{
 				}
 				refreshChannels();
 			}
-		});
+		}, "refresh channels");
 		refresher.start();
 	}
 	private void refreshChannels() {

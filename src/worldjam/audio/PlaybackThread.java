@@ -38,6 +38,7 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 	}
 
 	public PlaybackThread(Mixer mixer, AudioFormat inputFormat, ClockSetting clock, String sourceName, long senderID, PlaybackManager manager, LoopBuilder loopBuilder) throws LineUnavailableException{
+		this.setName("playback for " + manager.getChannelName(senderID));
 		this.manager = manager;
 		this.channelName = sourceName;
 		this.channelID = senderID;

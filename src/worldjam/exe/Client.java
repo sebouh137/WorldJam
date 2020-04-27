@@ -260,7 +260,9 @@ public class Client implements ClockSubscriber {
 		private Socket socket;
 
 		private class ReceiverThread extends Thread{
-
+			{
+				setName("receiver for " + peer.displayName);
+			}
 
 			@SuppressWarnings("rawtypes")
 			public void run(){
@@ -410,6 +412,9 @@ public class Client implements ClockSubscriber {
 
 
 	public class CheckForTimeoutThread extends Thread implements AudioSubscriber {
+		{
+			setName("check for timeout");
+		}
 		//number of ms to wait between checks
 		int sleepTime = 500;
 		//max amount of time between the (recorded) start of the sample
@@ -463,9 +468,11 @@ public class Client implements ClockSubscriber {
 
 
 	private class ListenForConnectionsRequestThread extends Thread {
+		
 		int port;
 		ListenForConnectionsRequestThread(int port){
 			this.port = port;
+			setName("listen for connections request");
 		}
 		public void run(){
 			try {

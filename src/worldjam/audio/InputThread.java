@@ -31,6 +31,7 @@ public class InputThread extends Thread implements HasAudioLevelStats, ClockSubs
 	}
 	
 	public InputThread(Mixer mixer, AudioFormat format, ClockSetting clock, int nMsPerLoop) throws LineUnavailableException{
+		this.setName("input");
 		this.format = format;
 		this.mixer = mixer;
 		this.clock = clock;

@@ -1,23 +1,15 @@
 package worldjam.exe;
 
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -38,6 +30,7 @@ import worldjam.time.DelayManager;
 import worldjam.util.ByteCountDataInputStream;
 import worldjam.util.ByteCountDataOutputStream;
 import worldjam.video.VideoFrame;
+import worldjam.video.VideoSubscriber;
 import worldjam.video.WebcamInterface;
 
 public class Client implements ClockSubscriber {
@@ -55,6 +48,8 @@ public class Client implements ClockSubscriber {
 
 	private boolean debug;
 
+	private BroadcasterThread broadcasterThread;
+
 	private ListenForConnectionsRequestThread listenForConnectionsRequestThread;
 	public void setDebug(boolean debug){
 		this.debug = debug;
@@ -62,15 +57,17 @@ public class Client implements ClockSubscriber {
 
 	public Client(int listeningPort, String displayName, InputThread input, 
 			PlaybackManager playback, ClockSetting clock,WebcamInterface webcamInterface) 
-			throws LineUnavailableException, UnknownHostException, IOException{
+					throws LineUnavailableException, UnknownHostException, IOException{
+		this.broadcasterThread = new BroadcasterThread();
+		broadcasterThread.start();
 		this.selfDescriptor = new ClientDescriptor(displayName, displayName.hashCode());
 		this.displayName = displayName;
-		
+
 		this.playback = playback;
 		//now setup the input
 		this.input = input;
 		if(input != null){
-			input.addSubscriber(sample -> {this.broadcastAudioSample(sample);});
+			input.addSubscriber(broadcasterThread);
 			input.start();
 		}
 		if(playback != null && input != null){
@@ -84,7 +81,7 @@ public class Client implements ClockSubscriber {
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-				
+
 			} catch (LineUnavailableException e) {
 				e.printStackTrace();
 			}
@@ -103,7 +100,7 @@ public class Client implements ClockSubscriber {
 			delayManager.getChannel(pbc.getChannelID()).addListener(pbc);
 		}
 	}
-	
+
 	public void generateRandomSessionID() {
 		Random random = new Random();
 		sessionID = random.nextLong();
@@ -142,7 +139,7 @@ public class Client implements ClockSubscriber {
 			//gui.getChat().
 		}
 	}
-	
+
 	public float sampleInputByteRate(long sampleDuration) {
 		long totBefore = 0;
 		for(Connection con : connections.values()) {
@@ -158,9 +155,9 @@ public class Client implements ClockSubscriber {
 			totAfter += con.dis.bytesProcessed();
 		}
 		return (totAfter-totBefore)*1000.f/sampleDuration;
-		
+
 	}
-	
+
 	public float sampleOutputByteRate(long sampleDuration) {
 		long totBefore = 0;
 		for(Connection con : connections.values()) {
@@ -176,7 +173,7 @@ public class Client implements ClockSubscriber {
 			totAfter += con.dos.bytesProcessed();
 		}
 		return (totAfter-totBefore)*1000.f/sampleDuration;
-		
+
 	}
 
 	private ClockSetting beatClock;
@@ -218,16 +215,17 @@ public class Client implements ClockSubscriber {
 		this.beatClock = clock;
 		if(playback != null)
 			playback.changeClockSettingsNow(beatClock);
-		
-		
+
+
 		if(input != null) input.changeClockSettingsNow(beatClock);
-		
+
 		if(gui == null){
 			gui = new ClientGUI(this);
 			gui.setVisible(true);
 			TimeCalibrationDialog tc = new TimeCalibrationDialog(this);
 			tc.setVisible(true);
 		}
+		//broadcasterThread.changeClockSettingsNow(clock);
 		gui.changeClockSettingsNow(clock);
 	}
 
@@ -269,40 +267,39 @@ public class Client implements ClockSubscriber {
 				ByteArrayOutputStream baos = new ByteArrayOutputStream(10000);
 				try {
 					while(alive){
-						synchronized(dis){
-							byte code;
-							code = dis.readByte(); 
-							if(code == WJConstants.VIDEO_FRAME){
-								//System.out.println("recevied video frame");
-								//long senderID = dis.readLong();
-								//long timestamp = dis.readLong();
-								//System.out.println(Arrays.toString(ImageIO.getReaderFormatNames()));
-								//BufferedImage image = ImageIO.read(dis);
-								VideoFrame frame = VideoFrame.readFromStream(dis);
-								gui.videoFrameReceived(frame);
-								
-							} else if(code == WJConstants.AUDIO_SAMPLE){								
-								AudioSample sample = AudioSample.readFromStream(dis);
-								audioSampleReceivedFromPeer(sample);
-								
-							} else if(code == WJConstants.LIST_CLIENTS){
-								int N = dis.readInt();
-								ArrayList<ClientDescriptor> clientList = new ArrayList<ClientDescriptor>();
-								for(int i = 0; i<N; i++){
-									ClientDescriptor descriptor = ClientDescriptor.readFromStream(dis);
-									clientList.add(descriptor);
-								}
-								processClientList(clientList);
-							} else if(code == WJConstants.TIME_CHANGED){
-								//dis.readInt();
-								ClockSetting beatClock = ClockSetting.readFromStream(dis);
-								System.out.println(displayName + ": received clock " + beatClock);
-								changeClockSettingsNow(beatClock);
-								
-							} else throw new Exception("unrecognized code " + (char)code + " (" +(int)code + ")");
+						byte code;
+						code = dis.readByte(); 
+						if(code == WJConstants.VIDEO_FRAME){
+							//System.out.println("recevied video frame");
+							//long senderID = dis.readLong();
+							//long timestamp = dis.readLong();
+							//System.out.println(Arrays.toString(ImageIO.getReaderFormatNames()));
+							//BufferedImage image = ImageIO.read(dis);
+							VideoFrame frame = VideoFrame.readFromStream(dis);
+							gui.videoFrameReceived(frame);
 
-						}
+						} else if(code == WJConstants.AUDIO_SAMPLE){								
+							AudioSample sample = AudioSample.readFromStream(dis);
+							audioSampleReceivedFromPeer(sample);
+
+						} else if(code == WJConstants.LIST_CLIENTS){
+							int N = dis.readInt();
+							ArrayList<ClientDescriptor> clientList = new ArrayList<ClientDescriptor>();
+							for(int i = 0; i<N; i++){
+								ClientDescriptor descriptor = ClientDescriptor.readFromStream(dis);
+								clientList.add(descriptor);
+							}
+							processClientList(clientList);
+						} else if(code == WJConstants.TIME_CHANGED){
+							//dis.readInt();
+							ClockSetting beatClock = ClockSetting.readFromStream(dis);
+							System.out.println(displayName + ": received clock " + beatClock);
+							changeClockSettingsNow(beatClock);
+
+						} else throw new Exception("unrecognized code " + (char)code + " (" +(int)code + ")");
+
 					}
+
 				} catch (IOException e) {
 					e.printStackTrace();
 				} catch (Exception e) {
@@ -327,34 +324,34 @@ public class Client implements ClockSubscriber {
 			}
 		}*/
 		private void sendAudioSample(AudioSample sample) {
-			synchronized(dos){
-				try {
-					//change the sourceID to the client's id number
-					sample.sourceID = selfDescriptor.clientID;
-					dos.writeByte(WJConstants.AUDIO_SAMPLE);
-					sample.writeToStream(dos);
-				} catch (SocketException e) {
-					System.out.println("closing connection");
-					removeConnection(peer.clientID);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+
+			try {
+				//change the sourceID to the client's id number
+				sample.sourceID = selfDescriptor.clientID;
+				dos.writeByte(WJConstants.AUDIO_SAMPLE);
+				sample.writeToStream(dos);
+			} catch (SocketException e) {
+				System.out.println("closing connection");
+				removeConnection(peer.clientID);
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
+
 		}
 		//reuseable auxilliary stream used for converting video data to bytes.    
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(10000);
-		public void sendVideoFrame(VideoFrame frame) {
-			synchronized(dos){
-				try {
-					dos.write(WJConstants.VIDEO_FRAME);
-					frame.writeToStream(dos, baos);
-				} catch (SocketException e) {
-					System.out.println("closing connection");
-					removeConnection(peer.clientID);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+		private void sendVideoFrame(VideoFrame frame) {
+
+			try {
+				dos.write(WJConstants.VIDEO_FRAME);
+				frame.writeToStream(dos, baos);
+			} catch (SocketException e) {
+				System.out.println("closing connection");
+				removeConnection(peer.clientID);
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
+
 		}
 
 		public void close() throws IOException {
@@ -366,11 +363,11 @@ public class Client implements ClockSubscriber {
 		ClientDescriptor peer;
 
 	}
-	
+
 	private void audioSampleReceivedFromPeer(AudioSample sample){
 		playback.sampleReceived(sample);
 	}
-	
+
 	private String displayName;
 	private String sessionName; 
 	public String getUserName(){
@@ -387,7 +384,7 @@ public class Client implements ClockSubscriber {
 
 	ConnectionMode connectionMode = ConnectionMode.THROUGH_SERVER;
 
-	public void broadcastAudioSample(AudioSample sample){
+	private void broadcastAudioSample(AudioSample sample){
 		if(debug)
 			System.out.println(this.getUserName()+": sending audio message at " + new Date());
 		for(Connection connection : connections.values()){
@@ -405,7 +402,7 @@ public class Client implements ClockSubscriber {
 	 * This is part of a patch for allowing the use of a stream of jpeg images,
 	 * whose lengths are not known a priori.   
 	 */
-	private ByteArrayOutputStream baosForRecording;
+	//private ByteArrayOutputStream baosForRecording;
 
 	public ClientDescriptor getDescriptor() {
 		return this.selfDescriptor;
@@ -447,24 +444,24 @@ public class Client implements ClockSubscriber {
 		}
 	}
 
-	public void broadcastClockChange(){
+	private void broadcastClockChange(ClockSetting clock){
 		for(Connection con : connections.values()){
 			ByteCountDataOutputStream dos = con.dos;
-			synchronized(dos){
-				try {
-					dos.writeByte(WJConstants.TIME_CHANGED);
-					beatClock.writeToStream(dos);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+
+			try {
+				dos.writeByte(WJConstants.TIME_CHANGED);
+				clock.writeToStream(dos);
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
+
 		}
 	}
 
 
 	private ServerSocket serverSocket;
-	
-	
+
+
 	private class ListenForConnectionsRequestThread extends Thread {
 		int port;
 		ListenForConnectionsRequestThread(int port){
@@ -483,20 +480,20 @@ public class Client implements ClockSubscriber {
 					if(firstByte == WJConstants.COMMAND_JOIN){
 						ClientDescriptor peer = ClientDescriptor.readFromStream(dis);
 						System.out.println(displayName + ":  received join request from peer " + peer.displayName);
-						synchronized(dos){
-							dos.writeByte(WJConstants.COMMAND_JOIN_RECEIVED);
-							selfDescriptor.writeToStream(dos);
-							dos.writeLong(sessionID);
-							dos.writeByte(WJConstants.TIME_CHANGED);
-							beatClock.writeToStream(dos);
-						}
+
+						dos.writeByte(WJConstants.COMMAND_JOIN_RECEIVED);
+						selfDescriptor.writeToStream(dos);
+						dos.writeLong(sessionID);
+						dos.writeByte(WJConstants.TIME_CHANGED);
+						beatClock.writeToStream(dos);
+
 						addConnection(peer, socket, dis, dos, false);
 					} else if (firstByte == WJConstants.COMMAND_GET_SESSION_INFO) {
 						System.out.println("sending session info");
 						sessionInfo().writeToStream(dos);
 						//socket.close();
 					}
-					
+
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -526,7 +523,7 @@ public class Client implements ClockSubscriber {
 		//so far, the string must be of the form ip.add.re.ss/port for a peer on a LAN or a VPN
 		//a better system would be to have the username or something user-friendly like that, and have a server
 		//facilitate the connection between peers.  
-		
+
 		String peerIP = string.split("/")[0];
 		String peerPort = string.split("/")[1];
 		joinSessionP2P(peerIP, Integer.parseInt(peerPort));
@@ -546,9 +543,6 @@ public class Client implements ClockSubscriber {
 		addConnection(peerDescriptor, socket, dis, dos, debug);
 	}
 
-	void welcomeIntoSessionP2P(){
-
-	}
 	public ClientGUI getGUI() {
 		return gui;
 
@@ -576,12 +570,13 @@ public class Client implements ClockSubscriber {
 		}
 	}
 	public void attachWebcam(WebcamInterface webcamInterface){
-		webcamInterface.addSubscriber((frame)->{
+		//selfie viewer
+		webcamInterface.addSubscriber((frame)->{ 
 			frame.setSourceID(this.selfDescriptor.clientID);
-			broadcastVideoFrame(frame);
 			frame.setSourceID(0L);
 			gui.videoFrameReceived(frame);
 		});
+		webcamInterface.addSubscriber(broadcasterThread);
 		//webcamInterface.start();
 		this.webcamInterface = webcamInterface;
 	}
@@ -595,16 +590,16 @@ public class Client implements ClockSubscriber {
 			//System.out.println("con send frame");
 			con.sendVideoFrame(frame);
 		}
-		
+
 		//gui.videoFrameReceived(0, timestamp, image);
 	}
 
 	private DelayManager delayManager = new DelayManager();
 	public DelayManager getDelayManager(){
-		
+
 		return delayManager;
 	}
-	
+
 
 	/**
 	 * 
@@ -628,8 +623,72 @@ public class Client implements ClockSubscriber {
 			SocketAddress sa = connection.socket.getRemoteSocketAddress();
 			info += name + " (id = " + Long.toHexString(id) + ")  address = " + sa.toString();
 		}
-		
+
 		return info;
 	}
+
+	class BroadcasterThread extends Thread implements AudioSubscriber,ClockSubscriber, VideoSubscriber{
+		BroadcasterThread(){
+			this.setName("broadcaster thread");
+		}
+		public void run() {
+			int interval = 50;
+			while(true) {
+				if(newAudioSample) {
+					broadcastAudioSample(sample);
+					newAudioSample=false;
+				}
+				if(newClockSetting) {
+					broadcastClockChange(clock);
+					newClockSetting = false;
+				}
+				if(newVideoFrame) {
+					broadcastVideoFrame(videoFrame);
+					newVideoFrame = false;
+				}
+				try {
+					Thread.sleep(interval);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
+		AudioSample sample = new AudioSample();
+		ClockSetting clock;
+		VideoFrame videoFrame;
+		private boolean newAudioSample;
+		private boolean newClockSetting;
+		private boolean newVideoFrame;
+		@Override
+		public void sampleReceived(AudioSample receivedSample) {
+			//copy the received sample to the transmitted sample
+			sample.sourceID = receivedSample.sourceID;
+			sample.sampleStartTime = receivedSample.sampleStartTime;
+			if(sample.sampleData == null || sample.sampleData.length != receivedSample.sampleData.length) {
+				sample.sampleData = new byte[receivedSample.sampleData.length];
+			}
+			System.arraycopy(receivedSample.sampleData, 0, sample.sampleData,0, receivedSample.sampleData.length);
+			newAudioSample= true;
+		}
+		@Override
+		public void changeClockSettingsNow(ClockSetting clock) {
+			this.clock = clock;
+			newClockSetting = true;
+		}
+		@Override
+		public void imageReceived(VideoFrame frame) {
+			this.videoFrame = frame;
+			newVideoFrame = true;
+		}
+	}
+	/*
+	 * tells the BroadcasterThread to send the current clock settings to 
+	 * all peers
+	 */
+	public void broadcastClockSettings() {
+		broadcasterThread.changeClockSettingsNow(beatClock);
+	}
+
 
 }

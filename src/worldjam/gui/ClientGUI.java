@@ -1,7 +1,5 @@
 package worldjam.gui;
 
-import javax.swing.DefaultListModel;
-import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -14,7 +12,6 @@ import worldjam.time.ClockSetting;
 import worldjam.time.ClockSubscriber;
 import worldjam.time.MutableClock;
 import worldjam.video.VideoFrame;
-import worldjam.video.ViewPanel;
 import worldjam.audio.*;
 
 import java.awt.BorderLayout;
@@ -27,24 +24,12 @@ import javax.swing.JLabel;
 import java.awt.Font;
 
 import javax.swing.SwingConstants;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
-
-import com.github.sarxos.webcam.WebcamViewer;
 
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.ListModel;
-import javax.swing.ListSelectionModel;
 //import javax.swing.JList;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.HashMap;
-
-import javax.swing.JButton;
 
 public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeListener, ClockSubscriber {
 	/**
@@ -120,7 +105,7 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 			MutableClock clockManager = new MutableClock(this.client.getBeatClock());
 			ClockSubscriber globalChange = setting->{
 				this.client.changeClockSettingsNow(setting);
-				this.client.broadcastClockChange();
+				this.client.broadcastClockSettings();
 			};
 			new BPMWindow(clockManager,globalChange).setVisible(true);
 		});

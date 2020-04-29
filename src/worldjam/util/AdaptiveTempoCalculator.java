@@ -3,7 +3,7 @@ package worldjam.util;
 import worldjam.time.ClockSetting;
 import worldjam.time.ClockSubscriber;
 
-public class AdaptiveTempoCalculator implements TempoCalculator, ClockSubscriber{
+public class AdaptiveTempoCalculator implements TempoCalculator{
 
 	int transitionDelay = 0;
 	double changePerBeatTolerance = 0.55;

@@ -1,10 +1,10 @@
+
 package worldjam.util;
 
-import java.util.Arrays;
-
 import worldjam.time.ClockSetting;
+import worldjam.time.ClockSubscriber;
 
-public interface TempoCalculator {
+public interface TempoCalculator extends ClockSubscriber{
 	
 	public void clear();
 	

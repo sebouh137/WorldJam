@@ -34,6 +34,8 @@ import worldjam.gui.conductor.Conductor;
 import worldjam.time.ClockSetting;
 import worldjam.util.ConfigurationsXML;
 import worldjam.util.DefaultObjects;
+import worldjam.util.FittedTempoCalculator2;
+import worldjam.util.TempoCalculator;
 import worldjam.video.WebcamInterface;
 import worldjam.video.WebcamThread;
 
@@ -393,6 +395,7 @@ public class ClientSetupGUI extends JFrame{
 			public void stateChanged(ChangeEvent e) {
 				ClockSetting clock = previewConductor.getClock().createWithDifferentBeatCount((int)spinnerNumerator.getValue());
 				previewConductor.changeClockSettingsNow(clock);
+				tc.changeClockSettingsNow(clock);
 			}
 		};
 
@@ -484,7 +487,9 @@ public class ClientSetupGUI extends JFrame{
 			public void stateChanged(ChangeEvent e) {
 				int val = (int)spinner_msPerBeat.getValue();
 				spinner_BPM.setValue((int)(60000/val));
-				previewConductor.changeClockSettingsNow(previewConductor.getClock().createWithDifferentTempo(val));
+				ClockSetting newSetting = previewConductor.getClock().createWithDifferentTempo(val);
+				previewConductor.changeClockSettingsNow(newSetting);
+				tc.changeClockSettingsNow(newSetting);
 			}
 
 		});
@@ -509,11 +514,41 @@ public class ClientSetupGUI extends JFrame{
 			int val = (int)spinner_BPM.getValue();
 			int mspb = (int)(60000/val);
 			spinner_msPerBeat.setValue(mspb);
-			previewConductor.changeClockSettingsNow(previewConductor.getClock().createWithDifferentTempo(mspb));
+			ClockSetting newSetting = previewConductor.getClock().createWithDifferentTempo(mspb);
+			previewConductor.changeClockSettingsNow(newSetting);
+			tc.changeClockSettingsNow(newSetting);
 		});
+		
+		JButton btnTapButton = new JButton("tap rhythm");
+		tc = new FittedTempoCalculator2(previewConductor.getClock());
+		btnTapButton.addActionListener(new ActionListener() {
+			
+			public void actionPerformed(ActionEvent e) {
+				//System.out.println(e.getWhen() + " " + System.currentTimeMillis());
+				tc.newBeat(e.getWhen());
+				float BPM = (float) tc.getClockSetting().getBPM();
+				if(BPM != 0){
+					int val = (int)(60000./BPM);
+					spinner_msPerBeat.setValue(val);
+					spinner_BPM.setValue(60000/val);
+					previewConductor.changeClockSettingsNow(tc.getClockSetting());
+					
+				}
+
+
+			}
+		});
+		
+		GridBagConstraints gbc_btnNewButton = new GridBagConstraints();
+		gbc_btnNewButton.gridwidth = 2;
+		gbc_btnNewButton.insets = new Insets(0, 0, 5, 5);
+		gbc_btnNewButton.gridx = 0;
+		gbc_btnNewButton.gridy = 7;
+		subPanel.add(btnTapButton, gbc_btnNewButton);
 		
 		return newSessionPanel;
 	}
+	TempoCalculator tc;
 
 	class MixerWrapper {
 		MixerWrapper(Mixer.Info info){

@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.WindowAdapter;
@@ -16,32 +17,40 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JSpinner;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 
 import worldjam.audio.PlaybackChannel;
 import worldjam.exe.Client;
 import worldjam.util.ConfigurationsXML;
+import java.awt.GridBagLayout;
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
 
 public class TimeCalibrationDialog extends JFrame{
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 4829724163657688277L;
-	private JTextField inputField;
+	private JSpinner spinner;
 	private JButton prevButton;
 	private JButton nextButton;
 	private JTextArea instructions;
 	private Map<Long,Boolean> initialMuting = new HashMap();
-	private JCheckBox checkbox;
+	private JCheckBox chckbxSaveTheseSettings;
 	public TimeCalibrationDialog(Client client) {
 		this.client = client;
-		
+
 		inputMixerName = ConfigurationsXML.getActualMixerName(client.getInput().getMixer().getMixerInfo().getName(),true);
 		outputMixerName = ConfigurationsXML.getActualMixerName(client.getPlaybackManager().getMixer().getMixerInfo().getName(),false);
 		// keep track of which channels are initially muted, and then bring it back to 
@@ -70,7 +79,7 @@ public class TimeCalibrationDialog extends JFrame{
 					boolean muted = entry.getValue();
 					client.getPlaybackManager().getChannel(id).setMuted(muted);
 				}
-				if(checkbox.isSelected())
+				if(chckbxSaveTheseSettings.isSelected())
 					saveCurrentCalibrations();
 				client.getGUI().channelsChanged();
 			}
@@ -78,7 +87,7 @@ public class TimeCalibrationDialog extends JFrame{
 		});
 
 		setTitle("Timing Calibration");
-		setSize(400,339);
+		setSize(405,394);
 		getContentPane().setLayout(new BorderLayout());
 		instructions = new JTextArea("Output timing calibration for:  " + 
 				outputMixerName + 
@@ -86,80 +95,157 @@ public class TimeCalibrationDialog extends JFrame{
 		instructions.setEditable(false);
 		instructions.setLineWrap(true);
 		instructions.setWrapStyleWord(true);
-		JPanel inputPanel = new JPanel();
-		inputPanel.setLayout(new GridLayout(1,7));
-		inputPanel.setMinimumSize(new Dimension(400,10));
-		inputField = new JTextField("0");
-		inputField.setHorizontalAlignment(SwingConstants.RIGHT);
-		inputField.addActionListener(e-> {
-			try {
-				int i = Integer.parseInt(inputField.getText());
-				if(mode == 1) {
-					setInputCalibration(i);
-				} else {
-					setOutputCalibration(i);
-				}
-			} catch(NumberFormatException ex) {
-				inputField.setText(Integer.toString(mode == 1 ? getInputCalibration() : getOutputCalibration()));
-			}
-		});
 
-		String text[] = {"<<<","<<","<",">",">>",">>>"};
-		int delta[] = {-100, -10,-1,1,10,100};
-		for(int i = 0; i<6;i++) {
-			JButton button = new JButton(text[i]);
-			inputPanel.add(button);
-			int adjustment = delta[i];
-			button.setFont(new Font(Font.MONOSPACED,Font.BOLD,15));
-			button.setBackground(Color.RED);
-			button.getInsets().set(2, 2, 2, 2);
-			button.setToolTipText(delta[i]>0 ? "Increases the offset by " + adjustment + " ms" : "Decreases the offset by " + -adjustment + " ms");
-			button.addActionListener((e)->{
-				adjustOffset(adjustment);
-			});
-			if(i == 2)
-				inputPanel.add(inputField);
-		}
+
+
+
+
+
+
 		JPanel buttonPanel = new JPanel();
+
+		GridBagLayout gbl_buttonPanel = new GridBagLayout();
+		gbl_buttonPanel.columnWidths = new int[]{177, 50, 50, 50, 0};
+		gbl_buttonPanel.rowHeights = new int[]{0, 0, 0, 0, 0};
+		gbl_buttonPanel.columnWeights = new double[]{1.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_buttonPanel.rowWeights = new double[]{1.0, 1.0, 1.0, 1.0, Double.MIN_VALUE};
+		buttonPanel.setLayout(gbl_buttonPanel);
+		JPanel mainPanel = new JPanel();
+		mainPanel.setLayout(new BorderLayout());
+		mainPanel.add(instructions, BorderLayout.CENTER);
+
+
+		getContentPane().add(mainPanel, BorderLayout.CENTER);
+		getContentPane().add(buttonPanel, BorderLayout.SOUTH);
 		prevButton = new JButton("Prev");
 		prevButton.setEnabled(false);
-		nextButton = new JButton("Next");
-
-		setMode(0);
 		prevButton.addActionListener((e->{
 			setMode(0);
 		}));
+		JLabel lblOffsetms = new JLabel("Offset (ms):");
+		GridBagConstraints gbc_lblOffsetms = new GridBagConstraints();
+		gbc_lblOffsetms.anchor = GridBagConstraints.EAST;
+		gbc_lblOffsetms.insets = new Insets(0, 0, 5, 5);
+		gbc_lblOffsetms.gridx = 0;
+		gbc_lblOffsetms.gridy = 0;
+		buttonPanel.add(lblOffsetms, gbc_lblOffsetms);
+
+		spinner = new JSpinner();
+		spinner.setValue(getOutputCalibration());
+		spinner.addChangeListener(e-> {
+
+			int i = (int)spinner.getValue();
+			if(mode == 1) {
+				setInputCalibration(i);
+			} else {
+				setOutputCalibration(i);
+			}
+
+		});
+
+		GridBagConstraints gbc_input = new GridBagConstraints();
+		gbc_input.gridwidth = 2;
+		gbc_input.fill = GridBagConstraints.HORIZONTAL;
+		gbc_input.insets = new Insets(0, 0, 5, 5);
+		gbc_input.gridx = 1;
+		gbc_input.gridy = 0;
+		buttonPanel.add(spinner, gbc_input);
+		//getContentPane().add(tabbedPane, BorderLayout.CENTER);
+
+
+		SpinnerNumberModel nsm = (SpinnerNumberModel) spinner.getModel();
+		JLabel label_1 = new JLabel("Adjustment increment (ms):");
+		GridBagConstraints gbc_label_1 = new GridBagConstraints();
+		gbc_label_1.anchor = GridBagConstraints.EAST;
+		gbc_label_1.insets = new Insets(0, 0, 5, 5);
+		gbc_label_1.gridx = 0;
+		gbc_label_1.gridy = 1;
+		buttonPanel.add(label_1, gbc_label_1);
+		chckbxSaveTheseSettings = new JCheckBox("Save these settings for future sessions");
+		GridBagConstraints gbc_chckbxSaveTheseSettings = new GridBagConstraints();
+		gbc_chckbxSaveTheseSettings.fill = GridBagConstraints.HORIZONTAL;
+		gbc_chckbxSaveTheseSettings.insets = new Insets(0, 0, 5, 0);
+		gbc_chckbxSaveTheseSettings.gridwidth = 4;
+		gbc_chckbxSaveTheseSettings.gridx = 0;
+		gbc_chckbxSaveTheseSettings.gridy = 2;
+		buttonPanel.add(chckbxSaveTheseSettings, gbc_chckbxSaveTheseSettings);
+		buttonPanel.setPreferredSize(new Dimension((int)chckbxSaveTheseSettings.getPreferredSize().getWidth() + 5,
+				(int)buttonPanel.getPreferredSize().getHeight()*2));
+		GridBagConstraints gbc_prevButton = new GridBagConstraints();
+		gbc_prevButton.anchor = GridBagConstraints.WEST;
+		gbc_prevButton.insets = new Insets(0, 0, 0, 5);
+		gbc_prevButton.gridx = 0;
+		gbc_prevButton.gridy = 3;
+		buttonPanel.add(prevButton, gbc_prevButton);
+		nextButton = new JButton("Next");
 		nextButton.addActionListener(e->{
 			if(mode==0) {
 				setMode(1);
 			} else {
-				if(checkbox.isSelected()) {
+				if(chckbxSaveTheseSettings.isSelected()) {
 					saveCurrentCalibrations();
 				}
 				dispose();
 			}
 		});
-		checkbox = new JCheckBox("Save these settings for future sessions                     ");
-		buttonPanel.add(checkbox);
-		buttonPanel.add(prevButton);
-		buttonPanel.add(nextButton);
-		buttonPanel.setPreferredSize(new Dimension((int)checkbox.getPreferredSize().getWidth() + 5,
-				(int)buttonPanel.getPreferredSize().getHeight()*2));
-		JPanel mainPanel = new JPanel();
-		mainPanel.setLayout(new BorderLayout());
-		mainPanel.add(instructions, BorderLayout.CENTER);
-		mainPanel.add(inputPanel, BorderLayout.SOUTH);
-		
+		GridBagConstraints gbc_nextButton = new GridBagConstraints();
+		gbc_nextButton.anchor = GridBagConstraints.WEST;
+		gbc_nextButton.gridx = 3;
+		gbc_nextButton.gridy = 3;
+		buttonPanel.add(nextButton, gbc_nextButton);
+		nsm.setStepSize(100);
+		JRadioButton jrb100 = new JRadioButton("100");
+		jrb100.setSelected(true);
+		JRadioButton jrb10 = new JRadioButton("10");
+		JRadioButton jrb1 = new JRadioButton("1");
 
-		getContentPane().add(mainPanel, BorderLayout.CENTER);
-		getContentPane().add(buttonPanel, BorderLayout.SOUTH);
-		//getContentPane().add(tabbedPane, BorderLayout.CENTER);
+		{
+			GridBagConstraints gbc = new GridBagConstraints();
+			gbc.anchor = GridBagConstraints.WEST;
+			gbc.gridx = 1;
+			gbc.gridy = 1;
+			buttonPanel.add(jrb100, gbc);
+		}
+
+		{
+			GridBagConstraints gbc = new GridBagConstraints();
+			gbc.anchor = GridBagConstraints.WEST;
+			gbc.gridx = 2;
+			gbc.gridy = 1;
+			buttonPanel.add(jrb10, gbc);
+		}
+		
+		{
+			GridBagConstraints gbc = new GridBagConstraints();
+			gbc.anchor = GridBagConstraints.WEST;
+			gbc.gridx = 3;
+			gbc.gridy = 1;
+			buttonPanel.add(jrb1, gbc);
+		} 
+		
+		ButtonGroup bg = new ButtonGroup();
+		bg.add(jrb100); bg.add(jrb10); bg.add(jrb1);
+
+		ActionListener al = e->{
+			if(jrb100.isSelected()) {
+				nsm.setStepSize(100);
+			} else if(jrb10.isSelected()) {
+				nsm.setStepSize(10);
+			} if(jrb1.isSelected()) {
+				nsm.setStepSize(1);
+			}
+		};
+		jrb100.addActionListener(al);
+		jrb10.addActionListener(al);
+		jrb1.addActionListener(al);
+
+		setMode(0);
 	}
 
 	private void saveCurrentCalibrations() {
 		ConfigurationsXML.saveCalibrationConstants(outputMixerName, false, getOutputCalibration());
 		ConfigurationsXML.saveCalibrationConstants(inputMixerName, true, getInputCalibration());
-		
+
 	}
 
 	private Client client;
@@ -173,7 +259,7 @@ public class TimeCalibrationDialog extends JFrame{
 			instructions.setText("Input timing calibration for:  " + 
 					inputMixerName + 
 					"\n\n" + inputCalibInstructions);
-			inputField.setText(Integer.toString(getInputCalibration()));
+			spinner.setValue(getInputCalibration());
 			if(client != null) {
 				client.getPlaybackManager().getChannelByName("metronome").setMuted(false);
 				client.getPlaybackManager().getChannelByName("loopback").setMuted(false);
@@ -186,7 +272,7 @@ public class TimeCalibrationDialog extends JFrame{
 			instructions.setText("Output timing calibration for:  " + 
 					outputMixerName + 
 					"\n\n" + outputCalibInstructions);
-			inputField.setText(Integer.toString(getOutputCalibration()));
+			spinner.setValue(getOutputCalibration());
 			if(client != null) {
 				client.getPlaybackManager().getChannelByName("metronome").setMuted(false);
 				client.getPlaybackManager().getChannelByName("loopback").setMuted(true);
@@ -199,12 +285,12 @@ public class TimeCalibrationDialog extends JFrame{
 	private synchronized void adjustOffset(int adjustment) {
 		if(mode == 0) {
 			int newVal = getOutputCalibration()+adjustment;
-			inputField.setText(Integer.toString(newVal));
+			spinner.setValue(newVal);
 			setOutputCalibration(newVal);
 		}
 		if(mode == 1) {
 			int newVal = getInputCalibration()+adjustment;
-			inputField.setText(Integer.toString(newVal));
+			spinner.setValue(newVal);
 			setInputCalibration(newVal);
 		}
 	}
@@ -255,7 +341,6 @@ public class TimeCalibrationDialog extends JFrame{
 				inputCalibInstructions += scanner2.nextLine()+"\n";
 			scanner2.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 

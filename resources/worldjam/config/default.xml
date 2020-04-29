@@ -14,7 +14,7 @@
   -->
   <audioDevice name="Galaxy Buds (4D80)">
     <outputTimeCalib>-710</outputTimeCalib>
-    <inputTimeCalib>-1060</inputTimeCalib>
+    <inputTimeCalib>1060</inputTimeCalib>
   </audioDevice>
   
   <audioDevice name="Built-in Output">
@@ -22,7 +22,7 @@
   </audioDevice>
 
   <audioDevice name="Built-in Microphone">
-    <inputTimeCalib>-1060</inputTimeCalib>
+    <inputTimeCalib>1060</inputTimeCalib>
   </audioDevice>
   
 </config>  

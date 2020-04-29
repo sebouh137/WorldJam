@@ -55,7 +55,7 @@ public class InputThread extends Thread implements HasAudioLevelStats, ClockSubs
 	
 	/**
 	 * Sets the calibration of the timestamp.  
-	 * @param calib The calibration of the timestamp in ms.  This value is subtracted from the timestamp of every recorded sample. 
+	 * @param calib The calibration of the timestamp in ms.  This value is added to the timestamp of every recorded sample. 
 	 */
 	public void setTimeCalibration(int calib) {
 		this.timeCalibration = calib;
@@ -82,7 +82,7 @@ public class InputThread extends Thread implements HasAudioLevelStats, ClockSubs
 			AudioSample message = new AudioSample();
 			message.sampleData = buffer.clone();
 			message.sourceID = this.lineID;
-			message.sampleStartTime = timestamp-timeCalibration;
+			message.sampleStartTime = timestamp+timeCalibration;
 			timestamp+= nMsPerLoop;
 			
 			System.arraycopy(buffer, 0, buffer2, 0, buffer.length);

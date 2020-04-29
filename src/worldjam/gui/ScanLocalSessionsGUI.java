@@ -11,6 +11,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JTextPane;
 
+import worldjam.exe.Client;
 import worldjam.exe.ClientDescriptor;
 import worldjam.exe.SessionDescriptor;
 import worldjam.net.ScanForJamSessions;
@@ -72,6 +73,7 @@ public class ScanLocalSessionsGUI extends JPanel{
 		add(panel, BorderLayout.NORTH);
 		
 		JLabel lblNewLabel = new JLabel("Address range:");
+		lblNewLabel.setVisible(Client.enableDevFeatures);
 		panel.add(lblNewLabel);
 		
 		textFieldScanRange = new JTextField();
@@ -82,6 +84,7 @@ public class ScanLocalSessionsGUI extends JPanel{
 		}
 		panel.add(textFieldScanRange);
 		textFieldScanRange.setColumns(10);
+		textFieldScanRange.setVisible(Client.enableDevFeatures);
 		
 		JButton btnScan = new JButton("Scan");
 		panel.add(btnScan);
@@ -108,6 +111,7 @@ public class ScanLocalSessionsGUI extends JPanel{
 		
 		jtfSessionInfo = new JTextField();
 		this.add(jtfSessionInfo, BorderLayout.SOUTH);
+		jtfSessionInfo.setVisible(Client.enableDevFeatures);
 	}	
 	JTextField jtfSessionInfo;
 	private void update() {
@@ -127,7 +131,8 @@ public class ScanLocalSessionsGUI extends JPanel{
 				list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 				list.setModel(listModel);
 				list.setCellRenderer(new MyListCellRenderer());
-				listModel.addElement(manualInput);
+				if(Client.enableDevFeatures)
+					listModel.addElement(manualInput);
 			} else {
 				dummyListModel = new DefaultListModel<String>(); 
 				list.setModel(dummyListModel);

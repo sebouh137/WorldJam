@@ -136,6 +136,7 @@ public class ClientSetupGUI extends JFrame{
 					mainPanel.add(newSessionPanel,BorderLayout.CENTER);
 					mainPanel.revalidate();
 					btnStart.setText("Start");
+					btnStart.setEnabled(true);
 					revalidate();
 					repaint();
 
@@ -144,6 +145,7 @@ public class ClientSetupGUI extends JFrame{
 					mainPanel.add(scanPanel,BorderLayout.CENTER);
 					mainPanel.revalidate();
 					btnStart.setText("Join");
+					btnStart.setEnabled(scanPanel.hasSelection());
 					revalidate();
 					repaint();
 				}
@@ -154,6 +156,9 @@ public class ClientSetupGUI extends JFrame{
 
 
 		scanPanel = new ScanLocalSessionsGUI();
+		scanPanel.list.addListSelectionListener(e->{
+			btnStart.setEnabled(scanPanel.hasSelection());
+		});
 
 		newSessionPanel = createNewSessionPanel();
 

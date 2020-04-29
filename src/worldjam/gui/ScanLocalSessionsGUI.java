@@ -58,7 +58,7 @@ public class ScanLocalSessionsGUI extends JPanel{
 	 */
 	private static final long serialVersionUID = -1124388249742616941L;
 	private JTextField textFieldScanRange;
-	private JList list;
+	protected JList list;
 	//JTextPane textPane;
 	public ScanLocalSessionsGUI() {
 		setLayout(new BorderLayout(0, 0));
@@ -151,4 +151,8 @@ public class ScanLocalSessionsGUI extends JPanel{
 		return jtfSessionInfo.getText().trim();
 	}
 
+	public boolean hasSelection() {
+		return list.getSelectedIndex() != -1;
+	}
+	
 }

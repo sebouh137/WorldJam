@@ -397,6 +397,7 @@ public class ClientSetupGUI extends JFrame{
 		};
 
 		spinnerNumerator = new JSpinner();
+		spinnerNumerator.setToolTipText("Set the number of beats in each measure");
 		GridBagConstraints gbc_spinner = new GridBagConstraints();
 		gbc_spinner.anchor = GridBagConstraints.EAST;
 		gbc_spinner.insets = new Insets(0, 0, 5, 0);
@@ -409,6 +410,7 @@ public class ClientSetupGUI extends JFrame{
 		spinnerNumerator.addChangeListener(changeTimeSignature);
 
 		spinnerDenominator = new JSpinner();
+		spinnerDenominator.setToolTipText("Set the type of note that gets the beat (4 = quarter note/crochet, 8 = eigth note/quaver etc.)");
 		GridBagConstraints gbc_spinner_1 = new GridBagConstraints();
 		gbc_spinner_1.anchor = GridBagConstraints.EAST;
 		gbc_spinner_1.insets = new Insets(0, 0, 5, 0);
@@ -440,6 +442,7 @@ public class ClientSetupGUI extends JFrame{
 		
 
 		labelBeatsPerMinute = new JLabel("BPM");
+		labelBeatsPerMinute.setToolTipText("Set the number of beats per minute");
 		GridBagConstraints gbc_rdbtnBeatsPerMinute = new GridBagConstraints();
 		gbc_rdbtnBeatsPerMinute.fill = GridBagConstraints.HORIZONTAL;
 		gbc_rdbtnBeatsPerMinute.insets = new Insets(0, 0, 5, 5);
@@ -451,6 +454,7 @@ public class ClientSetupGUI extends JFrame{
 
 
 		labelMsPerBeat = new JLabel("ms per beat");
+		labelMsPerBeat.setToolTipText("Set the number of milliseconds per beat (this is the same as 60000/BPM)");
 		GridBagConstraints gbc_rdbtnMsPerBeat = new GridBagConstraints();
 		gbc_rdbtnMsPerBeat.fill = GridBagConstraints.HORIZONTAL;
 		gbc_rdbtnMsPerBeat.insets = new Insets(0, 0, 5, 5);

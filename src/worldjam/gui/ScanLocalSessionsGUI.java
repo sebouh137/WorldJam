@@ -87,6 +87,7 @@ public class ScanLocalSessionsGUI extends JPanel{
 		textFieldScanRange.setVisible(Client.enableDevFeatures);
 		
 		JButton btnScan = new JButton("Scan");
+		btnScan.setToolTipText("Scans for active jam sessions on local networks and VPNs");
 		panel.add(btnScan);
 		btnScan.addActionListener(e->{
 			new Thread(()->{update();}).start();

@@ -7,43 +7,47 @@ import javax.swing.JLabel;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JTextField;
+import javax.swing.JSpinner;
 import javax.swing.SpinnerListModel;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeListener;
 
 import worldjam.audio.PlaybackChannel;
 import worldjam.audio.TuningFork;
 
-import javax.swing.JSpinner;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 
 public class TuningForkControls extends JPanel{
-	private JTextField textField;
+	private JSpinner spinner_freq;
 	private JButton btnApply;
-	private JSpinner spinner;
-	private JSpinner spinner_1;
+	private JSpinner spinner_pitch;
+	private JSpinner spinner_cents;
 	private JLabel lblNewLabel_2;
 	private ChangeListener al;
 	private JCheckBox chckbxPercussive;
+	ChangeListener al2;
 	public TuningForkControls() {
 
 		al = e->{
-			textField.setText(String.format("%.2f", ((NamedPitch)spinner.getValue()).freq*
-					Math.pow(2, ((Integer)spinner_1.getValue())/12000.)));
+			spinner_freq.removeChangeListener(al2);
+			spinner_freq.setValue(((NamedPitch)spinner_pitch.getValue()).freq*
+					Math.pow(2, ((double)spinner_cents.getValue())/1200.));
+			spinner_freq.addChangeListener(al2);
+			btnApply.setEnabled(true);
+		};
+		al2 = e->{
+			updateSpinners();
 			btnApply.setEnabled(true);
 		};
 
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{0, 0, 121, 0, 0};
 		gridBagLayout.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0};
-		gridBagLayout.columnWeights = new double[]{0.0, 0.0, 1.0, 0.0, Double.MIN_VALUE};
+		gridBagLayout.columnWeights = new double[]{0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
 		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		setLayout(gridBagLayout);
 
@@ -55,14 +59,14 @@ public class TuningForkControls extends JPanel{
 		gbc_lblNewLabel.gridy = 1;
 		add(lblNewLabel, gbc_lblNewLabel);
 
-		textField = new JTextField();
-		GridBagConstraints gbc_textField = new GridBagConstraints();
-		gbc_textField.fill = GridBagConstraints.HORIZONTAL;
-		gbc_textField.insets = new Insets(0, 0, 5, 5);
-		gbc_textField.gridx = 2;
-		gbc_textField.gridy = 1;
-		add(textField, gbc_textField);
-		textField.setColumns(10);
+		spinner_freq = new JSpinner();
+		spinner_freq.setModel(new SpinnerNumberModel((double)440, 20,20000,1));
+		GridBagConstraints gbc_spinner_freq = new GridBagConstraints();
+		gbc_spinner_freq.fill = GridBagConstraints.HORIZONTAL;
+		gbc_spinner_freq.insets = new Insets(0, 0, 5, 5);
+		gbc_spinner_freq.gridx = 2;
+		gbc_spinner_freq.gridy = 1;
+		add(spinner_freq, gbc_spinner_freq);
 
 		JLabel lblNewLabel_1 = new JLabel("Pitch");
 		GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
@@ -72,14 +76,14 @@ public class TuningForkControls extends JPanel{
 		gbc_lblNewLabel_1.gridy = 2;
 		add(lblNewLabel_1, gbc_lblNewLabel_1);
 
-		spinner = new JSpinner();
-		spinner.setModel(new SpinnerListModel(pitches()));
+		spinner_pitch = new JSpinner();
+		spinner_pitch.setModel(new SpinnerListModel(pitches()));
 		GridBagConstraints gbc_spinner = new GridBagConstraints();
 		gbc_spinner.fill = GridBagConstraints.HORIZONTAL;
 		gbc_spinner.insets = new Insets(0, 0, 5, 5);
 		gbc_spinner.gridx = 2;
 		gbc_spinner.gridy = 2;
-		add(spinner, gbc_spinner);
+		add(spinner_pitch, gbc_spinner);
 
 		lblNewLabel_2 = new JLabel("Cents");
 		GridBagConstraints gbc_lblNewLabel_2 = new GridBagConstraints();
@@ -89,18 +93,21 @@ public class TuningForkControls extends JPanel{
 		gbc_lblNewLabel_2.gridy = 3;
 		add(lblNewLabel_2, gbc_lblNewLabel_2);
 
-		spinner_1 = new JSpinner();
-		spinner_1.setMinimumSize(new Dimension(70, (int) spinner_1.getPreferredSize().getHeight()));
+		spinner_cents = new JSpinner();
+		spinner_cents.setMinimumSize(new Dimension(70, (int) spinner_cents.getPreferredSize().getHeight()));
 		GridBagConstraints gbc_spinner_1 = new GridBagConstraints();
 		gbc_spinner_1.insets = new Insets(0, 0, 5, 5);
 		gbc_spinner_1.fill = GridBagConstraints.HORIZONTAL;
 		gbc_spinner_1.gridx = 2;
 		gbc_spinner_1.gridy = 3;
-		add(spinner_1, gbc_spinner_1);
-		spinner_1.addChangeListener(al);
+		add(spinner_cents, gbc_spinner_1);
+		spinner_cents.setModel(new SpinnerNumberModel((double)0,-50,50,1));
+		spinner_cents.addChangeListener(al);
 
 		chckbxPercussive = new JCheckBox("percussive mode");
-		
+		chckbxPercussive.addChangeListener(e->{
+			btnApply.setEnabled(true);
+		});
 		GridBagConstraints gbc_chckbxNewCheckBox = new GridBagConstraints();
 		gbc_chckbxNewCheckBox.anchor = GridBagConstraints.WEST;
 		gbc_chckbxNewCheckBox.gridwidth = 2;
@@ -114,55 +121,36 @@ public class TuningForkControls extends JPanel{
 
 		btnApply = new JButton("Apply");
 		GridBagConstraints gbc_btnApply = new GridBagConstraints();
-		gbc_btnApply.gridwidth = 3;
-		gbc_btnApply.gridx = 2;
+		gbc_btnApply.gridwidth = 2;
+		gbc_btnApply.gridx = 1;
 		gbc_btnApply.gridy = 5;
 		add(btnApply, gbc_btnApply);
 
 
 
-		spinner.addChangeListener(al);
+		spinner_pitch.addChangeListener(al);
 
-		textField.addActionListener(e->{
-			updateSpinners();
-			btnApply.setEnabled(true);
-		});
-		textField.addKeyListener(new KeyListener() {
-
-			@Override
-			public void keyTyped(KeyEvent e) {
-				btnApply.setEnabled(true);
-			}
-
-			@Override
-			public void keyPressed(KeyEvent e) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void keyReleased(KeyEvent e) {
-				// TODO Auto-generated method stub
-
-			}
-
-		});
+		spinner_freq.addChangeListener(al2);
 	}
 	private void updateSpinners() {
-		double freq = Double.parseDouble(textField.getText());
+		double freq = (double)spinner_freq.getValue();
 		//find the nearest pitch
 		NamedPitch closest = null;
 		double df = 1000000;
 		double cents = 0;
-		for(NamedPitch pitch : (List<NamedPitch>)((SpinnerListModel)spinner.getModel()).getList()) {
+		for(NamedPitch pitch : (List<NamedPitch>)((SpinnerListModel)spinner_pitch.getModel()).getList()) {
 			if(Math.abs(pitch.freq-freq)<df) {
 				df = Math.abs(pitch.freq-freq);
 				closest = pitch;
-				cents = Math.log(freq/pitch.freq)/(Math.log(2)/12000);
+				cents = Math.log(freq/pitch.freq)/(Math.log(2)/1200);
 			}
 		}
-		spinner.setValue(closest);
-		spinner_1.setValue((int)cents);
+		spinner_pitch.removeChangeListener(al);
+		spinner_cents.removeChangeListener(al);
+		spinner_pitch.setValue(closest);
+		spinner_cents.setValue(cents);
+		spinner_pitch.addChangeListener(al);
+		spinner_cents.addChangeListener(al);
 	}
 	private class NamedPitch {
 		String name;
@@ -181,7 +169,7 @@ public class TuningForkControls extends JPanel{
 		List<NamedPitch> pitches = new ArrayList();
 		String pitchClassNames[] =  "C C#/Db D D#/Eb E F F#/Gb G G#/Ab A A#/Bb B".replaceAll("b", "\u266d").replaceAll("#", "\u266f").split(" ");
 		for(int i = 12; i<72; i++) {
-			double freq = 16.352*Math.pow(2, i/12.);
+			double freq = 16.351597*Math.pow(2, i/12.);
 			String name = pitchClassNames[i%12]+(i/12);
 			pitches.add(new NamedPitch(name,freq));
 		}
@@ -189,17 +177,18 @@ public class TuningForkControls extends JPanel{
 	}
 	public void setChannel(PlaybackChannel channel) {
 		double freq = ((TuningFork)channel.getLoopBuilder()).getFrequency();
-		textField.setText(String.format("%.2f", freq));
+		spinner_freq.setValue(freq);
 		updateSpinners();
 		btnApply.setEnabled(false);
 		TuningFork tf = ((TuningFork)channel.getLoopBuilder());
 		this.chckbxPercussive.setSelected(tf.getPercussiveMode());
 		btnApply.addActionListener(e->{
-			tf.setFrequency(Double.parseDouble(textField.getText()));
+			tf.setFrequency((double)spinner_freq.getValue());
 			tf.setPercussiveMode(this.chckbxPercussive.isSelected());
 			btnApply.setEnabled(false);
 			channel.rebuildLoop();
 		});
+		btnApply.setEnabled(false);
 	}
 
 

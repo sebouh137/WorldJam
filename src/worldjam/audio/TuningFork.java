@@ -29,14 +29,24 @@ public class TuningFork implements LoopBuilder{
 		//double factor = Math.pow(shape_pow, shape_pow)*Math.exp(-shape_pow);
 		for(int i = 0; i<nSamples; i++){
 			double t = i/frameRate;
-			double tp = t%(clock.getMsPerMeasure()/1000.); 
-			//double a = A*Math.pow(tp/tau,shape_pow)*Math.exp(-tp/tau)/factor;
-			double a = Math.exp(-tp/tau)*(1-Math.exp(-tp/attack))*A;
+			double a = A;
+			if(percussive) {
+				double tp = t%(clock.getMsPerMeasure()/1000.);
+				//double a = A*Math.pow(tp/tau,shape_pow)*Math.exp(-tp/tau)/factor;
+				a *= Math.exp(-tp/tau)*(1-Math.exp(-tp/attack));
+			}
 			//else System.out.println("other beat");
 			floatBuffer[i] = (float) (Math.sin(t*freq*2*Math.PI)*a);
 		}
 		System.out.println(floatBuffer.length/frameRate);
 		return floatBuffer;
+	}
+	private boolean percussive = true;
+	public void setPercussiveMode(boolean percussive) {
+		this.percussive = percussive;
+	}
+	public boolean getPercussiveMode() {
+		return percussive;
 	}
 
 }

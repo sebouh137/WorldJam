@@ -22,6 +22,7 @@ import worldjam.audio.TuningFork;
 
 import javax.swing.JSpinner;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 
 public class TuningForkControls extends JPanel{
 	private JTextField textField;
@@ -30,6 +31,7 @@ public class TuningForkControls extends JPanel{
 	private JSpinner spinner_1;
 	private JLabel lblNewLabel_2;
 	private ChangeListener al;
+	private JCheckBox chckbxPercussive;
 	public TuningForkControls() {
 
 		al = e->{
@@ -40,9 +42,9 @@ public class TuningForkControls extends JPanel{
 
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{0, 0, 121, 0, 0};
-		gridBagLayout.rowHeights = new int[]{0, 0, 0, 0, 0, 0};
+		gridBagLayout.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0};
 		gridBagLayout.columnWeights = new double[]{0.0, 0.0, 1.0, 0.0, Double.MIN_VALUE};
-		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		setLayout(gridBagLayout);
 
 		JLabel lblNewLabel = new JLabel("Frequency");
@@ -97,14 +99,24 @@ public class TuningForkControls extends JPanel{
 		add(spinner_1, gbc_spinner_1);
 		spinner_1.addChangeListener(al);
 
+		chckbxPercussive = new JCheckBox("percussive mode");
+		
+		GridBagConstraints gbc_chckbxNewCheckBox = new GridBagConstraints();
+		gbc_chckbxNewCheckBox.anchor = GridBagConstraints.WEST;
+		gbc_chckbxNewCheckBox.gridwidth = 2;
+		gbc_chckbxNewCheckBox.insets = new Insets(0, 0, 5, 5);
+		gbc_chckbxNewCheckBox.gridx = 1;
+		gbc_chckbxNewCheckBox.gridy = 4;
+		add(chckbxPercussive, gbc_chckbxNewCheckBox);
+
 
 
 
 		btnApply = new JButton("Apply");
 		GridBagConstraints gbc_btnApply = new GridBagConstraints();
 		gbc_btnApply.gridwidth = 3;
-		gbc_btnApply.gridx = 1;
-		gbc_btnApply.gridy = 4;
+		gbc_btnApply.gridx = 2;
+		gbc_btnApply.gridy = 5;
 		add(btnApply, gbc_btnApply);
 
 
@@ -125,15 +137,15 @@ public class TuningForkControls extends JPanel{
 			@Override
 			public void keyPressed(KeyEvent e) {
 				// TODO Auto-generated method stub
-				
+
 			}
 
 			@Override
 			public void keyReleased(KeyEvent e) {
 				// TODO Auto-generated method stub
-				
+
 			}
-			
+
 		});
 	}
 	private void updateSpinners() {
@@ -180,8 +192,11 @@ public class TuningForkControls extends JPanel{
 		textField.setText(String.format("%.2f", freq));
 		updateSpinners();
 		btnApply.setEnabled(false);
+		TuningFork tf = ((TuningFork)channel.getLoopBuilder());
+		this.chckbxPercussive.setSelected(tf.getPercussiveMode());
 		btnApply.addActionListener(e->{
-			((TuningFork)channel.getLoopBuilder()).setFrequency(Double.parseDouble(textField.getText()));
+			tf.setFrequency(Double.parseDouble(textField.getText()));
+			tf.setPercussiveMode(this.chckbxPercussive.isSelected());
 			btnApply.setEnabled(false);
 			channel.rebuildLoop();
 		});

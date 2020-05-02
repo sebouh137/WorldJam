@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JSpinner;
+import javax.swing.JTextField;
 import javax.swing.SpinnerListModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeListener;
@@ -77,6 +78,7 @@ public class TuningForkControls extends JPanel{
 		add(lblNewLabel_1, gbc_lblNewLabel_1);
 
 		spinner_pitch = new JSpinner();
+		SwingUtil.setSpinnerAlignment(spinner_pitch, JTextField.RIGHT);
 		spinner_pitch.setModel(new SpinnerListModel(pitches()));
 		GridBagConstraints gbc_spinner = new GridBagConstraints();
 		gbc_spinner.fill = GridBagConstraints.HORIZONTAL;

@@ -51,6 +51,7 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.SwingConstants;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JCheckBox;
 import javax.swing.JSeparator;;
@@ -388,6 +389,7 @@ public class ClientSetupGUI extends JFrame{
 		lblTimeSignature = new JLabel("Time Signature");
 		lblTimeSignature.setHorizontalAlignment(SwingConstants.LEFT);
 		GridBagConstraints gbc_lblTimeSignature = new GridBagConstraints();
+		gbc_lblTimeSignature.gridheight = 2;
 		gbc_lblTimeSignature.fill = GridBagConstraints.HORIZONTAL;
 		gbc_lblTimeSignature.insets = new Insets(0, 0, 5, 5);
 		gbc_lblTimeSignature.gridx = 0;
@@ -412,13 +414,14 @@ public class ClientSetupGUI extends JFrame{
 		gbc_spinner.gridx = 1;
 		gbc_spinner.gridy = 1;
 		gbc_spinner.fill = GridBagConstraints.HORIZONTAL;
-		spinnerNumerator.setModel(new SpinnerListModel(new Integer[] {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24}));
+		spinnerNumerator.setModel(new SpinnerNumberModel(4,1,24,1));
 		spinnerNumerator.getModel().setValue(4);
 		subPanel.add(spinnerNumerator, gbc_spinner);
 		spinnerNumerator.addChangeListener(changeTimeSignature);
 
 		spinnerDenominator = new JSpinner();
-		spinnerDenominator.setToolTipText("Set the type of note that gets the beat (4 = quarter note/crochet, 8 = eigth note/quaver etc.)");
+		SwingUtil.setSpinnerAlignment(spinnerDenominator,JTextField.RIGHT);
+		spinnerDenominator.setToolTipText("Set the type of note that gets the beat\n (4 = quarter note/crochet, 8 = eighth note/quaver etc.)");
 		GridBagConstraints gbc_spinner_1 = new GridBagConstraints();
 		gbc_spinner_1.anchor = GridBagConstraints.EAST;
 		gbc_spinner_1.insets = new Insets(0, 0, 5, 0);
@@ -427,6 +430,7 @@ public class ClientSetupGUI extends JFrame{
 		gbc_spinner_1.fill = GridBagConstraints.HORIZONTAL;
 
 		spinnerDenominator.setModel(new SpinnerListModel(new Integer[]{1, 2, 4, 8, 16}));
+		
 		spinnerDenominator.getModel().setValue(4);
 		subPanel.add(spinnerDenominator, gbc_spinner_1);
 		spinnerDenominator.addChangeListener(changeTimeSignature);

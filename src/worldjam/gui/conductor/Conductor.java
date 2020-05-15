@@ -112,25 +112,10 @@ public class Conductor extends VisualMetronome implements ClockSubscriber{
 		
 	}
 	
-	
-	public static void main(String arg[]){
-		JFrame frame = new JFrame();
-		frame.setSize(300, 300);
-		
-		Path2D path = new Path2D.Double();
-		path.moveTo(.5, 0);
-		path.curveTo(.5, 0, .5, 1, .5, 1);
-		path.curveTo(.5, .8, .1, .5, 0, .5);
-		path.curveTo(.3, .7, .7, .3, 1, .5);
-		path.curveTo(.8,.5, .5, .1, .5, 0);
-		
-		
-		Conductor tb = new Conductor(DefaultObjects.bc0, 
-				new ConductingPattern(BezierUtil.generateSegments(path)));
-		frame.add(tb);
-		frame.setVisible(true);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	public static void main(String arg[]) {
+		//new ConductorStandaloneWindow();
 	}
+	
 	public void setPattern(ConductingPattern pattern) {
 		this.pattern = pattern;
 		this.segments = pattern.getSegments();

@@ -18,10 +18,16 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JSpinner;
 
+import worldjam.audio.Metronome;
+import worldjam.audio.PlaybackChannel;
+import worldjam.audio.PlaybackManager;
+import worldjam.gui.ClientListItem;
 import worldjam.gui.conductor.Conductor;
 import worldjam.time.ClockSetting;
+import worldjam.util.DefaultObjects;
 
 import javax.swing.SpinnerNumberModel;
+import javax.swing.event.ChangeListener;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -33,6 +39,10 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
 
 public class ConductingPatternEditor extends JFrame{
 	class EditorConductor extends Conductor{
@@ -54,9 +64,15 @@ public class ConductingPatternEditor extends JFrame{
 				if(e.getKeyChar() == 'n'){
 					showBeatNumbers ^= true;
 				}
-					
+				if(e.getKeyChar() == 'm'){
+					toggleMetronomeMute();
+				}
+
 			}
+
+
 		};
+
 		boolean showGuides = true;
 		MouseAdapter mouseAdapter = new MouseAdapter(){
 
@@ -124,7 +140,7 @@ public class ConductingPatternEditor extends JFrame{
 			}*/
 			if(showBeatNumbers){
 				for(int i = 0; i<segments.size(); i++){
-					
+
 					int x = tipCoordX(segments.get(i).x[0]);
 					int y = tipCoordY(segments.get(i).y[0]);
 					String text;
@@ -134,19 +150,19 @@ public class ConductingPatternEditor extends JFrame{
 						text = "+";
 					x-= g.getFontMetrics().stringWidth(text)/2;
 					y+= g.getFontMetrics().getAscent()/2;
-					
+
 					BezierSegment prev = segments.get((i+segments.size()-1)%segments.size());
-					
+
 					//now create another offset, based on the previous segment's tangent line
 					double dx = prev.x[prev.type]-prev.x[prev.type-1];
 					double dy = prev.y[prev.type]-prev.y[prev.type-1];
 					double d = Math.hypot(dx, dy);
 					double offset = g.getFontMetrics().getAscent();
 					offset+=1.5;
-					
+
 					x+=(int)offset*dx/d;
 					y+=(int)offset*dy/d;
-					
+
 					g.drawString(text, x, y);
 				}
 			}
@@ -206,8 +222,21 @@ public class ConductingPatternEditor extends JFrame{
 
 	}
 
+	private static PlaybackManager pm;
+	private static PlaybackChannel metronome;
+
+	static private void toggleMetronomeMute() {
+		metronome.setMuted(!metronome.isMuted());
+		System.out.println("toggling metronome muting");
+		
+	}
+
+	private static Icon metronomeIcon = new ImageIcon(ClientListItem.class.getResource("/worldjam/gui/icons/metronome.png"));
+	private static Icon metronomeMutedIcon = new ImageIcon(ClientListItem.class.getResource("/worldjam/gui/icons/metronome.png"));
+	
+
 	ConductingPatternEditor(){
-		setSize(300, 300);
+		setSize(448, 383);
 
 		JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
@@ -314,11 +343,11 @@ public class ConductingPatternEditor extends JFrame{
 		mnView.add(chckbxmntmShowGuides);
 		chckbxmntmShowGuides.addActionListener(
 				e-> {
-				if(conductor != null)
-					conductor.showGuides = chckbxmntmShowGuides.isSelected();
+					if(conductor != null)
+						conductor.showGuides = chckbxmntmShowGuides.isSelected();
 				}
 
-		);
+				);
 
 
 		JCheckBoxMenuItem chckbxmntmShowPath = new JCheckBoxMenuItem("Show Path");
@@ -327,46 +356,81 @@ public class ConductingPatternEditor extends JFrame{
 		chckbxmntmShowPath.addActionListener(
 				e-> {if(conductor != null)
 					conductor.showPath = chckbxmntmShowPath.isSelected();
-			}
+				}
 
-		);
-		
+				);
+
 		JCheckBoxMenuItem chckbxmntmShowBeats = new JCheckBoxMenuItem("Show Beat Numbers");
 		mnView.add(chckbxmntmShowBeats);
 		chckbxmntmShowBeats.setMnemonic(KeyEvent.getExtendedKeyCodeForChar('n'));
+
+		
 		chckbxmntmShowBeats.addActionListener(
 				e-> {if(conductor != null)
 					conductor.showBeatNumbers = chckbxmntmShowBeats.isSelected();
-			}
+				}
 
-		);
-		
+				);
+
 		getContentPane().setLayout(new BorderLayout());
-		
-		
+
+
 		JPanel panel = new JPanel();
 		getContentPane().add(panel, BorderLayout.SOUTH);
-		panel.setLayout(new GridLayout(1, 3, 0, 0));
-		
-		JLabel labelBPM = new JLabel("(120.00 BPM)");
+		//panel.setLayout(new GridLayout(1, 3, 0, 0));
+
+		JLabel labelBPM = new JLabel("BPM");
 		labelBPM.setHorizontalAlignment(JLabel.RIGHT);
 		JSpinner spinner = new JSpinner();
 		panel.add(spinner);
-		spinner.setModel(new SpinnerNumberModel(500, 100, 2000, 10));
-		spinner.addChangeListener(
-				e -> {
-					int val = (int)spinner.getValue();
-					conductor.changeClockSettingsNow(conductor.getClock().createWithDifferentTempo(val));
-					labelBPM.setText(String.format("%.2f BPM", 60000./val));
-				}
-		);
-		panel.add(new JLabel("ms per beat"));
+		JSpinner spinner_1 = new JSpinner();
+		spinner.setModel(new SpinnerNumberModel(500, 100, 3000, 10));
+		cl = e -> {
+			if(e.getSource() == spinner) {
+				int val = (int)spinner.getValue();
+				ClockSetting newSetting = conductor.getClock().createWithDifferentTempo(val);
+				conductor.changeClockSettingsNow(newSetting);
+				pm.changeClockSettingsNow(newSetting);
+				spinner_1.removeChangeListener(cl);
+				spinner_1.setValue(60000./val);
+				spinner_1.addChangeListener(cl);
+			}
+			if(e.getSource() == spinner_1) {
+				int val = (int)(60000./(double)spinner_1.getValue());
+				ClockSetting newSetting = conductor.getClock().createWithDifferentTempo(val);
+				conductor.changeClockSettingsNow(newSetting);
+				pm.changeClockSettingsNow(newSetting);
+				spinner.removeChangeListener(cl);
+				spinner.setValue(val);
+				spinner.addChangeListener(cl);
+			}
+		};
+		spinner.addChangeListener(cl);
+		panel.add(new JLabel("ms per beat      "));
+
+		spinner_1.setModel(new SpinnerNumberModel(120., 20., 600., 1.));
+		panel.add(spinner_1);
+		spinner_1.addChangeListener(cl);
 		//panel.add((Component)null);
 		panel.add(labelBPM);
+		
+		button = new JButton(metronomeIcon);
+		button.addActionListener(e->{
+			boolean mute = !metronome.isMuted();
+			metronome.setMuted(mute);
+			if(mute) 
+				button.setIcon(metronomeMutedIcon);
+			else
+				button.setIcon(metronomeIcon);
+			
+		});
+		panel.add(button);
 		
 		newPattern(4);
 	}
 
+	JButton button;
+	ChangeListener cl;
 	void save(File file) throws FileNotFoundException {
 		if(file == null)
 			return;
@@ -390,9 +454,13 @@ public class ConductingPatternEditor extends JFrame{
 		}
 		if(pattern.getBeatsPerMeasure() >= conductor.getClock().beatsPerMeasure){
 			conductor.setPattern(pattern);
-			conductor.changeClockSettingsNow(new ClockSetting(500, nBeats, 4));
+			ClockSetting clockSetting = new ClockSetting(500, nBeats, 4);
+			conductor.changeClockSettingsNow(clockSetting);
+			pm.changeClockSettingsNow(clockSetting);
 		} else {
-			conductor.changeClockSettingsNow(new ClockSetting(500, nBeats, 4));
+			ClockSetting clockSetting = new ClockSetting(500, nBeats, 4);
+			conductor.changeClockSettingsNow(clockSetting);
+			pm.changeClockSettingsNow(clockSetting);
 			conductor.setPattern(pattern);
 		}
 	}
@@ -406,9 +474,15 @@ public class ConductingPatternEditor extends JFrame{
 		}
 		if(pattern.getBeatsPerMeasure() >= conductor.getClock().beatsPerMeasure){
 			conductor.setPattern(pattern);
-			conductor.changeClockSettingsNow(new ClockSetting(500, nBeats, 4));
+			ClockSetting clockSetting = new ClockSetting(500, nBeats, 4);
+			conductor.changeClockSettingsNow(clockSetting);
+			if(pm != null)
+				pm.changeClockSettingsNow(clockSetting);
 		} else {
-			conductor.changeClockSettingsNow(new ClockSetting(500, nBeats, 4));
+			ClockSetting clockSetting = new ClockSetting(500, nBeats, 4);
+			conductor.changeClockSettingsNow(clockSetting);
+			if(pm != null)
+				pm.changeClockSettingsNow(clockSetting);
 			conductor.setPattern(pattern);
 		}
 		openedFile = null;
@@ -418,7 +492,7 @@ public class ConductingPatternEditor extends JFrame{
 
 	public static void main(String arg[]){
 		ConductingPatternEditor editor = new ConductingPatternEditor();
-		
+
 		editor.setVisible(true);
 		if(arg.length == 1)
 			try {
@@ -428,5 +502,11 @@ public class ConductingPatternEditor extends JFrame{
 				e.printStackTrace();
 			}
 		editor.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+		pm = new PlaybackManager(DefaultObjects.getOutputMixer(), editor.conductor.getClock(), DefaultObjects.defaultFormat);
+		metronome = pm.getChannelByName("metronome");
+		metronome.setMuted(true);
+		pm.changeClockSettingsNow(editor.conductor.getClock());
+
 	}
 }

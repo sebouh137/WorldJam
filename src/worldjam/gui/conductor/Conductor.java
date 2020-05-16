@@ -105,12 +105,9 @@ public class Conductor extends VisualMetronome implements ClockSubscriber{
 			g2.setFont(measureNumFont );
 			g2.drawString(String.format("measure %d", clock.getCurrentMeasure()), 10, getHeight()-10);
 		}
-		this.paintExtras(g2);
 		
 	}
-	void paintExtras(Graphics g){
-		
-	}
+	
 	
 	public static void main(String arg[]) {
 		//new ConductorStandaloneWindow();

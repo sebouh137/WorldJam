@@ -132,7 +132,8 @@ public class ConductingPatternEditor extends JFrame{
 		private boolean showPath;
 		private boolean showBatton = true;
 		private boolean showBeatNumbers = false;
-		public void paintExtras(Graphics g){
+		public void paint(Graphics g){
+			super.paint(g);
 			g.setColor(Color.RED);
 			//System.out.println(clock.msPerBeat);
 			/*if(showBatton){
@@ -232,7 +233,8 @@ public class ConductingPatternEditor extends JFrame{
 	}
 
 	private static Icon metronomeIcon = new ImageIcon(ClientListItem.class.getResource("/worldjam/gui/icons/metronome.png"));
-	private static Icon metronomeMutedIcon = new ImageIcon(ClientListItem.class.getResource("/worldjam/gui/icons/metronome.png"));
+	private static Icon metronomeMutedIcon = new ImageIcon(ClientListItem.class.getResource("/worldjam/gui/icons/metronome_muted.png"));
+	private JSpinner spinner;
 	
 
 	ConductingPatternEditor(){
@@ -381,7 +383,7 @@ public class ConductingPatternEditor extends JFrame{
 
 		JLabel labelBPM = new JLabel("BPM");
 		labelBPM.setHorizontalAlignment(JLabel.RIGHT);
-		JSpinner spinner = new JSpinner();
+		spinner = new JSpinner();
 		panel.add(spinner);
 		JSpinner spinner_1 = new JSpinner();
 		spinner.setModel(new SpinnerNumberModel(500, 100, 3000, 10));
@@ -467,19 +469,19 @@ public class ConductingPatternEditor extends JFrame{
 
 	void newPattern(int nBeats){
 		ConductingPattern pattern = DefaultConductingPatternProvider.getInstance().getDefaultPattern(nBeats);
-
+		int mspb = spinner != null ?  (int)spinner.getValue() : 500;
 		if(conductor == null){
-			conductor = new EditorConductor(new ClockSetting(500, nBeats, 4), pattern);
+			conductor = new EditorConductor(new ClockSetting(mspb, nBeats, 4), pattern);
 			getContentPane().add(conductor, BorderLayout.CENTER);
 		}
 		if(pattern.getBeatsPerMeasure() >= conductor.getClock().beatsPerMeasure){
 			conductor.setPattern(pattern);
-			ClockSetting clockSetting = new ClockSetting(500, nBeats, 4);
+			ClockSetting clockSetting = new ClockSetting(mspb, nBeats, 4);
 			conductor.changeClockSettingsNow(clockSetting);
 			if(pm != null)
 				pm.changeClockSettingsNow(clockSetting);
 		} else {
-			ClockSetting clockSetting = new ClockSetting(500, nBeats, 4);
+			ClockSetting clockSetting = new ClockSetting(mspb, nBeats, 4);
 			conductor.changeClockSettingsNow(clockSetting);
 			if(pm != null)
 				pm.changeClockSettingsNow(clockSetting);

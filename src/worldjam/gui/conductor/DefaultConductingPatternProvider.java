@@ -36,6 +36,8 @@ public class DefaultConductingPatternProvider implements ConductingPatternProvid
 				double r = (j==0 || j==3 ) ? .5 : .3;
 				segment.y[j] = .5+r*Math.cos((3*i+j)*2*Math.PI/(3*beats));
 				segment.x[j] = .5-r*Math.sin((3*i+j)*2*Math.PI/(3*beats));
+				segment.t1 = i;
+				segment.t2 = i+1;
 				//System.out.println(segment.x[j] + " " + segment.y[j]);
 			}
 			segments.add(segment);

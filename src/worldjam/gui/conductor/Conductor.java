@@ -59,6 +59,7 @@ public class Conductor extends VisualMetronome implements ClockSubscriber{
 	}
 	protected List<BezierSegment> segments;
 	private Font measureNumFont = new Font(Font.SANS_SERIF, Font.PLAIN, 24);
+	private Font infoFont = new Font(Font.MONOSPACED, Font.PLAIN, 16);
 	
 
 	public Conductor(ClockSetting clock) {
@@ -105,7 +106,18 @@ public class Conductor extends VisualMetronome implements ClockSubscriber{
 			g2.setFont(measureNumFont );
 			g2.drawString(String.format("measure %d", clock.getCurrentMeasure()), 10, getHeight()-10);
 		}
-		
+		if(showInfoAtBottom) {
+			g2.setFont(infoFont );
+			g2.drawString(String.format("%d/%d", clock.beatsPerMeasure,clock.beatDenominator), 10, getHeight()-10);
+			String bpmStr = String.format("%.1f BPM",clock.getBPM());
+			g2.drawString(bpmStr, 
+					getWidth()/2-g2.getFontMetrics().stringWidth(bpmStr)/2, getHeight()-10);
+			String mspbStr = String.format("(%d ms/beat)",clock.msPerBeat);
+			g2.drawString(mspbStr, 
+					getWidth()-10-g2.getFontMetrics().stringWidth(mspbStr), getHeight()-10);
+			
+			
+		}
 	}
 	
 	
@@ -131,4 +143,9 @@ public class Conductor extends VisualMetronome implements ClockSubscriber{
 	public void setBattonColor(Color color){
 		this.battonColor  = color;
 	}
+	private boolean showInfoAtBottom = false;
+	public void setShowInfoAtBottom(boolean val) {
+		this.showInfoAtBottom = val;
+	}
+	
 }

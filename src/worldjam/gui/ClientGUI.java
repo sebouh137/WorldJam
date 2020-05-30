@@ -222,13 +222,14 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 
 
 		this.conductor = new Conductor(client.getBeatClock());
+		conductor.setShowInfoAtBottom(true);
 		//ViewPanel webcamViewer = new ViewPanel();
 		//viewManager = new ConductorAndWebcamViewer(conductor, webcamViewer);
 		viewManager = new ConductorAndWebcamViewer(conductor, this.client.getDelayManager());
 
 		getContentPane().add(viewManager, BorderLayout.CENTER);
 
-		getContentPane().add(createTimeInfoPanel(), BorderLayout.SOUTH);;
+		//getContentPane().add(createTimeInfoPanel(), BorderLayout.SOUTH);;
 
 
 

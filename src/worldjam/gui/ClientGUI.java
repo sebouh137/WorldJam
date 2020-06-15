@@ -42,7 +42,10 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 			"WorldJam \n"
 					+ "\n"
 					+ "Copyright (c) 2020- Sebouh Paul\n\n"
-					+ "World Jam includes the library webcam-capture, which is under MIT license (see below):\n"
+					+ "World Jam utilizes the following external libraries:"
+					+ "1) webcam-capture, which is under MIT license (see below),"
+					+ "2) JFreeChart, which is under the Lesser GNU Public License.\n"
+					+ "\n"
 					+ "\n"
 					+ "The MIT License (MIT)\n" + 
 					"\n" + 

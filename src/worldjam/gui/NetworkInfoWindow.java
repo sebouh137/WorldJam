@@ -49,7 +49,9 @@ public class NetworkInfoWindow extends JFrame{
 		textArea.setText(info);
 		JButton refresh = new JButton("Refresh");
 		refresh.addActionListener((e)->{
-			textArea.setText(client.getFormattedSessionStatusString());
+			new Thread(()->{
+				textArea.setText(client.getFormattedSessionStatusString());
+			}).start();
 		});
 		panel.add(refresh,BorderLayout.SOUTH);
 		return panel;
@@ -74,11 +76,13 @@ public class NetworkInfoWindow extends JFrame{
 		JScrollPane jsp = new JScrollPane(textArea);
 		panel.add(jsp, BorderLayout.CENTER);
 		ActionListener a = (e)->{
-			try {
-				textArea.setText(NetworkUtils.getNetworkInterfaceInfo(!chckbxNewCheckBox.isSelected()));
-			} catch (SocketException e1) {
-				e1.printStackTrace();
-			}
+			new Thread(()->{
+				try {
+					textArea.setText(NetworkUtils.getNetworkInterfaceInfo(!chckbxNewCheckBox.isSelected()));
+				} catch (SocketException e1) {
+					e1.printStackTrace();
+				}
+			}).start();
 		};
 		a.actionPerformed(null);
 
@@ -103,9 +107,11 @@ public class NetworkInfoWindow extends JFrame{
 		JScrollPane jsp = new JScrollPane(textArea);
 		panel.add(jsp, BorderLayout.CENTER);
 		ActionListener a = (e)->{
-			textArea.setText(String.format("Input: %.0f kBps\nOutput: %.0f kBps",
-					client.sampleInputByteRate(1000)/1000.,
-					client.sampleOutputByteRate(1000)/1000.));
+			new Thread(()->{
+				textArea.setText(String.format("Input: %.0f kBps\nOutput: %.0f kBps",
+						client.sampleInputByteRate(1000)/1000.,
+						client.sampleOutputByteRate(1000)/1000.));
+			}).start();
 
 		};
 		a.actionPerformed(null);

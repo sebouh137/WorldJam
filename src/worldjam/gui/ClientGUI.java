@@ -102,12 +102,14 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 
 
 		mntmTempo.addActionListener(e -> {
-			MutableClock clockManager = new MutableClock(this.client.getBeatClock());
-			ClockSubscriber globalChange = setting->{
-				this.client.changeClockSettingsNow(setting);
-				this.client.broadcastClockSettings();
-			};
-			new BPMWindow(clockManager,globalChange).setVisible(true);
+			new Thread(()->{
+				MutableClock clockManager = new MutableClock(this.client.getBeatClock());
+				ClockSubscriber globalChange = setting->{
+					this.client.changeClockSettingsNow(setting);
+					this.client.broadcastClockSettings();
+				};
+				new BPMWindow(clockManager,globalChange).setVisible(true);
+			}).start();
 		});
 
 		JMenuItem mntmDelays = new JMenuItem("Delays ...");
@@ -128,7 +130,9 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		mnDebug.add(mntmNetwork);
 		mntmNetwork.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				new NetworkInfoWindow(client);
+				new Thread(()->{
+					new NetworkInfoWindow(client);
+				}).start();
 			}
 		});
 
@@ -182,7 +186,7 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 			mnRecording.addActionListener(e->{
 				new RecordDialog(this.client).setVisible(true);
 			});
-			
+
 			JMenuItem mnVideo = new JMenuItem("Video...");
 			mnTools.add(mnVideo);
 			mnVideo.addActionListener(e->{
@@ -190,7 +194,7 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 			});
 		}
 
-		
+
 
 		JMenu mnHelp = new JMenu("Help");
 		menuBar.add(mnHelp);
@@ -201,7 +205,7 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 			JOptionPane.showMessageDialog(this, ABOUT_TEXT);
 		});
 
-		
+
 
 
 		mntmDelays.addActionListener(e->{

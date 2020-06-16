@@ -304,7 +304,7 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		//chat = new ChatPanel();
 		//getContentPane().add(chat, BorderLayout.WEST);
 
-		getContentPane().add(new MainGuiSidePanel(this.client), BorderLayout.EAST);
+		getContentPane().add(new SidePanel(this.client), BorderLayout.EAST);
 
 		client.getPlaybackManager().addChannelChangeListener(this);
 		client.getPlaybackManager().updateChannels();

@@ -43,7 +43,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 
-public class ConductingPatternEditor extends JFrame{
+public class ConductorStandaloneWindow extends JFrame{
 	class EditorConductor extends Conductor{
 		public EditorConductor(ClockSetting clock, ConductingPattern pattern) {
 			super(clock, pattern);
@@ -131,8 +131,7 @@ public class ConductingPatternEditor extends JFrame{
 		private boolean showPath;
 		private boolean showBatton = true;
 		private boolean showBeatNumbers = false;
-		public void paint(Graphics g){
-			super.paint(g);
+		public void paintExtras(Graphics g){
 			g.setColor(Color.RED);
 			//System.out.println(clock.msPerBeat);
 			/*if(showBatton){
@@ -231,12 +230,11 @@ public class ConductingPatternEditor extends JFrame{
 		
 	}
 
-	private static Icon metronomeIcon = new ImageIcon(ConductingPatternEditor.class.getResource("/worldjam/gui/icons/metronome.png"));
-	private static Icon metronomeMutedIcon = new ImageIcon(ConductingPatternEditor.class.getResource("/worldjam/gui/icons/metronome_muted.png"));
-	private JSpinner spinner;
+	private static Icon metronomeIcon = new ImageIcon(ConductorStandaloneWindow.class.getResource("/worldjam/gui/icons/metronome.png"));
+	private static Icon metronomeMutedIcon = new ImageIcon(ConductorStandaloneWindow.class.getResource("/worldjam/gui/icons/metronome_muted.png"));
 	
 
-	ConductingPatternEditor(){
+	ConductorStandaloneWindow(){
 		setSize(448, 383);
 
 		JMenuBar menuBar = new JMenuBar();
@@ -276,7 +274,7 @@ public class ConductingPatternEditor extends JFrame{
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser chooser = new JFileChooser();
 				chooser.setCurrentDirectory(new File("."));
-				chooser.showOpenDialog(ConductingPatternEditor.this);
+				chooser.showOpenDialog(ConductorStandaloneWindow.this);
 				try {
 					open(chooser.getSelectedFile());
 					repaint();
@@ -298,7 +296,7 @@ public class ConductingPatternEditor extends JFrame{
 					if(openedFile == null){
 						JFileChooser chooser = new JFileChooser();
 						chooser.setCurrentDirectory(new File("."));
-						chooser.showSaveDialog(ConductingPatternEditor.this);
+						chooser.showSaveDialog(ConductorStandaloneWindow.this);
 						openedFile = chooser.getSelectedFile();
 						setTitle(openedFile.getPath());
 					}
@@ -318,7 +316,7 @@ public class ConductingPatternEditor extends JFrame{
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser chooser = new JFileChooser();
 				chooser.setCurrentDirectory(new File("."));
-				chooser.showSaveDialog(ConductingPatternEditor.this);
+				chooser.showSaveDialog(ConductorStandaloneWindow.this);
 				try {
 					File selectedFile = chooser.getSelectedFile();
 					if(selectedFile == null )
@@ -382,7 +380,7 @@ public class ConductingPatternEditor extends JFrame{
 
 		JLabel labelBPM = new JLabel("BPM");
 		labelBPM.setHorizontalAlignment(JLabel.RIGHT);
-		spinner = new JSpinner();
+		JSpinner spinner = new JSpinner();
 		panel.add(spinner);
 		JSpinner spinner_1 = new JSpinner();
 		spinner.setModel(new SpinnerNumberModel(500, 100, 3000, 10));
@@ -468,19 +466,19 @@ public class ConductingPatternEditor extends JFrame{
 
 	void newPattern(int nBeats){
 		ConductingPattern pattern = DefaultConductingPatternProvider.getInstance().getDefaultPattern(nBeats);
-		int mspb = spinner != null ?  (int)spinner.getValue() : 500;
+
 		if(conductor == null){
-			conductor = new EditorConductor(new ClockSetting(mspb, nBeats, 4), pattern);
+			conductor = new EditorConductor(new ClockSetting(500, nBeats, 4), pattern);
 			getContentPane().add(conductor, BorderLayout.CENTER);
 		}
 		if(pattern.getBeatsPerMeasure() >= conductor.getClock().beatsPerMeasure){
 			conductor.setPattern(pattern);
-			ClockSetting clockSetting = new ClockSetting(mspb, nBeats, 4);
+			ClockSetting clockSetting = new ClockSetting(500, nBeats, 4);
 			conductor.changeClockSettingsNow(clockSetting);
 			if(pm != null)
 				pm.changeClockSettingsNow(clockSetting);
 		} else {
-			ClockSetting clockSetting = new ClockSetting(mspb, nBeats, 4);
+			ClockSetting clockSetting = new ClockSetting(500, nBeats, 4);
 			conductor.changeClockSettingsNow(clockSetting);
 			if(pm != null)
 				pm.changeClockSettingsNow(clockSetting);
@@ -492,7 +490,7 @@ public class ConductingPatternEditor extends JFrame{
 	File openedFile;
 
 	public static void main(String arg[]){
-		ConductingPatternEditor editor = new ConductingPatternEditor();
+		ConductorStandaloneWindow editor = new ConductorStandaloneWindow();
 
 		editor.setVisible(true);
 		if(arg.length == 1)

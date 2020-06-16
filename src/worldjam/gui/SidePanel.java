@@ -39,14 +39,14 @@ import java.awt.Font;
 import java.awt.Color;
 import java.awt.Component;
 
-public class MainGuiSidePanel extends JPanel{
+public class SidePanel extends JPanel{
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 709459704287380237L;
 	private Client client;
-	public MainGuiSidePanel(Client client) {
+	public SidePanel(Client client) {
 		this.client = client;
 		this.setPreferredSize(new Dimension(310, 700));
 		this.setLayout(new FlowLayout());
@@ -402,20 +402,20 @@ public class MainGuiSidePanel extends JPanel{
 		return slider;
 	}
 
-	private static ImageIcon mutedIcon = new ImageIcon(ClientListItem.class.getResource("/worldjam/gui/icons/mute.png"));
-	private static ImageIcon unmutedIcon = new ImageIcon(ClientListItem.class.getResource("/worldjam/gui/icons/unmute.png"));
-	private static ImageIcon settingsIcon = new ImageIcon(ClientListItem.class.getResource("/worldjam/gui/icons/settings.png"));
-	private static ImageIcon metronomeSettingsIcon = new ImageIcon(ClientListItem.class.getResource("/worldjam/gui/icons/metronome_settings.png"));
-	private static ImageIcon tuningforkSettingsIcon = new ImageIcon(ClientListItem.class.getResource("/worldjam/gui/icons/tuningfork_settings.png"));
-	private static ImageIcon loopbackSettingsIcon = new ImageIcon(ClientListItem.class.getResource("/worldjam/gui/icons/loopback_settings.png"));
+	private static ImageIcon mutedIcon = new ImageIcon(SidePanel.class.getResource("/worldjam/gui/icons/mute.png"));
+	private static ImageIcon unmutedIcon = new ImageIcon(SidePanel.class.getResource("/worldjam/gui/icons/unmute.png"));
+	private static ImageIcon settingsIcon = new ImageIcon(SidePanel.class.getResource("/worldjam/gui/icons/settings.png"));
+	private static ImageIcon metronomeSettingsIcon = new ImageIcon(SidePanel.class.getResource("/worldjam/gui/icons/metronome_settings.png"));
+	private static ImageIcon tuningforkSettingsIcon = new ImageIcon(SidePanel.class.getResource("/worldjam/gui/icons/tuningfork_settings.png"));
+	private static ImageIcon loopbackSettingsIcon = new ImageIcon(SidePanel.class.getResource("/worldjam/gui/icons/loopback_settings.png"));
 
 	
 	
-	private ImageIcon mutedMicIcon = new ImageIcon(ClientListItem.class.getResource("/worldjam/gui/icons/mutedmic.png"));;
-	private ImageIcon unmutedMicIcon = new ImageIcon(ClientListItem.class.getResource("/worldjam/gui/icons/mic.png"));;
+	private ImageIcon mutedMicIcon = new ImageIcon(SidePanel.class.getResource("/worldjam/gui/icons/mutedmic.png"));;
+	private ImageIcon unmutedMicIcon = new ImageIcon(SidePanel.class.getResource("/worldjam/gui/icons/mic.png"));;
 	public static void main(String arg[]) {
 		JFrame frame = new JFrame();
-		frame.getContentPane().add(new MainGuiSidePanel(null));
+		frame.getContentPane().add(new SidePanel(null));
 		frame.setSize(100, 300);
 		frame.setVisible(true);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

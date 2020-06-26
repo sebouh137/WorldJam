@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Random;
 
 import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.Line;
@@ -38,7 +39,8 @@ public class InputThread extends Thread implements HasAudioLevelStats, ClockSubs
 		this.nMsPerLoop = nMsPerLoop;
 		this.timeCalibration = ConfigurationsXML.getInputTimeCalib(mixer.getMixerInfo().getName());
 		
-		Line.Info info = new DataLine.Info(TargetDataLine.class, format);
+		int requestedBufferSize =  AudioSystem.NOT_SPECIFIED;
+		Line.Info info = new DataLine.Info(TargetDataLine.class, format,requestedBufferSize);
 		tdl = (TargetDataLine)mixer.getLine(info);
 		nBytesPerLoop = format.getFrameSize()*(int)(format.getFrameRate()*nMsPerLoop/1000.);
 		buffer = new byte[nBytesPerLoop];
@@ -154,7 +156,7 @@ public class InputThread extends Thread implements HasAudioLevelStats, ClockSubs
 		else if(tdl.isControlSupported(FloatControl.Type.VOLUME))
 			return (FloatControl) tdl.getControl(FloatControl.Type.VOLUME);
 		else 
-			return InputVolumeUtil.getInstance();
+			return InputVolumeUtil.getInstance(mixer.getMixerInfo().getName());
 		 
 	}
 

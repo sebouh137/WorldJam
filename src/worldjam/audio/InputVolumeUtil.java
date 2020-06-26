@@ -15,12 +15,15 @@ public abstract class InputVolumeUtil extends FloatControl
 
 	private static InputVolumeUtil instance;
 	
-	public static InputVolumeUtil getInstance() {
+	public static InputVolumeUtil getInstance(String mixerName) {
 		if(instance != null) {
 			return instance;
 		}
 		if(System.getProperty("os.name").toLowerCase().contains("mac")) {
-			instance = new MacInputVolumeUtil();
+			if(mixerName.equals("Built-in Microphone") || mixerName.equals("Built-in Input"))	
+				instance = new MacInputVolumeUtil();
+			else 
+				instance = null;
 		}
 		if(System.getProperty("os.name").toLowerCase().contains("win")) {
 			instance = null;  //not implemented for windows yet
@@ -99,8 +102,8 @@ public abstract class InputVolumeUtil extends FloatControl
 	public abstract float getVolume();
 	
 	public static void main(String arg[]) {
-		getInstance().setVolume(40);
-		System.out.println("received value " + getInstance().getVolume());
+		getInstance("Built-in input").setVolume(40);
+		System.out.println("received value " + getInstance("Built-in input").getVolume());
 	}
 
 	public FloatControl volumeControl() {

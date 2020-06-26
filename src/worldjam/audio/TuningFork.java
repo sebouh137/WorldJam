@@ -18,6 +18,10 @@ public class TuningFork implements LoopBuilder{
 	
 	@Override
 	public float[] createSamples(double frameRate, ClockSetting clock) {
+		//force there to be an integer number of cycles per measure.  
+		double Tloop = clock.beatsPerMeasure*clock.msPerBeat/1000.;
+		double realfreq = ((int)(freq*Tloop))/Tloop;
+		
 		int nSamples = (int)(clock.beatsPerMeasure*clock.msPerBeat*frameRate/1000.);
 		float floatBuffer[] = new float[nSamples];
 
@@ -36,7 +40,7 @@ public class TuningFork implements LoopBuilder{
 				a *= Math.exp(-tp/tau)*(1-Math.exp(-tp/attack));
 			}
 			//else System.out.println("other beat");
-			floatBuffer[i] = (float) (Math.sin(t*freq*2*Math.PI)*a);
+			floatBuffer[i] = (float) (Math.sin(t*realfreq*2*Math.PI)*a);
 		}
 		System.out.println(floatBuffer.length/frameRate);
 		return floatBuffer;

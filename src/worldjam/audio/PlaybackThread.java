@@ -477,4 +477,10 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 		return max;*/
 	}
 
+	@Override
+	public int errorCode() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
 }

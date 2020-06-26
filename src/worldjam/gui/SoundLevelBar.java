@@ -1,9 +1,13 @@
 package worldjam.gui;
 
+import java.awt.BasicStroke;
 import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Stroke;
 
 import javax.sound.sampled.LineUnavailableException;
 import javax.swing.JFrame;
@@ -20,12 +24,14 @@ public class SoundLevelBar extends Canvas{
 	public static final int VERTICAL = 0;
 	public static final int HORIZONTAL = 1;
 	private HasAudioLevelStats stats;
+	private int errorCode;
 	public SoundLevelBar(HasAudioLevelStats stats, int orientation){
 		this.stats = stats;
 		this.setMinimumSize(new Dimension(30, 100));
 		this.setPreferredSize(new Dimension(30, 100));
 		
 		new Thread("sound-level-bar-updater"){
+
 			public void run(){
 				while(!stopped){
 					try {
@@ -36,6 +42,7 @@ public class SoundLevelBar extends Canvas{
 					}
 
 					level = useRMS ? stats.getRMS(200) : stats.getPeakAmp(200);
+					errorCode = stats.errorCode();
 					repaint();
 				}
 			}
@@ -57,6 +64,16 @@ public class SoundLevelBar extends Canvas{
 	double level;
 	public void paint(Graphics g){
 		super.paint(g);
+		
+		if(errorCode !=0) {
+			g.fillRect(0, 0, getWidth(), getHeight());
+			g.setColor(Color.RED);
+			g.setFont(errFont);
+			g.drawString("err",2, getHeight()*3/10);
+			g.drawString(Integer.toString(errorCode), 2, getHeight()*3/4);
+			return;
+		}
+		
 		int divisions = 10;
 		double yellowThreshold = 1, redThreshold = 1;
 		if (useDB){
@@ -124,7 +141,15 @@ public class SoundLevelBar extends Canvas{
 				int y1 = (int)((.9-.8*i/divisions)*getHeight());
 				g.drawLine(getWidth()/4, y1, 3*getWidth()/4, y1);
 			}
+			if(level == 0) {
+				g.setColor(darkRed);
+				((Graphics2D)g).setStroke(xStroke);
+				g.drawLine(0, 0, getWidth(), getHeight());
+				g.drawLine(0, getHeight(), getWidth(), 0);
+			}
+			
 			break;
+			
 		case HORIZONTAL:
 			g.fillRect(getWidth()/10, getHeight()/4, (int)(.8*getWidth()*level), getHeight()/2);
 
@@ -137,6 +162,8 @@ public class SoundLevelBar extends Canvas{
 			}
 		}
 	}
+	BasicStroke xStroke = new BasicStroke(2);
+	Font errFont = new Font(Font.MONOSPACED, Font.PLAIN, 10);
 	
 	private double fastLog10(double level) {
 		if(level == 0)

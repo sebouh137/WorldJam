@@ -77,6 +77,7 @@ public class InputThread extends Thread implements HasAudioLevelStats, ClockSubs
 		timestamp = System.currentTimeMillis();
 		//time = (time*format.getFrameSize())/format.getFrameSize();
 		while(alive){
+			
 			tdl.read(buffer, 0, buffer.length);
 			if(muted) {
 				Arrays.fill(buffer, (byte)0); // software muting of the line.   
@@ -202,5 +203,20 @@ public class InputThread extends Thread implements HasAudioLevelStats, ClockSubs
 		}*/
 		//System.out.println(max + " " + posOfMax);
 		//return max;
+	}
+
+	@Override
+	public int errorCode() {
+		
+		//dead thread
+		if(!this.isAlive())
+			return 1;
+
+		//delayed reading the audio sample 
+		int threshold = 300;
+		if(System.currentTimeMillis()>this.timestamp+this.nMsPerLoop+threshold)
+			return 2;
+		else
+			return 0;
 	}
 }

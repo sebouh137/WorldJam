@@ -211,7 +211,7 @@ public class InputThread extends Thread implements HasAudioLevelStats, ClockSubs
 		else { //for wrap around
 			double max1 = dac.getPeak(buffer2, 0, offsetInBytes/sampleSizeInBytes);
 			double max2 = dac.getPeak(buffer2, 
-					buffer2.length/sampleSizeInBytes-(nSamples-offsetInBytes), 
+					Math.max(buffer2.length/sampleSizeInBytes-(nSamples-offsetInBytes),0), 
 					buffer2.length/sampleSizeInBytes-1);
 			return Math.max(max1, max2);
 		}

@@ -8,7 +8,9 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
 
+import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.Mixer;
 import javax.swing.JFrame;
 
 import worldjam.audio.AudioSample;
@@ -162,7 +164,16 @@ public class Tuner extends SpectrumVisualizer{
 		frame.add(sv);
 		frame.setSize(500,500);
 		frame.setVisible(true);
-		InputThread it = new InputThread(DefaultObjects.getInputMixer(), DefaultObjects.defaultFormat, null, 100);
+		Mixer mixer = null;
+		if(arg.length == 0)	
+			mixer = DefaultObjects.getInputMixer();
+		else 
+			for(Mixer.Info m : AudioSystem.getMixerInfo()) {
+				if(m.getName().matches(".*" +arg[0] + ".*"))
+					mixer = AudioSystem.getMixer(m);
+			}
+		System.out.println(mixer.getMixerInfo().getName());
+		InputThread it = new InputThread(mixer, DefaultObjects.defaultFormat, null, 100);
 		it.addSubscriber(sv);
 		it.start();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

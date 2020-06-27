@@ -27,8 +27,9 @@ public class InputThread extends Thread implements HasAudioLevelStats, ClockSubs
 	private byte[] buffer;
 	private ArrayList<AudioSubscriber> subscribers = new ArrayList();
 	private AudioFormat format;
+	private int requestedBufferSize =  AudioSystem.NOT_SPECIFIED;
 	public InputThread(Mixer mixer, AudioFormat format, ClockSetting clock) throws LineUnavailableException {
-		this(mixer, format, clock, 500);
+		this(mixer, format, clock, 200);
 	}
 	
 	public InputThread(Mixer mixer, AudioFormat format, ClockSetting clock, int nMsPerLoop) throws LineUnavailableException{
@@ -39,7 +40,6 @@ public class InputThread extends Thread implements HasAudioLevelStats, ClockSubs
 		this.nMsPerLoop = nMsPerLoop;
 		this.timeCalibration = ConfigurationsXML.getInputTimeCalib(mixer.getMixerInfo().getName());
 		
-		int requestedBufferSize =  AudioSystem.NOT_SPECIFIED;
 		Line.Info info = new DataLine.Info(TargetDataLine.class, format,requestedBufferSize);
 		tdl = (TargetDataLine)mixer.getLine(info);
 		nBytesPerLoop = format.getFrameSize()*(int)(format.getFrameRate()*nMsPerLoop/1000.);
@@ -69,7 +69,7 @@ public class InputThread extends Thread implements HasAudioLevelStats, ClockSubs
 	
 	public void run(){
 		try {
-			tdl.open();
+			tdl.open(format,requestedBufferSize);
 		} catch (LineUnavailableException e) {
 			e.printStackTrace();
 		}
@@ -77,8 +77,12 @@ public class InputThread extends Thread implements HasAudioLevelStats, ClockSubs
 		timestamp = System.currentTimeMillis();
 		//time = (time*format.getFrameSize())/format.getFrameSize();
 		while(alive){
-			
-			tdl.read(buffer, 0, buffer.length);
+			if(newBufferLength > 0) {
+				buffer = new byte[newBufferLength];
+				buffer2 = new byte[newBufferLength];
+				newBufferLength = 0;
+			}
+			int readbytes = tdl.read(buffer, 0, buffer.length);
 			if(muted) {
 				Arrays.fill(buffer, (byte)0); // software muting of the line.   
 			}
@@ -94,6 +98,28 @@ public class InputThread extends Thread implements HasAudioLevelStats, ClockSubs
 			
 		}
 	}
+	/**
+	 * setting this to a non-zero number adjusts the buffer length in bytes just before the next read cycle
+	 */
+	private int newBufferLength = 0;
+	/**
+	 * Requests a change to the length of the buffer length; this will take place just before the next call to 
+	 * {@link TargetDataLine.read}.  
+	 * @param length the new length of the buffer in bytes
+	 */
+	public void setBufferLengthInBytes(int length) {
+		this.newBufferLength = length;
+	}
+	/**
+	 * return the current buffer length in bytes.  This is not always the same as the number provided to {@link setBufferLengthInBytes},
+	 * since the change to the buffer length doesn't take place until just before the next invocation of  {@link TargetDataLine.read}.
+	 * 
+	 */
+	public int getBufferLengthInBytes() {
+		return buffer.length;
+	}
+	
+	
 	private byte buffer2[];
 	public void addSubscriber(AudioSubscriber subs){
 		this.subscribers.add(subs);
@@ -214,7 +240,7 @@ public class InputThread extends Thread implements HasAudioLevelStats, ClockSubs
 
 		//delayed reading the audio sample 
 		int threshold = 300;
-		if(System.currentTimeMillis()>this.timestamp+this.nMsPerLoop+threshold)
+		if(System.currentTimeMillis()>timestamp+timeCalibration+nMsPerLoop+threshold)
 			return 2;
 		else
 			return 0;

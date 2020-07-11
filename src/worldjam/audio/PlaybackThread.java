@@ -168,12 +168,29 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 
 	private long loopStartTime;
 	private byte[] replacementBuffer;
+	
+	private int defaultBytesPerCycle = 32*4800;
+	private int minBytesPerCycle = 32*2400;
+	public int getDefaultBytesPerCycle(){
+		return defaultBytesPerCycle;
+	}
+	public int getMinBytesPerCycle(){
+		return minBytesPerCycle;
+	}
+	public void setDefaultBytesPerCycle(int val){
+		defaultBytesPerCycle = val;
+	}
+	public void setMinBytesPerCycle(int val){
+		minBytesPerCycle = val;
+	}
+	
+	
 	public void run(){
 		//write such and such seconds at a time
-		int defaultBytesPerCycle = (int) (playbackFormat.getFrameRate()*1)*playbackFormat.getFrameSize();
+		//int defaultBytesPerCycle = (int) (playbackFormat.getFrameRate()*0.1)*playbackFormat.getFrameSize();
 		//avoid writing less than a certain number of bytes in a cycle by extending the current cycle 
 		//to the end of the buffer if necessary. 
-		int minBytesPerCycle = (int) (playbackFormat.getFrameRate()*0.05)*playbackFormat.getFrameSize();
+		//int minBytesPerCycle = (int) (playbackFormat.getFrameRate()*0.05)*playbackFormat.getFrameSize();
 
 
 		/*
@@ -268,7 +285,7 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 		return this.loopBuilder;
 	}
 
-	public Line getLine(){
+	public SourceDataLine getLine(){
 		return sdl;
 	}
 

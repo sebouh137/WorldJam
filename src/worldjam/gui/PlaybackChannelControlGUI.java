@@ -17,6 +17,7 @@ import javax.swing.event.ChangeListener;
 
 import worldjam.audio.Metronome;
 import worldjam.audio.PlaybackChannel;
+import worldjam.audio.PlaybackThread;
 import worldjam.audio.TuningFork;
 import worldjam.filters.NoiseGateFilter;
 import worldjam.filters.pitchshift.PitchShift;
@@ -77,7 +78,8 @@ public class PlaybackChannelControlGUI extends JFrame {
 		if(playbackChannel.getLoopBuilder() == null) {
 			tabbedPane.addTab("Transpose", null, createTransposeControls(playbackChannel), null);
 			tabbedPane.addTab("Noise Gate", null, createNoiseGateControls(playbackChannel), null);
-			tabbedPane.addTab("Delay", null, createDelayControls(playbackChannel,dm), null);
+			if(dm != null)
+				tabbedPane.addTab("Delay", null, createDelayControls(playbackChannel,dm), null);
 		} else if (playbackChannel.getLoopBuilder() instanceof TuningFork) {
 			TuningForkControls tfc = new TuningForkControls();
 			tfc.setChannel(playbackChannel);
@@ -87,11 +89,60 @@ public class PlaybackChannelControlGUI extends JFrame {
 			tabbedPane.addTab("metronome", mc);
 		}
 		tabbedPane.addTab("Info", null, createInfoPanel(playbackChannel), null);
-
+		tabbedPane.addTab("Misc", null, createMiscPanel((PlaybackThread)playbackChannel));
 		slb = new SoundLevelBar(playbackChannel, SoundLevelBar.VERTICAL);
 
 		if(playbackChannel != null)
 			getContentPane().add(slb, BorderLayout.WEST); 
+	}
+
+
+	private Component createMiscPanel(PlaybackThread playbackChannel) {
+		JPanel panel = new JPanel();
+		GridBagLayout gbl_panel = new GridBagLayout();
+		gbl_panel.columnWidths = new int[]{0, 79, 0, 0};
+		gbl_panel.rowHeights = new int[]{0, 0};
+		gbl_panel.columnWeights = new double[]{0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_panel.rowWeights = new double[]{0.0, Double.MIN_VALUE};
+		panel.setLayout(gbl_panel);
+		{
+			JLabel lblNewLabel = new JLabel("Bytes written per cyle");
+			GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
+			gbc_lblNewLabel.insets = new Insets(0, 0, 0, 5);
+			gbc_lblNewLabel.gridx = 0;
+			gbc_lblNewLabel.gridy = 0;
+			panel.add(lblNewLabel, gbc_lblNewLabel);
+		}
+
+		JSpinner spinner = new JSpinner();
+		int frameSize = playbackChannel.getLine().getFormat().getFrameSize();
+		float frameRate = playbackChannel.getLine().getFormat().getFrameRate();
+		spinner.setModel(new SpinnerNumberModel(playbackChannel.getDefaultBytesPerCycle(), frameSize, (int)(frameSize*10*frameRate), frameSize));
+		GridBagConstraints gbc_spinner = new GridBagConstraints();
+		gbc_spinner.insets = new Insets(0, 0, 0, 5);
+		gbc_spinner.fill = GridBagConstraints.HORIZONTAL;
+		gbc_spinner.gridx = 1;
+		gbc_spinner.gridy = 0;
+		panel.add(spinner, gbc_spinner);
+
+		JButton btnApply = new JButton("Apply");
+		btnApply.setEnabled(false);
+		btnApply.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				playbackChannel.setDefaultBytesPerCycle((int)spinner.getValue());
+				btnApply.setEnabled(false);
+			}
+		});
+		GridBagConstraints gbc_btnNewButton = new GridBagConstraints();
+		gbc_btnNewButton.gridx = 2;
+		gbc_btnNewButton.gridy = 0;
+		panel.add(btnApply, gbc_btnNewButton);
+		
+		spinner.addChangeListener(e->{
+			btnApply.setEnabled(true);
+		});
+
+		return panel;
 	}
 
 

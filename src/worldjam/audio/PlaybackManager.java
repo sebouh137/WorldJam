@@ -150,10 +150,7 @@ public class PlaybackManager implements AudioSubscriber, ClockSubscriber{
 	public void startRecording(File directory, String ext) throws FileNotFoundException{
 		directory.mkdir();
 		long timestamp = System.currentTimeMillis();
-		//round to the 10 ms.  This is because at 44100 frames/second,
-		// 10 ms is the smallest integer number of ms that are an integer number
-		// of frames.
-		timestamp/=10; timestamp*= 10; 
+		
 		for(PlaybackChannel channel : channels.values()){
 			File trackFile = new File(directory.getPath() + File.separatorChar +"trk_"+ channel.getChannelName() + ext);
 			channel.startRecording(new FileOutputStream(trackFile), timestamp);

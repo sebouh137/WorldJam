@@ -5,6 +5,7 @@ import java.io.OutputStream;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.Line;
 import javax.sound.sampled.Mixer;
+import javax.sound.sampled.SourceDataLine;
 
 import worldjam.time.ClockSetting;
 import worldjam.time.ClockSubscriber;
@@ -15,7 +16,7 @@ public interface PlaybackChannel extends HasAudioLevelStats, AudioSubscriber, Cl
 	public void close();
 	public void changeClockSettingsNow(ClockSetting beatClock);
 	public ClockSetting getClock();
-	public Line getLine();
+	public SourceDataLine getLine();
 	public Mixer getMixer();
 	public void setFilter(AudioFilter filter);
 	public AudioFormat getInputFormat();

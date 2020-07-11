@@ -5,10 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class ClockSetting {
-	//should be divisible by 10
 	public final long startTime;
-	//should be divisible by 10, so that at 44100 samples per second, 
-	// there should be an integer number of samples per beat. 
 	public final int msPerBeat;  
 	public final int beatsPerMeasure;
 	public final int beatDenominator;

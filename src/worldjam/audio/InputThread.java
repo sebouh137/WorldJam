@@ -13,6 +13,7 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.Mixer;
 import javax.sound.sampled.TargetDataLine;
 
+//import worldjam.test.TestInputThread;
 import worldjam.time.ClockSetting;
 import worldjam.time.ClockSubscriber;
 import worldjam.util.ConfigurationsXML;
@@ -30,9 +31,10 @@ public class InputThread extends Thread implements HasAudioLevelStats, ClockSubs
 	private int requestedBufferSize =  AudioSystem.NOT_SPECIFIED;
 	public InputThread(Mixer mixer, AudioFormat format, ClockSetting clock) throws LineUnavailableException {
 		this(mixer, format, clock, 200);
+		//this.addSubscriber(new TestInputThread.MySubscriber(this));
 	}
 	
-	public InputThread(Mixer mixer, AudioFormat format, ClockSetting clock, int nMsPerLoop) throws LineUnavailableException{
+	public InputThread(final Mixer mixer, AudioFormat format, ClockSetting clock, int nMsPerLoop) throws LineUnavailableException{
 		this.setName("input");
 		this.format = format;
 		this.mixer = mixer;
@@ -45,6 +47,14 @@ public class InputThread extends Thread implements HasAudioLevelStats, ClockSubs
 		nBytesPerLoop = format.getFrameSize()*(int)(format.getFrameRate()*nMsPerLoop/1000.);
 		buffer = new byte[nBytesPerLoop];
 		buffer2 = new byte[nBytesPerLoop];
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			public void run() {
+				alive = false;
+				tdl.close();
+				mixer.close();
+			}
+		});
+		this.start();
 	}
 	private double nMsPerLoop;
 	//status flags

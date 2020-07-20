@@ -68,7 +68,7 @@ public class Client implements ClockSubscriber {
 		this.input = input;
 		if(input != null){
 			input.addSubscriber(broadcasterThread);
-			input.start();
+			//input.start();
 		}
 		if(playback != null && input != null){
 			try {

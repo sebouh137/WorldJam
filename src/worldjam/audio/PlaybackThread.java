@@ -150,9 +150,12 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 			}
 		}
 		int ifs = inputFormat.getFrameSize();
-		for(int i = 0; i<mono.length/ifs; i++){
-			System.arraycopy(mono, ifs*i, stereo, ifs*2*i, ifs);
-			System.arraycopy(mono, ifs*i, stereo, ifs*(2*i+1), ifs);
+		int n = mono.length/ifs;
+		int k = 0;
+		for(int i = 0; i<n; i++){
+			System.arraycopy(mono, k, stereo, k*2, ifs);
+			System.arraycopy(mono, k, stereo, k*2+ifs, ifs);
+			k+=ifs;
 		}
 		return stereo;
 	}

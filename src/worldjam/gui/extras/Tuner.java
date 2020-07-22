@@ -175,7 +175,7 @@ public class Tuner extends SpectrumVisualizer{
 		System.out.println(mixer.getMixerInfo().getName());
 		InputThread it = new InputThread(mixer, DefaultObjects.defaultFormat, null, 100);
 		it.addSubscriber(sv);
-		it.start();
+		//it.start();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 }

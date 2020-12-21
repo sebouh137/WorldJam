@@ -6,11 +6,15 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.Mixer;
+import javax.sound.sampled.Mixer.Info;
 import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.TargetDataLine;
 import javax.xml.parsers.DocumentBuilder;
@@ -77,11 +81,23 @@ public class ConfigurationsXML {
 						inputTimeCalib = Integer.parseInt(eElement.getElementsByTagName("inputTimeCalib").item(0).getTextContent());
 					if(eElement.getElementsByTagName("outputTimeCalib").getLength() != 0)
 						outputTimeCalib = Integer.parseInt(eElement.getElementsByTagName("outputTimeCalib").item(0).getTextContent());
+					
+					int inputPreferenceOrder = 0;
+					int outputPreferenceOrder = 0;
+					if(eElement.getElementsByTagName("inputPreferenceOrder").getLength() != 0)
+						inputPreferenceOrder = Integer.parseInt(eElement.getElementsByTagName("inputPreferenceOrder").item(0).getTextContent());
+					if(eElement.getElementsByTagName("outputPreferenceOrder").getLength() != 0)
+						outputPreferenceOrder = Integer.parseInt(eElement.getElementsByTagName("outputPreferenceOrder").item(0).getTextContent());
+					
+					
+					
 					AudioDeviceConfig config = new AudioDeviceConfig();
 					config.name = name;
 					config.inputTimeCalib = inputTimeCalib;
 					config.outputTimeCalib = outputTimeCalib;
-					audioDeviceConfigs.add(config);
+					config.outputPreferenceOrder = outputPreferenceOrder;
+					config.inputPreferenceOrder = inputPreferenceOrder;
+					audioDeviceConfigs.put(name,config);
 				}
 			}
 		}   
@@ -91,9 +107,14 @@ public class ConfigurationsXML {
 		}  
 
 	}
-	private static ArrayList<AudioDeviceConfig> audioDeviceConfigs = new ArrayList();
+	
+	
+	
+	private static Map<String,AudioDeviceConfig> audioDeviceConfigs = new HashMap();
 
 	private static class AudioDeviceConfig{
+		public int outputPreferenceOrder;
+		public int inputPreferenceOrder;
 		String name;
 		int inputTimeCalib;
 		int outputTimeCalib;
@@ -102,25 +123,33 @@ public class ConfigurationsXML {
 	private static String userName;
 
 
-
+	public static int getPreferenceOrder(String name, boolean isInput) {
+		
+		int ret;
+		if(!audioDeviceConfigs.containsKey(name)) {
+			System.out.println("no key");
+			ret =0;
+		}
+		else if(isInput)
+			ret = audioDeviceConfigs.get(name).inputPreferenceOrder;
+		else
+			ret = audioDeviceConfigs.get(name).outputPreferenceOrder;
+		System.out.println("preference order " + name + " " +  isInput + " " + ret);
+		return ret;
+	}
+	
 	private static final String defaultAudioDevice = "Default Audio Device";
 	public static int getInputTimeCalib(String deviceName) {
 		deviceName = getActualMixerName(deviceName,true);
-		for(AudioDeviceConfig conf : audioDeviceConfigs) {
-			if(deviceName.equals(conf.name)) {
-				return conf.inputTimeCalib;
-			}
-		}
+		if(audioDeviceConfigs.containsKey(deviceName))
+			return audioDeviceConfigs.get(deviceName).inputTimeCalib;
 		return 0;
 	}
 
 	public static int getOutputTimeCalib(String deviceName) {
 		deviceName = getActualMixerName(deviceName,false);
-		for(AudioDeviceConfig conf : audioDeviceConfigs) {
-			if(deviceName.equals(conf.name)) {
-				return conf.outputTimeCalib;
-			}
-		}
+		if(audioDeviceConfigs.containsKey(deviceName))
+			return audioDeviceConfigs.get(deviceName).outputTimeCalib;
 		return 0;
 	}
 

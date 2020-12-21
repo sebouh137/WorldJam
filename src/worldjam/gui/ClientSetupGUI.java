@@ -14,6 +14,7 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
 
@@ -591,6 +592,18 @@ public class ClientSetupGUI extends JFrame{
 					new DataLine.Info(class1, DefaultObjects.defaultFormat)))
 				availableMixers.add(info);
 		}
+		boolean isInput = (class1 == TargetDataLine.class);
+		Collections.sort(availableMixers, 
+				(m1,m2)->{
+					
+					int o1 = ConfigurationsXML.getPreferenceOrder(m1.getName(), isInput);
+					int o2 = ConfigurationsXML.getPreferenceOrder(m2.getName(), isInput);
+					if(o1< o2)
+						return 1;
+					else if(o2<o1)
+						return -1;
+					else return 0;
+				});
 		return availableMixers;
 
 	}

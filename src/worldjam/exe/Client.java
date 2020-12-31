@@ -39,6 +39,7 @@ public class Client implements ClockSubscriber {
 		for(String arg : args) {
 			if(arg.equals("--dev")) {
 				enableDevFeatures = true;
+				//worldjam.video.NativeWebcamDriverLoader.useNativeDriver();
 			}
 		}
 		ClientSetupGUI.main(args);
@@ -72,7 +73,7 @@ public class Client implements ClockSubscriber {
 		}
 		if(playback != null && input != null){
 			try {
-				input.setSenderID(this.selfDescriptor.clientID);
+				input.setSenderID(this.getSelfDescriptor().clientID);
 				playback.addChannel(input.getSenderID(), "loopback");
 				try {
 					Thread.sleep(700);//the thread sleep prevents problems where the channel cannot be muted 
@@ -107,6 +108,9 @@ public class Client implements ClockSubscriber {
 	}
 	private long sessionID;
 
+	public String getPeerDisplayName(long id) {
+		return connections.get(id).peer.displayName;
+	}
 	private Map<Long,Connection> connections = new HashMap<Long,Connection>();
 	void addConnection(ClientDescriptor peer, Socket socket, ByteCountDataInputStream dis, ByteCountDataOutputStream dos, boolean isServer){
 		delayManager.addChannel(peer.clientID, peer.displayName);
@@ -329,7 +333,7 @@ public class Client implements ClockSubscriber {
 
 			try {
 				//change the sourceID to the client's id number
-				sample.sourceID = selfDescriptor.clientID;
+				sample.sourceID = getSelfDescriptor().clientID;
 				dos.writeByte(WJConstants.AUDIO_SAMPLE);
 				sample.writeToStream(dos);
 			} catch (SocketException e) {
@@ -407,7 +411,7 @@ public class Client implements ClockSubscriber {
 	//private ByteArrayOutputStream baosForRecording;
 
 	public ClientDescriptor getDescriptor() {
-		return this.selfDescriptor;
+		return this.getSelfDescriptor();
 	}
 
 
@@ -489,7 +493,7 @@ public class Client implements ClockSubscriber {
 						System.out.println(displayName + ":  received join request from peer " + peer.displayName);
 
 						dos.writeByte(WJConstants.COMMAND_JOIN_RECEIVED);
-						selfDescriptor.writeToStream(dos);
+						getSelfDescriptor().writeToStream(dos);
 						dos.writeLong(sessionID);
 						dos.writeByte(WJConstants.TIME_CHANGED);
 						beatClock.writeToStream(dos);
@@ -509,7 +513,7 @@ public class Client implements ClockSubscriber {
 		private SessionDescriptor sessionInfo() {
 			Connection cons[] =connections.values().toArray(new Connection[connections.values().size()]);
 			ClientDescriptor members[] = new ClientDescriptor[cons.length+1];
-			members[0] = selfDescriptor;
+			members[0] = getSelfDescriptor();
 			for(int i = 0; i<cons.length; i++) {
 				members[i+1] = cons[i].peer;
 			}
@@ -541,7 +545,7 @@ public class Client implements ClockSubscriber {
 		ByteCountDataInputStream dis = new ByteCountDataInputStream(socket.getInputStream());
 		ByteCountDataOutputStream dos = new ByteCountDataOutputStream(socket.getOutputStream());
 		dos.writeByte(WJConstants.COMMAND_JOIN);
-		selfDescriptor.writeToStream(dos);
+		getSelfDescriptor().writeToStream(dos);
 		dis.readByte();
 		ClientDescriptor peerDescriptor = ClientDescriptor.readFromStream(dis); 
 		long sessionID = dis.readLong();
@@ -579,8 +583,7 @@ public class Client implements ClockSubscriber {
 	public void attachWebcam(WebcamInterface webcamInterface){
 		//selfie viewer
 		webcamInterface.addSubscriber((frame)->{ 
-			frame.setSourceID(this.selfDescriptor.clientID);
-			frame.setSourceID(0L);
+			frame.setSourceID(this.getSelfDescriptor().clientID);
 			gui.videoFrameReceived(frame);
 		});
 		webcamInterface.addSubscriber(broadcasterThread);
@@ -695,6 +698,10 @@ public class Client implements ClockSubscriber {
 	 */
 	public void broadcastClockSettings() {
 		broadcasterThread.changeClockSettingsNow(beatClock);
+	}
+
+	public ClientDescriptor getSelfDescriptor() {
+		return selfDescriptor;
 	}
 
 

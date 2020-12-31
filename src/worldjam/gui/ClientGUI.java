@@ -232,7 +232,7 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 		conductor.setShowInfoAtBottom(true);
 		//ViewPanel webcamViewer = new ViewPanel();
 		//viewManager = new ConductorAndWebcamViewer(conductor, webcamViewer);
-		viewManager = new ConductorAndWebcamViewer(conductor, this.client.getDelayManager());
+		viewManager = new ConductorAndWebcamViewer(conductor, this.client.getDelayManager(),client);
 
 		getContentPane().add(viewManager, BorderLayout.CENTER);
 

@@ -1,5 +1,6 @@
 package worldjam.video;
 import java.awt.image.BufferedImage;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,9 +43,8 @@ public class WebcamInterface implements WebcamListener {
 	public void webcamImageObtained(WebcamEvent we) {
 		BufferedImage image = we.getImage();
 		long timestamp = System.currentTimeMillis();
-		
+		VideoFrame frame = new VideoFrame(image, timestamp, 0);	
 		for(VideoSubscriber sub : subscribers){
-			VideoFrame frame = new VideoFrame(image, timestamp, 0);
 			sub.imageReceived(frame);
 		}
 	}

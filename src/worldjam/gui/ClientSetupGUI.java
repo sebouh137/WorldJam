@@ -15,7 +15,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 import javax.swing.JRadioButton;
@@ -38,7 +40,6 @@ import worldjam.util.DefaultObjects;
 import worldjam.util.FittedTempoCalculator2;
 import worldjam.util.TempoCalculator;
 import worldjam.video.WebcamInterface;
-import worldjam.video.WebcamThread;
 
 import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
@@ -87,13 +88,15 @@ public class ClientSetupGUI extends JFrame{
 	private JLabel lblVideoInput;
 	private JComboBox comboBoxWebcams;
 	private JLabel lblVideoResolution;
-	private JComboBox comboBoxResolutions;
+	private JComboBox<String> comboBoxResolutions;
 	protected ScanLocalSessionsGUI scanPanel;
 
 	JPanel newSessionPanel;
 	private JCheckBox chckbxNewCheckBox;
 	private JSeparator separator;
 	private JSeparator separator_1;
+	
+	static Map<String,Webcam> webcamsList = new HashMap<String, Webcam>();
 	ClientSetupGUI() {
 		this.setSize(544, 388);
 		setTitle("WorldJam Client Setup");
@@ -223,10 +226,12 @@ public class ClientSetupGUI extends JFrame{
 		if(Client.enableDevFeatures) tabAudioIO.add(lblVideoInput, gbc_lblVideoInput);
 
 		List<Webcam> webcams = Webcam.getWebcams();
-		List<String> webcamNames = new ArrayList();
+		List<String> webcamNames = new ArrayList<String>();
 		webcamNames.add(NO_WEBCAM);
 		for(Webcam webcam : webcams){
-			webcamNames.add(webcam.getName());
+			String name = webcam.getName();
+			webcamsList.put(name, webcam);
+			webcamNames.add(name);
 		}
 
 		comboBoxWebcams = new JComboBox();
@@ -247,7 +252,7 @@ public class ClientSetupGUI extends JFrame{
 		gbc_lblVideoResolution.gridy = 4;
 		if(Client.enableDevFeatures) tabAudioIO.add(lblVideoResolution, gbc_lblVideoResolution);
 
-		comboBoxResolutions = new JComboBox();
+		comboBoxResolutions = new JComboBox<String>();
 		gbc_comboBox_2 = new GridBagConstraints();
 		gbc_comboBox_2.fill = GridBagConstraints.HORIZONTAL;
 		gbc_comboBox_2.gridx = 1;
@@ -262,15 +267,16 @@ public class ClientSetupGUI extends JFrame{
 			else{
 				lblVideoResolution.setEnabled(true);
 				comboBoxResolutions.setEnabled(true);
-				Vector<String> strings = new Vector();
+				Vector<String> strings = new Vector<String>();
 
 				Webcam cam = Webcam.getWebcamByName((String)comboBoxWebcams.getSelectedItem());
 				for(Dimension dim : cam.getViewSizes()){
 					strings.add(dim.width + "x" + dim.height);
 				}
 				comboBoxResolutions.setModel(new DefaultComboBoxModel<String>(strings));
-				comboBoxResolutions.setSelectedItem(cam.getViewSize().width + "x" + cam.getViewSize().height);
-
+				if(cam.getViewSize() != null)
+					comboBoxResolutions.setSelectedItem(cam.getViewSize().width + "x" + cam.getViewSize().height);
+				
 				System.out.println(strings);
 			}
 		});
@@ -639,7 +645,9 @@ public class ClientSetupGUI extends JFrame{
 				try {
 					Webcam webcam = null;
 					if (!gui.comboBoxWebcams.getSelectedItem().equals(NO_WEBCAM)){
-						webcam = Webcam.getWebcamByName((String)gui.comboBoxWebcams.getSelectedItem());
+						String selectedWebcamName = (String)gui.comboBoxWebcams.getSelectedItem();
+						webcam = Webcam.getWebcamByName(selectedWebcamName);//this method is broken
+						
 						String s[] = ((String)gui.comboBoxResolutions.getSelectedItem()).split("x");
 
 						Dimension viewSize = new Dimension(Integer.parseInt(s[0]),Integer.parseInt(s[1])); 

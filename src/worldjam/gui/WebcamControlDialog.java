@@ -181,7 +181,9 @@ public class WebcamControlDialog extends JFrame {
 				strings.add(dim.width + "x" + dim.height);
 			}
 			cmbxResolution.setModel(new DefaultComboBoxModel<String>(strings));
-			cmbxResolution.setSelectedItem(cam.getViewSize().width + "x" + cam.getViewSize().height);
+			if(cam != null && cam.getViewSize() != null) {
+				cmbxResolution.setSelectedItem(cam.getViewSize().width + "x" + cam.getViewSize().height);
+			}
 
 			System.out.println(strings);
 		}

@@ -61,7 +61,8 @@ public class ViewPanel extends JComponent implements VideoSubscriber, DelayChang
 	}
 
 	private BufferedImage makeCompatible(BufferedImage image) {
-
+		return image;
+		/*
 		//System.out.println("in: " + image.getColorModel() + ", " + image.getSampleModel());
 		BufferedImage bimage = gc.createCompatibleImage(image.getWidth(), image.getHeight(), Transparency.OPAQUE);
 		Graphics2D g = bimage.createGraphics();
@@ -70,12 +71,13 @@ public class ViewPanel extends JComponent implements VideoSubscriber, DelayChang
 		g.drawImage(image, 0, 0, null);
 		//System.out.println("out: " + bimage.getColorModel() + ", " + bimage.getSampleModel());
 		return bimage;
+		*/
 	}
 
 
 	private BufferedImage currentImage = null;
 	private boolean closed = false;
-
+	private String displayName = "";
 	private Thread refreshThread = new Thread(()->{
 		BufferedImage prevImage = null;
 		while(!closed ){
@@ -111,8 +113,10 @@ public class ViewPanel extends JComponent implements VideoSubscriber, DelayChang
 			prevImage = currentImage;
 		}
 
-	});
-
+	}, "refresh view panel");
+	public void setDisplayName(String name) {
+		this.displayName = name;
+	}
 	long prevRenderTime; 
 	boolean disable = false;
 	public void paintComponent(Graphics g){
@@ -128,12 +132,21 @@ public class ViewPanel extends JComponent implements VideoSubscriber, DelayChang
 			g2.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_OFF);
 			g2.setRenderingHint(KEY_RENDERING, VALUE_RENDER_SPEED);
 			//System.out.println("painting image");
-			//g2.drawImage(currentImage, 0, 0, getWidth(),getHeight(),null);
-
-			g2.drawImage(currentImage, 0, 0,null);
+			int w1 = getWidth(), h1 = getHeight(), w2 = currentImage.getWidth(), h2 = currentImage.getHeight();
+			if(w1/h1>w2/h2)
+				g2.drawImage(currentImage, 0, (h1-(w1*h2)/w2)/2, w1, (w1*h2)/w2,null);
+			else 
+				g2.drawImage(currentImage, (w1-(h1*w2)/h2)/2, 0, (h1*w2)/h2, h1,null);
+			if(!"".contentEquals(displayName)) {
+				int w3 = getFontMetrics(g.getFont()).stringWidth(displayName);
+				int h3 = getFontMetrics(g.getFont()).getHeight()*3/2;
+				g.drawString(displayName, w1/2-w3/2,h1-h3);
+			}
+			//g2.drawImage(currentImage, 0, 0,null);
 		}
 		else{
 			g.setColor(Color.black);
+			
 			g.fillRect(0, 0, getWidth(),getHeight());
 			g.setColor(Color.WHITE);
 			g.drawString("Visuals not available", getWidth()/4, getHeight()/2);

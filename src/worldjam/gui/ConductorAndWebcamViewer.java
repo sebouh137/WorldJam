@@ -11,6 +11,7 @@ import java.util.Map;
 import javax.swing.JPanel;
 import javax.swing.OverlayLayout;
 
+import worldjam.exe.Client;
 import worldjam.gui.conductor.Conductor;
 import worldjam.time.ClockSetting;
 import worldjam.time.ClockSubscriber;
@@ -33,11 +34,13 @@ public class ConductorAndWebcamViewer extends JPanel implements ClockSubscriber,
 	private int nRows;
 	private int nColumns;
 	private DelayManager delayManager;
+	private Client client;
 	static {
 		System.setProperty("sun.awt.noerasebackground", "true");
 	}
 	//= new BezierConductor();
-	public ConductorAndWebcamViewer(Conductor conductor, DelayManager dm){
+	public ConductorAndWebcamViewer(Conductor conductor, DelayManager dm, Client client){
+		this.client = client;
 		conductor.setOpaque(false);
 		conductor.setStroke(new BasicStroke(8));
 		//conductor.setBattonColor(new Color(1.f, 1.f, 1.f, .5f));
@@ -73,15 +76,19 @@ public class ConductorAndWebcamViewer extends JPanel implements ClockSubscriber,
 		this.setDoubleBuffered(true);
 	}
 	
+	
 	public void imageReceived(VideoFrame frame) {
 		long sourceID = frame.getSourceID();
+		//System.out.println("Source id " + sourceID);
 		ViewPanel viewer = this.viewers.get(sourceID);
-		if(sourceID == 0){
+		if(sourceID == client.getSelfDescriptor().clientID){
 			selfieViewer.setVisible(true);
 			viewer = selfieViewer;
 		}
 		else if(viewer == null){
 			viewer = new ViewPanel(clock);
+			if(client != null)
+				viewer.setDisplayName(client.getPeerDisplayName(frame.getSourceID()));
 			if(delayManager != null){ 
 				//the delay manager is only null during certain tests.  
 				//otherwise connect the delay manager to the viewer.  

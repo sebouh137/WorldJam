@@ -26,8 +26,11 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 public class ConfigurationsXML {
-	private static String FILE_LOCATION = System.getProperty("user.home")+File.separator+".worldjam"+File.separator +"config.xml";
+	private static String FILE_LOCATION = System.getProperty("user.home")+File.separator+".WorldJam"+File.separator +"config.xml";
 	private static void loadConfigs() {
+		File worldjamdir = new File(System.getProperty("user.home")+File.separator+".WorldJam");
+		if(! worldjamdir.exists())
+			worldjamdir.mkdir();
 		File configFile = new File(FILE_LOCATION);
 		if (!configFile.exists()) {
 			try {

@@ -43,12 +43,14 @@ public class ConductorAndWebcamViewer extends JPanel implements ClockSubscriber,
 		this.client = client;
 		conductor.setOpaque(false);
 		conductor.setStroke(new BasicStroke(8));
+		conductor.setDrawShadow(true);
 		//conductor.setBattonColor(new Color(1.f, 1.f, 1.f, .5f));
 		conductor.setBattonColor(new Color(1.f, 0.f, 0.f, .7f));
 		this.clock = conductor.getClock();
 		
 		
 		this.conductor = conductor;
+		
 		this.setLayout(new OverlayLayout(this));
 		this.add(conductor);
 		selfieViewer = new ViewPanel(clock);

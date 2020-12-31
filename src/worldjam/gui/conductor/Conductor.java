@@ -68,7 +68,10 @@ public class Conductor extends VisualMetronome implements ClockSubscriber{
 		this.setOpaque(false);
 	}
 	
-	
+	private boolean drawShadow;
+	public void setDrawShadow(boolean b) {
+		this.drawShadow = b;
+	}
 	
 	@Override
 	public void paint(Graphics2D g2, long time){
@@ -94,14 +97,24 @@ public class Conductor extends VisualMetronome implements ClockSubscriber{
 		
 
 		//draw the baton
-		g2.setColor(battonColor);
 		g2.setStroke(stroke);
+		if(drawShadow) {
+			g2.setColor(Color.black);
+			g2.drawLine(
+					(int)(getWidth()*(.1+.8*x)+1), 
+					(int)(getHeight()*(.1+.8*y)+1), 
+					(int)(getWidth()*(.1+.4*x)+1), 
+					(int)(getHeight()*(.25+.4*y)+1)
+					);
+		}
+		g2.setColor(battonColor);
 		g2.drawLine(
 				(int)(getWidth()*(.1+.8*x)), 
 				(int)(getHeight()*(.1+.8*y)), 
 				(int)(getWidth()*(.1+.4*x)), 
 				(int)(getHeight()*(.25+.4*y))
 				);
+		
 		if(showMeasureNumber){
 			g2.setFont(measureNumFont );
 			g2.drawString(String.format("measure %d", clock.getCurrentMeasure()), 10, getHeight()-10);

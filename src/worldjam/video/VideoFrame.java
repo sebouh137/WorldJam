@@ -6,7 +6,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
 import javax.imageio.ImageIO;
 
@@ -16,7 +15,6 @@ public class VideoFrame {
 	private long timestamp;
 	private long sourceID;
 	private BufferedImage image;
-	private ByteBuffer byteBuffer;
 
 	public VideoFrame(BufferedImage image, long timestamp, long sourceID) {
 		this.sourceID = sourceID;
@@ -46,7 +44,7 @@ public class VideoFrame {
 		dos.write(baos.toByteArray());
 		baos.reset();
 	}
-
+	
 	public static VideoFrame readFromStream(DataInputStream dis) throws IOException{
 		long senderID = dis.readLong();
 		long timestamp = dis.readLong();
@@ -69,7 +67,7 @@ public class VideoFrame {
 	public long getSourceID() {
 		return sourceID;
 	}
-
+	
 	public long getTimestamp(){
 		return this.timestamp;
 	}

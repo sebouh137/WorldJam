@@ -35,6 +35,7 @@ import worldjam.video.WebcamInterface;
 
 public class Client implements ClockSubscriber {
 	public static boolean enableDevFeatures;
+	public static boolean enableWebcam = true;
 	public static void main(String args[]) throws LineUnavailableException, UnknownHostException, IOException{
 		for(String arg : args) {
 			if(arg.equals("--dev")) {

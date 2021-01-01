@@ -7,6 +7,7 @@ public class SwingUtil {
 		if(spinner.getEditor() instanceof JSpinner.DefaultEditor) {
 			JSpinner.DefaultEditor editor = ((JSpinner.DefaultEditor)spinner.getEditor());
 			editor.getTextField().setHorizontalAlignment(alignment);
+			editor.revalidate();
 		}
 	}
 }

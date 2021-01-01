@@ -43,6 +43,7 @@ import worldjam.video.WebcamInterface;
 
 import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.Mixer;
@@ -173,7 +174,7 @@ public class ClientSetupGUI extends JFrame{
 		getContentPane().add(btnStart, BorderLayout.SOUTH);
 
 		JPanel tabAudioIO = new JPanel(); 
-		tabs.addTab(Client.enableDevFeatures ? "Audio/Video IO" : "Audio IO", tabAudioIO);
+		tabs.addTab(Client.enableWebcam ? "Audio/Video IO" : "Audio IO", tabAudioIO);
 		GridBagLayout gbl_tabAudioIO = new GridBagLayout();
 		gbl_tabAudioIO.columnWidths = new int[]{122, 44, 0};
 		gbl_tabAudioIO.rowHeights = new int[]{27, 0, 0, 0, 0, 0};
@@ -219,11 +220,11 @@ public class ClientSetupGUI extends JFrame{
 		
 		lblVideoInput = new JLabel("Video Input");
 		GridBagConstraints gbc_lblVideoInput = new GridBagConstraints();
-		gbc_lblVideoInput.anchor = GridBagConstraints.EAST;
+		gbc_lblVideoInput.anchor = GridBagConstraints.WEST;
 		gbc_lblVideoInput.insets = new Insets(0, 0, 5, 5);
 		gbc_lblVideoInput.gridx = 0;
 		gbc_lblVideoInput.gridy = 3;
-		if(Client.enableDevFeatures) tabAudioIO.add(lblVideoInput, gbc_lblVideoInput);
+		if(Client.enableWebcam) tabAudioIO.add(lblVideoInput, gbc_lblVideoInput);
 
 		List<Webcam> webcams = Webcam.getWebcams();
 		List<String> webcamNames = new ArrayList<String>();
@@ -242,22 +243,22 @@ public class ClientSetupGUI extends JFrame{
 		gbc_comboBox_2.gridx = 1;
 		gbc_comboBox_2.gridy = 3;
 		
-		if(Client.enableDevFeatures) tabAudioIO.add(comboBoxWebcams, gbc_comboBox_2);
+		if(Client.enableWebcam) tabAudioIO.add(comboBoxWebcams, gbc_comboBox_2);
 
 		lblVideoResolution = new JLabel("Video Resolution");
 		GridBagConstraints gbc_lblVideoResolution = new GridBagConstraints();
-		gbc_lblVideoResolution.anchor = GridBagConstraints.EAST;
+		gbc_lblVideoResolution.anchor = GridBagConstraints.WEST;
 		gbc_lblVideoResolution.insets = new Insets(0, 0, 0, 5);
 		gbc_lblVideoResolution.gridx = 0;
 		gbc_lblVideoResolution.gridy = 4;
-		if(Client.enableDevFeatures) tabAudioIO.add(lblVideoResolution, gbc_lblVideoResolution);
+		if(Client.enableWebcam) tabAudioIO.add(lblVideoResolution, gbc_lblVideoResolution);
 
 		comboBoxResolutions = new JComboBox<String>();
 		gbc_comboBox_2 = new GridBagConstraints();
 		gbc_comboBox_2.fill = GridBagConstraints.HORIZONTAL;
 		gbc_comboBox_2.gridx = 1;
 		gbc_comboBox_2.gridy = 4;
-		if(Client.enableDevFeatures) tabAudioIO.add(comboBoxResolutions, gbc_comboBox_2);
+		if(Client.enableWebcam) tabAudioIO.add(comboBoxResolutions, gbc_comboBox_2);
 
 		comboBoxWebcams.addActionListener(e->{
 			if(comboBoxWebcams.getSelectedItem() == NO_WEBCAM){
@@ -427,8 +428,9 @@ public class ClientSetupGUI extends JFrame{
 		spinnerNumerator.addChangeListener(changeTimeSignature);
 
 		spinnerDenominator = new JSpinner();
-		SwingUtil.setSpinnerAlignment(spinnerDenominator,JTextField.RIGHT);
+		
 		spinnerDenominator.setToolTipText("Set the type of note that gets the beat\n (4 = quarter note/crochet, 8 = eighth note/quaver etc.)");
+		
 		GridBagConstraints gbc_spinner_1 = new GridBagConstraints();
 		gbc_spinner_1.anchor = GridBagConstraints.EAST;
 		gbc_spinner_1.insets = new Insets(0, 0, 5, 0);
@@ -441,6 +443,7 @@ public class ClientSetupGUI extends JFrame{
 		spinnerDenominator.getModel().setValue(4);
 		subPanel.add(spinnerDenominator, gbc_spinner_1);
 		spinnerDenominator.addChangeListener(changeTimeSignature);
+		SwingUtil.setSpinnerAlignment(spinnerDenominator,JTextField.RIGHT);
 		
 		separator_1 = new JSeparator();
 		GridBagConstraints gbc_separator_1 = new GridBagConstraints();

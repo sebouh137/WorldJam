@@ -189,7 +189,8 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 			mnRecording.addActionListener(e->{
 				new RecordDialog(this.client).setVisible(true);
 			});
-
+		}
+		if(Client.enableWebcam) {
 			JMenuItem mnVideo = new JMenuItem("Video...");
 			mnTools.add(mnVideo);
 			mnVideo.addActionListener(e->{

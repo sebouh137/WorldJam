@@ -19,10 +19,12 @@
   
   <audioDevice name="Built-in Output">
     <outputTimeCalib>-450</outputTimeCalib>
+    <outputPreferenceOrder>1</outputPreferenceOrder>
   </audioDevice>
 
   <audioDevice name="Built-in Microphone">
     <inputTimeCalib>1060</inputTimeCalib>
+    <inputPreferenceOrder>1</inputPreferenceOrder>
   </audioDevice>
   
 </config>  

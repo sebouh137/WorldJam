@@ -21,6 +21,12 @@ import worldjam.util.ConfigurationsXML;
 
 public class PlaybackManager implements AudioSubscriber, ClockSubscriber{
 	
+	public void setConvoMode(boolean b) {
+		for(PlaybackChannel chan: channels.values()) {
+			chan.setConvoMode(b);
+		}
+	}
+	
 	public PlaybackManager(Mixer mixer, ClockSetting clock, AudioFormat format) {
 		super();
 		this.mixer = mixer;

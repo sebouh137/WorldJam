@@ -34,4 +34,5 @@ public interface PlaybackChannel extends HasAudioLevelStats, AudioSubscriber, Cl
 	public void validateDelays();
 	public LoopBuilder getLoopBuilder();
 	public void rebuildLoop();
+	public void setConvoMode(boolean b);
 }

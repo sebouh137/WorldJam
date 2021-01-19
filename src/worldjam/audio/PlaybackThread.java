@@ -11,6 +11,7 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.Mixer;
 import javax.sound.sampled.SourceDataLine;
 
+import worldjam.net.WJConstants;
 import worldjam.time.ClockSetting;
 import worldjam.time.DelayChangeListener;
 import worldjam.time.DelaySetting;
@@ -106,6 +107,11 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 	public void sampleReceived(AudioSample sample) {
 		int dt = (int) (sample.sampleStartTime-loopStartTime);
 		int destPos = (int) (dt*playbackFormat.getFrameRate()/1000.)*playbackFormat.getFrameSize();
+		int replayOffsetInBytes = this.replayOffsetInBytes;
+		if(convoMode) {
+			replayOffsetInBytes = (int)(WJConstants.CONVO_MODE_LATENCY*playbackFormat.getFrameRate()/1000.)*playbackFormat.getFrameSize(); 
+		}
+		
 		destPos += replayOffsetInBytes;
 		destPos %= buffer.length;
 		if(destPos < 0)
@@ -502,5 +508,11 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 		// TODO Auto-generated method stub
 		return 0;
 	}
+
+	@Override
+	public void setConvoMode(boolean b) {
+		this.convoMode = b;
+	}
+	boolean convoMode = false;
 
 }

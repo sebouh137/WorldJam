@@ -30,6 +30,7 @@ import worldjam.audio.AudioSample;
 import worldjam.audio.InputThread;
 import worldjam.audio.PlaybackChannel;
 import worldjam.exe.Client;
+import worldjam.net.WJConstants;
 import worldjam.time.ClockSetting;
 import worldjam.time.DelaySetting;
 import java.awt.GridBagLayout;
@@ -51,6 +52,7 @@ public class SidePanel extends JPanel{
 		this.setPreferredSize(new Dimension(310, 700));
 		this.setLayout(new FlowLayout());
 		this.setBackground(new Color(100,100,100));
+		addMiscPanel(client);
 		addInputPanel(client.getInput());
 		for(PlaybackChannel channel : client.getPlaybackManager().getChannels()) {
 			addChannelPanel(channel);
@@ -69,6 +71,27 @@ public class SidePanel extends JPanel{
 			}
 		}, "refresh channels");
 		refresher.start();
+	}
+	private JButton convoModeButton;
+	private void addMiscPanel(Client client) {
+		JPanel subpanel = new JPanel();
+		subpanel.setLayout(new FlowLayout());
+		subpanel.setBackground(new Color(190, 204, 190));
+		subpanel.setBorder(BorderFactory.createRaisedBevelBorder());
+		subpanel.setPreferredSize(new Dimension(300, 70));
+		convoModeButton = new JButton(convoModeOffIcon);
+		subpanel.add(convoModeButton);
+		convoModeButton.addActionListener(e->{
+			boolean convoMode = !client.getConvoMode();
+			client.setConvoMode(convoMode);
+			client.broadcastConvoMode();
+			convoModeButton.setToolTipText("Toggles convo mode, which decreases the latency"
+					+ " to a smaller fixed value (" + WJConstants.CONVO_MODE_LATENCY + " ms).  "
+							+ "  This is useful for allowing users to talk with one another before, after "
+							+ "and between jamming.");
+			convoModeButton.setIcon(convoMode ? convoModeOnIcon : convoModeOffIcon);
+		});
+		this.add(subpanel);
 	}
 	private void refreshChannels() {
 		boolean changed = false;
@@ -216,7 +239,7 @@ public class SidePanel extends JPanel{
 		JPanel subpanel = new JPanel();
 		if(!channel.getChannelName().equals("loopback") && 
 				!channel.getChannelName().equals("metronome") &&
-				 !channel.getChannelName().equals("tuning fork"))
+				!channel.getChannelName().equals("tuning fork"))
 			subpanel.setBackground(new Color(173, 216, 230));
 		else 
 			subpanel.setBackground(new Color(214, 214, 206));
@@ -314,7 +337,7 @@ public class SidePanel extends JPanel{
 			gbc_slider.gridheight = 2;
 			subpanel.add(warning, gbc_slider);
 		}
-		
+
 		// balance control
 		FloatControl balanceControl = (FloatControl)channel.getLine().getControl(FloatControl.Type.BALANCE);
 		if(balanceControl != null) {
@@ -408,9 +431,11 @@ public class SidePanel extends JPanel{
 	private static ImageIcon metronomeSettingsIcon = new ImageIcon(SidePanel.class.getResource("/worldjam/gui/icons/metronome_settings.png"));
 	private static ImageIcon tuningforkSettingsIcon = new ImageIcon(SidePanel.class.getResource("/worldjam/gui/icons/tuningfork_settings.png"));
 	private static ImageIcon loopbackSettingsIcon = new ImageIcon(SidePanel.class.getResource("/worldjam/gui/icons/loopback_settings.png"));
+	private static ImageIcon convoModeOffIcon = new ImageIcon(SidePanel.class.getResource("/worldjam/gui/icons/convoModeOff.png"));
+	private static ImageIcon convoModeOnIcon = new ImageIcon(SidePanel.class.getResource("/worldjam/gui/icons/convoModeOn.png"));
 
-	
-	
+
+
 	private ImageIcon mutedMicIcon = new ImageIcon(SidePanel.class.getResource("/worldjam/gui/icons/mutedmic.png"));;
 	private ImageIcon unmutedMicIcon = new ImageIcon(SidePanel.class.getResource("/worldjam/gui/icons/mic.png"));;
 	public static void main(String arg[]) {
@@ -419,5 +444,8 @@ public class SidePanel extends JPanel{
 		frame.setSize(100, 300);
 		frame.setVisible(true);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	}
+	public void setConvoMode(boolean b) {
+		convoModeButton.setIcon(b ? convoModeOnIcon : convoModeOffIcon);
 	}
 }

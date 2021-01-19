@@ -303,7 +303,11 @@ public class Client implements ClockSubscriber {
 							System.out.println(displayName + ": received clock " + beatClock);
 							changeClockSettingsNow(beatClock);
 
-						} else throw new Exception("unrecognized code " + (char)code + " (" +(int)code + ")");
+						} else if(code == WJConstants.CONVO_MODE_CHANGED) {
+							boolean b = dis.readBoolean();
+							setConvoMode(b);
+						}
+						else throw new Exception("unrecognized code " + (char)code + " (" +(int)code + ")");
 
 					}
 
@@ -606,6 +610,7 @@ public class Client implements ClockSubscriber {
 	}
 
 	private DelayManager delayManager = new DelayManager();
+	private boolean convoMode;
 	public DelayManager getDelayManager(){
 
 		return delayManager;
@@ -657,6 +662,10 @@ public class Client implements ClockSubscriber {
 					broadcastVideoFrame(videoFrame);
 					newVideoFrame = false;
 				}
+				if(newConvoMode) {
+					broadcastConvoMode(convoMode);
+					newConvoMode = false;
+				}
 				try {
 					Thread.sleep(interval);
 				} catch (InterruptedException e) {
@@ -671,6 +680,7 @@ public class Client implements ClockSubscriber {
 		private boolean newAudioSample;
 		private boolean newClockSetting;
 		private boolean newVideoFrame;
+		private boolean newConvoMode;
 		@Override
 		public void sampleReceived(AudioSample receivedSample) {
 			//copy the received sample to the transmitted sample
@@ -692,6 +702,9 @@ public class Client implements ClockSubscriber {
 			this.videoFrame = frame;
 			newVideoFrame = true;
 		}
+		public void convoModeChanged() {
+			newConvoMode = true;
+		}
 	}
 	/*
 	 * tells the BroadcasterThread to send the current clock settings to 
@@ -703,6 +716,32 @@ public class Client implements ClockSubscriber {
 
 	public ClientDescriptor getSelfDescriptor() {
 		return selfDescriptor;
+	}
+
+	public boolean getConvoMode() {
+		return convoMode;
+	}
+	public void setConvoMode(boolean b) {
+		this.convoMode = b;
+		playback.setConvoMode(b);
+		gui.getSidePanel().setConvoMode(b);
+	}
+
+	public void broadcastConvoMode() {
+		broadcasterThread.convoModeChanged();
+	}
+	private void broadcastConvoMode(boolean b){
+		for(Connection con : connections.values()){
+			ByteCountDataOutputStream dos = con.dos;
+
+			try {
+				dos.writeByte(WJConstants.CONVO_MODE_CHANGED);
+				dos.writeBoolean(b);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+		}
 	}
 
 

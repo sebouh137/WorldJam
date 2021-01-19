@@ -15,5 +15,6 @@ public class WJConstants {
 	
 	public static final String DEFAULT_IMAGE_FORMAT = "jpeg";
 	public static final byte COMMAND_GET_SESSION_INFO = (byte)'G';
+	public static final int CONVO_MODE_CHANGED = 'c';
 	
 }

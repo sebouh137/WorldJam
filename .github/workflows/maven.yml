@@ -26,4 +26,4 @@ jobs:
       uses: actions/upload-artifact@v1
       with:
         name: artifacts
-        path: artifacts
+        path: target/WorldJam-0.0.1-SNAPSHOT-shaded.jar

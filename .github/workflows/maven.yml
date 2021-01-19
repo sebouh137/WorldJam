@@ -35,6 +35,6 @@ jobs:
     - name: Archive results 3
       uses: actions/upload-artifact@v1
       with:
-        name: WorldJam app for Mac
-        path: target/WorldJam-0.0.1-SNAPSHOT
+        name: WorldJam dmg for Mac
+        path: target/WorldJam-0.0.1-SNAPSHOT.dmg
       

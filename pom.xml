@@ -89,6 +89,7 @@
 		
 		<bundleName>WorldJam</bundleName>
 		<iconFile>img/icons/wj_icon.icns</iconFile>
+		<generateDiskImageFile>true</generateDiskImageFile>
 	      </configuration>
 	      <executions>
 		<execution>
@@ -164,6 +165,13 @@
 	    <artifactId>webcam-capture</artifactId>
 	    <version>0.3.12</version>
 	  </dependency>
+
+	  <dependency>
+	    <groupId>com.github.sarxos</groupId>
+	    <artifactId>webcam-capture-driver-openimaj</artifactId>
+	    <version>0.3.12</version>
+	  </dependency>
+	  
 	  <!-- https://mvnrepository.com/artifact/org.jfree/jfreechart -->
 	  <dependency>
 	    <groupId>org.jfree</groupId>
@@ -172,4 +180,5 @@
 	  </dependency>
 
 	</dependencies>
+
 </project>

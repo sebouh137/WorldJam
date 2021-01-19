@@ -36,5 +36,5 @@ jobs:
       uses: actions/upload-artifact@v1
       with:
         name: WorldJam app for Mac
-        path: target/WorldJam/WorldJam.app
+        path: target/WorldJam-0.0.1-SNAPSHOT/WorldJam.app
       

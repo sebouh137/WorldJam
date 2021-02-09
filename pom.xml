@@ -68,7 +68,7 @@
 	      </configuration>
 	    </plugin>
 	    <!-- MacOS .app file -->
-	    <plugin>
+	    <!--<plugin>
 	      <groupId>sh.tak.appbundler</groupId>
 	      <artifactId>appbundle-maven-plugin</artifactId>
 	      <version>1.2.0</version>
@@ -99,15 +99,40 @@
 		  </goals>
 		</execution>
 	      </executions>
+	      </plugin>-->
+	    <plugin>
+	      <groupId>de.perdian.maven.plugins</groupId>
+	      <artifactId>macosappbundler-maven-plugin</artifactId>
+	      <version>1.5.0</version>
+	      <configuration>
+		<plist>
+		  <CFBundleIconFile>img/icons/wj_icon.icns</CFBundleIconFile>
+		  <CFBundleDisplayName>WorldJam</CFBundleDisplayName>
+		  <CFBundleName>WorldJam</CFBundleName>
+		  <JVMMainClassName>worldjam.exe.Client</JVMMainClassName>
+		</plist>
+		<dmg>
+		  <generate>true</generate>
+		  <autoFallback>true</autoFallback>
+		</dmg>
+	      </configuration>
+	      <executions>
+		<execution>
+		  <phase>package</phase>
+		  <goals>
+		    <goal>bundle</goal>
+		  </goals>
+		</execution>
+	      </executions>
 	    </plugin>
 	    <!-- Windows .exe -->
 	    
 	    <plugin>
 	      <groupId>com.akathist.maven.plugins.launch4j</groupId>
-	      <artifactId>launch4j-maven-plugin</artifactId>
-	      <version>1.7.21</version>
-	      <executions>
-		<execution>
+	    <artifactId>launch4j-maven-plugin</artifactId>
+	    <version>1.7.21</version>
+	    <executions>
+	    <execution>
 		  <id>l4j-clui</id>
 		  <phase>package</phase>
 		  <goals>

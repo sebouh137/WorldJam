@@ -30,12 +30,15 @@ import worldjam.audio.AudioSample;
 import worldjam.audio.InputThread;
 import worldjam.audio.PlaybackChannel;
 import worldjam.exe.Client;
+import worldjam.gui.extras.Tuner;
 import worldjam.net.WJConstants;
 import worldjam.time.ClockSetting;
 import worldjam.time.DelaySetting;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.Font;
 import java.awt.Color;
 import java.awt.Component;
@@ -91,6 +94,46 @@ public class SidePanel extends JPanel{
 							+ "and between jamming.");
 			convoModeButton.setIcon(convoMode ? convoModeOnIcon : convoModeOffIcon);
 		});
+		JButton tunerButton = new JButton(tunerIcon);
+		tunerButton.addActionListener(e->{
+			Tuner tuner = new Tuner();
+			client.getInput().addSubscriber(tuner);
+			JFrame frame = new JFrame();
+			frame.setTitle("WorldJam: Tuner");
+			frame.setSize(300,300);
+			frame.add(tuner);
+			frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+			frame.addWindowListener(new WindowAdapter() {
+
+
+				@Override
+				public void windowClosing(WindowEvent e) {
+					client.getInput().removeSubscriber(tuner);
+				}
+
+				@Override
+				public void windowClosed(WindowEvent e) {
+					client.getInput().removeSubscriber(tuner);
+				}
+
+				@Override
+				public void windowIconified(WindowEvent e) {
+					client.getInput().removeSubscriber(tuner);
+				}
+
+				@Override
+				public void windowDeiconified(WindowEvent e) {
+					client.getInput().addSubscriber(tuner);
+				}
+
+
+			});
+			frame.setVisible(true);
+
+		});
+		subpanel.add(tunerButton);
+		
 		this.add(subpanel);
 	}
 	private void refreshChannels() {
@@ -433,7 +476,7 @@ public class SidePanel extends JPanel{
 	private static ImageIcon loopbackSettingsIcon = new ImageIcon(SidePanel.class.getResource("/worldjam/gui/icons/loopback_settings.png"));
 	private static ImageIcon convoModeOffIcon = new ImageIcon(SidePanel.class.getResource("/worldjam/gui/icons/convoModeOff.png"));
 	private static ImageIcon convoModeOnIcon = new ImageIcon(SidePanel.class.getResource("/worldjam/gui/icons/convoModeOn.png"));
-
+	private static ImageIcon tunerIcon = new ImageIcon(SidePanel.class.getResource("/worldjam/gui/icons/opentuner.png"));
 
 
 	private ImageIcon mutedMicIcon = new ImageIcon(SidePanel.class.getResource("/worldjam/gui/icons/mutedmic.png"));;

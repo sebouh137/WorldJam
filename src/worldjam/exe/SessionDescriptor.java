@@ -33,4 +33,12 @@ public class SessionDescriptor {
 			client.writeToStream(dos);
 		}
 	}
+	@Override
+	public String toString() {
+		String s = "Session id = " + sessionID + ";  clients:\n";
+		for (ClientDescriptor client : clients) {
+			s+= client.clientID + ", ";
+		}
+		return s;
+	}
 }

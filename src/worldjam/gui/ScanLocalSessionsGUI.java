@@ -102,8 +102,8 @@ public class ScanLocalSessionsGUI extends JPanel{
 			if(list.getSelectedValue() instanceof SessionConnectionInfo) {
 				SessionConnectionInfo sci = (SessionConnectionInfo)list.getSelectedValue();
 				StringBuilder sb = new StringBuilder();
-				for(String s : sci.addresses) {
-					sb.append(s+"/" + DefaultObjects.defaultPort + ",");
+				for(String s : sci.addressesAndPorts) {
+					sb.append(s + ",");
 				}
 				jtfSessionInfo.setText(sb.toString().substring(0, sb.toString().length()-1)); //remove trailing comma
 			}
@@ -122,7 +122,10 @@ public class ScanLocalSessionsGUI extends JPanel{
 		list.setCellRenderer(new DefaultListCellRenderer());
 		dummyListModel.addElement("Scanning for jam sessions");
 		try {
-			java.util.List<SessionConnectionInfo> activeSessions = ScanForJamSessions.scanRange(textFieldScanRange.getText(),DefaultObjects.defaultPort, 1000);
+			int ports[] = {DefaultObjects.defaultPort};
+			if(Client.enableDevFeatures)
+				ports = new int[]{DefaultObjects.defaultPort, DefaultObjects.defaultPort+1, DefaultObjects.defaultPort+2}; 
+			java.util.List<SessionConnectionInfo> activeSessions = ScanForJamSessions.scanRange(textFieldScanRange.getText(),ports, 1000);
 			if(activeSessions.size() != 0) {
 				DefaultListModel<Object> listModel = new DefaultListModel<Object>();
 				for (SessionConnectionInfo session : activeSessions) {

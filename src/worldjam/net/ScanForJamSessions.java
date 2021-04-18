@@ -49,9 +49,17 @@ public class ScanForJamSessions {
 		}
 		return allCandidates.toArray(new String[0]);
 	}
-	public static List<SessionConnectionInfo> scanRange(String arg, int port, int timeout) {
-		Map<String,SessionDescriptor> responses = getResponses(arg, port, timeout);
-		return consolidateResponses(responses);
+	public static List<SessionConnectionInfo> scanRange(String arg, int ports[], int timeout) {
+		Map<String,SessionDescriptor> responses = new HashMap();
+		for(int port : ports) {
+			
+			responses.putAll(getResponses(arg, port, timeout));
+		}
+		//return responses;
+		List<SessionConnectionInfo> ret = consolidateResponses(responses);
+		for(SessionConnectionInfo val : ret)
+			System.out.println(val.toString());
+		return ret;
 	}
 
 	private static Map<String,SessionDescriptor> getResponses(String arg, int port, int timeout) {
@@ -70,15 +78,17 @@ public class ScanForJamSessions {
 					//scanner.useDelimiter("#done");//end of file 
 					System.out.println("response received");
 					synchronized (ret){
-						ret.put(addr,val);
+						ret.put(addr + "/"+port,val);
 					}
 					socket.close();
+					System.out.println(val.toString());
 				} catch (IOException e) {
 					return;
 				} 
 
 			});
 			thread.start();
+			threads.add(thread);
 		}
 		try {
 			Thread.sleep(timeout + 100);
@@ -92,12 +102,15 @@ public class ScanForJamSessions {
 		return ret;
 	}
 	public static List<SessionConnectionInfo> consolidateResponses(Map<String,SessionDescriptor> responses) {
+		//maps session id to the session connection infos
 		Map<Long,SessionConnectionInfo> map = new HashMap<Long,SessionConnectionInfo>();
 		List<Long> clientIDs = new ArrayList();
 		for(Map.Entry<String,SessionDescriptor> entry : responses.entrySet()) {
-			long respondingClientID = entry.getValue().clients[0].clientID;
+			String addressAndPort = entry.getKey();
+			SessionDescriptor sessionDescriptor = entry.getValue();
+			long respondingClientID = sessionDescriptor.clients[0].clientID;
 			if(!map.containsKey(entry.getValue().sessionID)) {
-				
+
 				map.put(entry.getValue().sessionID, new SessionConnectionInfo(entry.getValue()));
 			}
 			if(clientIDs.contains(respondingClientID)) {
@@ -106,7 +119,7 @@ public class ScanForJamSessions {
 				continue;
 			}
 			clientIDs.add(respondingClientID);
-			map.get(entry.getValue().sessionID).addresses.add(entry.getKey());
+			map.get(sessionDescriptor.sessionID).addressesAndPorts.add(addressAndPort);
 
 		}
 		System.out.println(map.size() + " sessions");
@@ -122,7 +135,7 @@ public class ScanForJamSessions {
 			if(netint.isLoopback())
 				continue;
 
-			
+
 			//out.printf("Name: %s\n", netint.getName());
 			Enumeration<InetAddress> inetAddresses = netint.getInetAddresses();
 			for (InetAddress inetAddress : Collections.list(inetAddresses)) {

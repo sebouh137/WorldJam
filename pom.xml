@@ -191,11 +191,11 @@
 	    <version>0.3.12</version>
 	  </dependency>
 
-	  <dependency>
+	  <!--<dependency>
 	    <groupId>com.github.sarxos</groupId>
 	    <artifactId>webcam-capture-driver-openimaj</artifactId>
 	    <version>0.3.12</version>
-	  </dependency>
+	  </dependency>-->
 	  
 	  <!-- https://mvnrepository.com/artifact/org.jfree/jfreechart -->
 	  <dependency>

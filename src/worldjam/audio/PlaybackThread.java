@@ -6,12 +6,11 @@ import java.util.Arrays;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.BooleanControl;
 import javax.sound.sampled.DataLine;
-import javax.sound.sampled.Line;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.Mixer;
 import javax.sound.sampled.SourceDataLine;
 
-import worldjam.net.WJConstants;
+import worldjam.exe.Client;
 import worldjam.time.ClockSetting;
 import worldjam.time.DelayChangeListener;
 import worldjam.time.DelaySetting;
@@ -109,7 +108,7 @@ public class PlaybackThread extends Thread implements PlaybackChannel, DelayChan
 		int destPos = (int) (dt*playbackFormat.getFrameRate()/1000.)*playbackFormat.getFrameSize();
 		int replayOffsetInBytes = this.replayOffsetInBytes;
 		if(convoMode) {
-			replayOffsetInBytes = (int)(WJConstants.CONVO_MODE_LATENCY*playbackFormat.getFrameRate()/1000.)*playbackFormat.getFrameSize(); 
+			replayOffsetInBytes = (int)((Client.getConvoModeLatency()+manager.getTimeCalibration())*playbackFormat.getFrameRate()/1000.)*playbackFormat.getFrameSize(); 
 		}
 		
 		destPos += replayOffsetInBytes;

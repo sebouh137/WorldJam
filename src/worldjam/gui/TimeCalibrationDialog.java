@@ -50,7 +50,11 @@ public class TimeCalibrationDialog extends JFrame{
 	private JCheckBox chckbxSaveTheseSettings;
 	public TimeCalibrationDialog(Client client) {
 		this.client = client;
-
+		
+		//only do this if this is during certain types of tests
+		if(client.getInput() == null || client.getPlaybackManager() == null)
+			return;
+		
 		inputMixerName = ConfigurationsXML.getActualMixerName(client.getInput().getMixer().getMixerInfo().getName(),true);
 		outputMixerName = ConfigurationsXML.getActualMixerName(client.getPlaybackManager().getMixer().getMixerInfo().getName(),false);
 		// keep track of which channels are initially muted, and then bring it back to 

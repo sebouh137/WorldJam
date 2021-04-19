@@ -19,24 +19,21 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.JTextArea;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import worldjam.audio.AudioFilter;
-import worldjam.audio.AudioSample;
 import worldjam.audio.InputThread;
 import worldjam.audio.PlaybackChannel;
 import worldjam.exe.Client;
 import worldjam.gui.extras.Tuner;
-import worldjam.net.WJConstants;
-import worldjam.time.ClockSetting;
-import worldjam.time.DelaySetting;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.Font;
@@ -85,14 +82,25 @@ public class SidePanel extends JPanel{
 		convoModeButton = new JButton(convoModeOffIcon);
 		subpanel.add(convoModeButton);
 		convoModeButton.addActionListener(e->{
-			boolean convoMode = !client.getConvoMode();
-			client.setConvoMode(convoMode);
-			client.broadcastConvoMode();
-			convoModeButton.setToolTipText("Toggles convo mode, which decreases the latency"
-					+ " to a smaller fixed value (" + WJConstants.CONVO_MODE_LATENCY + " ms).  "
-							+ "  This is useful for allowing users to talk with one another before, after "
-							+ "and between jamming.");
-			convoModeButton.setIcon(convoMode ? convoModeOnIcon : convoModeOffIcon);
+			if((e.getModifiers() & ActionEvent.SHIFT_MASK) != 0) {
+				String str = JOptionPane.showInputDialog("Set latency for convo mode (ms)", Integer.toString(Client.getConvoModeLatency()));
+				try {
+					Client.setConvoModeLatency(Integer.parseInt(str));
+				}catch(NumberFormatException ex) {
+					JOptionPane.showMessageDialog(null, "Invalid input");
+				}
+			} else {
+				boolean convoMode = !client.getConvoMode();
+				client.setConvoMode(convoMode);
+				client.broadcastConvoMode();
+				int lat = Client.getConvoModeLatency();
+				convoModeButton.setToolTipText("  Toggles convo mode, which decreases the latency\n"
+						+ "to a smaller fixed value ("+lat+" ms).   This is useful for allowing users\n"
+						+ "to talk with one another when they are not actively jamming.  Hold shift\n"
+						+ "when clicking this button to change the setting for the latency used in \n"
+						+ "convo mode.");
+				convoModeButton.setIcon(convoMode ? convoModeOnIcon : convoModeOffIcon);
+			}
 		});
 		JButton tunerButton = new JButton(tunerIcon);
 		tunerButton.addActionListener(e->{
@@ -132,8 +140,8 @@ public class SidePanel extends JPanel{
 			frame.setVisible(true);
 
 		});
+		tunerButton.setToolTipText("Opens a tuner dialog, so that you can tune your instrument");
 		subpanel.add(tunerButton);
-		
 		this.add(subpanel);
 	}
 	private void refreshChannels() {

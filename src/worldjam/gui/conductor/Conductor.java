@@ -3,25 +3,15 @@ package worldjam.gui.conductor;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Path2D;
-import java.awt.geom.PathIterator;
-import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import javax.swing.JFrame;
 
+import worldjam.exe.Client;
 import worldjam.gui.VisualMetronome;
 import worldjam.time.ClockSetting;
 import worldjam.time.ClockSubscriber;
-import worldjam.util.DefaultObjects;
 public class Conductor extends VisualMetronome implements ClockSubscriber{
 
 	/**
@@ -30,7 +20,15 @@ public class Conductor extends VisualMetronome implements ClockSubscriber{
 	private static final long serialVersionUID = -3856681830782446266L;
 	private ConductingPattern pattern;
 
-	
+	/**
+	 * Use a visual cue to let the user know that the session is in 
+	 * convo mode (low latency).   
+	 * @param val
+	 */
+	public void setConvoMode(boolean val) {
+		this.convoMode = val;
+	}
+	private boolean convoMode;
 
 	public Conductor(ClockSetting clock, ConductingPattern pattern) {
 		super(clock);
@@ -60,7 +58,8 @@ public class Conductor extends VisualMetronome implements ClockSubscriber{
 	protected List<BezierSegment> segments;
 	private Font measureNumFont = new Font(Font.SANS_SERIF, Font.PLAIN, 24);
 	private Font infoFont = new Font(Font.MONOSPACED, Font.PLAIN, 16);
-	
+
+	private Font convoModeFont = new Font(Font.MONOSPACED, Font.PLAIN, 32);
 
 	public Conductor(ClockSetting clock) {
 		this(clock, DefaultConductingPatternProvider.getInstance().getDefaultPattern(clock != null ? clock.beatsPerMeasure : 4));
@@ -97,7 +96,11 @@ public class Conductor extends VisualMetronome implements ClockSubscriber{
 		
 
 		//draw the baton
-		g2.setStroke(stroke);
+		if(convoMode) {
+			g2.setStroke(stroke_convoMode);
+		} else {
+			g2.setStroke(stroke);
+		}
 		if(drawShadow) {
 			g2.setColor(Color.black);
 			g2.drawLine(
@@ -107,7 +110,12 @@ public class Conductor extends VisualMetronome implements ClockSubscriber{
 					(int)(getHeight()*(.25+.4*y)+1)
 					);
 		}
-		g2.setColor(battonColor);
+		if(convoMode) {
+			g2.setColor(battonColor_convoMode);
+		}
+		else {
+			g2.setColor(battonColor);
+		}
 		g2.drawLine(
 				(int)(getWidth()*(.1+.8*x)), 
 				(int)(getHeight()*(.1+.8*y)), 
@@ -128,9 +136,21 @@ public class Conductor extends VisualMetronome implements ClockSubscriber{
 			String mspbStr = String.format("(%d ms/beat)",clock.msPerBeat);
 			g2.drawString(mspbStr, 
 					getWidth()-10-g2.getFontMetrics().stringWidth(mspbStr), getHeight()-10);
-			
+		
+		}
+		
+		//display visual cue corresponding to convo mode
+		if(convoMode) {
+			g2.setFont(convoModeFont);
+			String str ="convo mode enabled.";
+			g2.drawString(str, 
+					getWidth()/2-g2.getFontMetrics().stringWidth(str)/2, getHeight()/2);
+			str = String.format("(latency = %d ms)", Client.getConvoModeLatency());
+			g2.drawString(str, 
+					getWidth()/2-g2.getFontMetrics().stringWidth(str)/2, getHeight()*3/5);
 			
 		}
+		
 	}
 	
 	
@@ -143,8 +163,11 @@ public class Conductor extends VisualMetronome implements ClockSubscriber{
 		this.segments = pattern.getSegments();
 	}
 	private Stroke stroke = new BasicStroke(3);
+	private Stroke stroke_convoMode = new BasicStroke(3.f, BasicStroke.CAP_SQUARE,BasicStroke.JOIN_BEVEL, 10.f,new float[]{5,5},0);
+			
 	private boolean showMeasureNumber;
 	private Color battonColor = Color.BLACK;
+	private Color battonColor_convoMode = Color.BLUE;
 	public void setStroke(Stroke stroke){
 		this.stroke = stroke;
 	}

@@ -502,6 +502,8 @@ public class Client implements ClockSubscriber {
 						dos.writeLong(sessionID);
 						dos.writeByte(WJConstants.TIME_CHANGED);
 						beatClock.writeToStream(dos);
+						dos.writeByte(WJConstants.CONVO_MODE_CHANGED);
+						dos.writeBoolean(convoMode);
 
 						addConnection(peer, socket, dis, dos, false);
 					} else if (firstByte == WJConstants.COMMAND_GET_SESSION_INFO) {
@@ -610,7 +612,8 @@ public class Client implements ClockSubscriber {
 	}
 
 	private DelayManager delayManager = new DelayManager();
-	private boolean convoMode;
+	private boolean convoMode = false;
+	private static int convoModeLatency = 750;
 	public DelayManager getDelayManager(){
 
 		return delayManager;
@@ -724,7 +727,7 @@ public class Client implements ClockSubscriber {
 	public void setConvoMode(boolean b) {
 		this.convoMode = b;
 		playback.setConvoMode(b);
-		gui.getSidePanel().setConvoMode(b);
+		gui.setConvoMode(b);
 	}
 
 	public void broadcastConvoMode() {
@@ -742,6 +745,14 @@ public class Client implements ClockSubscriber {
 			}
 
 		}
+	}
+
+	public static void setConvoModeLatency(int val) {
+		convoModeLatency = val;
+	}
+
+	public static int getConvoModeLatency() {
+		return convoModeLatency;
 	}
 
 

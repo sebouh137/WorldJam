@@ -417,4 +417,10 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 	public void videoFrameReceived(VideoFrame frame) {
 		viewManager.imageReceived(frame);
 	}
+	
+	
+	public void setConvoMode(boolean val) {
+		this.conductor.setConvoMode(val);
+		this.sidePanel.setConvoMode(val);
+	}
 }

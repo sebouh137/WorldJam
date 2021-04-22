@@ -94,11 +94,11 @@ public class SidePanel extends JPanel{
 				client.setConvoMode(convoMode);
 				client.broadcastConvoMode();
 				int lat = Client.getConvoModeLatency();
-				convoModeButton.setToolTipText("  Toggles convo mode, which decreases the latency\n"
-						+ "to a smaller fixed value ("+lat+" ms).   This is useful for allowing users\n"
-						+ "to talk with one another when they are not actively jamming.  Hold shift\n"
-						+ "when clicking this button to change the setting for the latency used in \n"
-						+ "convo mode.");
+				convoModeButton.setToolTipText("<html>Toggles convo mode, which decreases the latency"
+						+ "<br/>to a smaller fixed value ("+lat+" ms).   This is useful for allowing users\n"
+						+ "<br/>to talk with one another when they are not actively jamming.  Hold shift\n"
+						+ "<br/>when clicking this button to change the setting for the latency used in \n"
+						+ "<br/>convo mode.</html");
 				convoModeButton.setIcon(convoMode ? convoModeOnIcon : convoModeOffIcon);
 			}
 		});

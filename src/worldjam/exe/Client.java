@@ -613,7 +613,11 @@ public class Client implements ClockSubscriber {
 
 	private DelayManager delayManager = new DelayManager();
 	private boolean convoMode = false;
-	private static int convoModeLatency = 750;
+	//  "If you can't make it perfect, at least make it adjustable"
+	//  Since the only way to know how to adjust this is by reading 
+	//  either the instruction manual or the tool tip text, it is best to
+	//  choose a safe default latency value than a fast one.  
+	private static int convoModeLatency = 1200; 
 	public DelayManager getDelayManager(){
 
 		return delayManager;

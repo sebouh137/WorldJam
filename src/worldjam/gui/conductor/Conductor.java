@@ -167,7 +167,7 @@ public class Conductor extends VisualMetronome implements ClockSubscriber{
 			
 	private boolean showMeasureNumber;
 	private Color battonColor = Color.BLACK;
-	private Color battonColor_convoMode = Color.BLUE;
+	private Color battonColor_convoMode = new Color(64,64,255); // a slightly lighter blue than primary
 	public void setStroke(Stroke stroke){
 		this.stroke = stroke;
 	}

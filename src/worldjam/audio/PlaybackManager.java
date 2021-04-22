@@ -25,6 +25,7 @@ public class PlaybackManager implements AudioSubscriber, ClockSubscriber{
 		for(PlaybackChannel chan: channels.values()) {
 			chan.setConvoMode(b);
 		}
+		getChannelByName("metronome").setMuted(b);
 	}
 	
 	public PlaybackManager(Mixer mixer, ClockSetting clock, AudioFormat format) {
@@ -46,7 +47,7 @@ public class PlaybackManager implements AudioSubscriber, ClockSubscriber{
 			channelsChanged();
 			Thread.sleep(500);
 			//mute the metronome by default
-			metronomeChannel.setMuted(true);
+			metronomeChannel.setMuted(false);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

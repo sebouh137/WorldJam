@@ -144,11 +144,19 @@ public class Conductor extends VisualMetronome implements ClockSubscriber{
 			g2.setFont(convoModeFont);
 			String str ="convo mode enabled.";
 			g2.drawString(str, 
-					getWidth()/2-g2.getFontMetrics().stringWidth(str)/2, getHeight()/2);
+					getWidth()/2-g2.getFontMetrics().stringWidth(str)/2, getHeight()*2/5);
 			str = String.format("(latency = %d ms)", Client.getConvoModeLatency());
 			g2.drawString(str, 
+					getWidth()/2-g2.getFontMetrics().stringWidth(str)/2, getHeight()/2);
+			str = String.format("Click here (or on the convo-mode", Client.getConvoModeLatency());
+			g2.drawString(str, 
 					getWidth()/2-g2.getFontMetrics().stringWidth(str)/2, getHeight()*3/5);
-			
+			str = String.format(" toggle button) to exit convo mode,", Client.getConvoModeLatency());
+			g2.drawString(str, 
+					getWidth()/2-g2.getFontMetrics().stringWidth(str)/2, getHeight()*7/10);
+			str = String.format("and continue jamming.", Client.getConvoModeLatency());
+			g2.drawString(str, 
+					getWidth()/2-g2.getFontMetrics().stringWidth(str)/2, getHeight()*4/5);
 		}
 		
 	}
@@ -167,7 +175,7 @@ public class Conductor extends VisualMetronome implements ClockSubscriber{
 			
 	private boolean showMeasureNumber;
 	private Color battonColor = Color.BLACK;
-	private Color battonColor_convoMode = new Color(64,64,255); // a slightly lighter blue than primary
+	private Color battonColor_convoMode = new Color(128,128,255); // a slightly lighter blue than primary
 	public void setStroke(Stroke stroke){
 		this.stroke = stroke;
 	}

@@ -18,6 +18,8 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 import javax.swing.JMenu;
 import javax.swing.JLabel;
@@ -231,6 +233,40 @@ public class ClientGUI extends JFrame implements PlaybackManager.ChannelChangeLi
 
 		this.conductor = new Conductor(client.getBeatClock());
 		conductor.setShowInfoAtBottom(true);
+		this.conductor.addMouseListener(new MouseListener() {
+
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if(client.getConvoMode()) {
+					client.setConvoMode(false);
+				}
+			}
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+		});
 		//ViewPanel webcamViewer = new ViewPanel();
 		//viewManager = new ConductorAndWebcamViewer(conductor, webcamViewer);
 		viewManager = new ConductorAndWebcamViewer(conductor, this.client.getDelayManager(),client);

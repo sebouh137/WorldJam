@@ -1,5 +1,6 @@
 package worldjam.gui;
 
+import java.util.Random;
 import javax.swing.JFrame;
 
 import java.awt.GridBagLayout;
@@ -99,7 +100,7 @@ public class ClientSetupGUI extends JFrame{
 	
 	static Map<String,Webcam> webcamsList = new HashMap<String, Webcam>();
 	ClientSetupGUI() {
-		this.setSize(544, 388);
+		this.setSize(544, 444);
 		setTitle("WorldJam Client Setup");
 		/*Image image;
 		try {
@@ -386,9 +387,9 @@ public class ClientSetupGUI extends JFrame{
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{148, 65};
 
-		gridBagLayout.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0};
+		gridBagLayout.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 		gridBagLayout.columnWeights = new double[]{0.0, 0.0};
-		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		subPanel.setLayout(gridBagLayout);
 
 		newSessionPanel.setLayout(new BorderLayout());
@@ -560,14 +561,70 @@ public class ClientSetupGUI extends JFrame{
 		
 		GridBagConstraints gbc_btnNewButton = new GridBagConstraints();
 		gbc_btnNewButton.gridwidth = 2;
-		gbc_btnNewButton.insets = new Insets(0, 0, 5, 5);
+		gbc_btnNewButton.insets = new Insets(0, 0, 5, 0);
 		gbc_btnNewButton.gridx = 0;
 		gbc_btnNewButton.gridy = 7;
 		subPanel.add(btnTapButton, gbc_btnNewButton);
 		
+		Random random = new Random();
+		btnNewButton = new JButton("Randomize");
+		btnNewButton.setToolTipText("randomly selects a time signature and tempo.");
+		btnNewButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				double  mu = 110;
+				double sigma = 30;
+				double BPM = mu+random.nextGaussian()*sigma;
+				
+				int val = (int)(60000./BPM);
+				spinner_msPerBeat.setValue(val);
+				spinner_BPM.setValue(60000/val);
+				ClockSetting clk = previewConductor.getClock();
+				
+				int newBeatCount = 0;
+				int denom = 4;
+				float r = random.nextFloat();
+				if(r<.5) {
+					newBeatCount=4;
+					denom =4;
+				} else if (r<.7) {
+					newBeatCount=3;
+					denom =4;
+				} else if (r<.8) {
+					newBeatCount=6;
+					denom =8;
+				}else if (r<.9) {
+					newBeatCount=5;
+					denom =4;
+				} else if (r<.95) {
+					newBeatCount=7;
+					denom =8;
+				} else {
+					newBeatCount=2;
+					denom =4;
+				}
+				
+
+				spinnerNumerator.setValue(newBeatCount);
+				spinnerDenominator.setValue(denom);
+				
+				clk = clk.createWithDifferentBeatCount(newBeatCount);
+				clk = clk.createWithDifferentTempo(val);
+				previewConductor.changeClockSettingsNow(clk);
+					
+				
+			}
+		});
+		gbc_btnNewButton = new GridBagConstraints();
+		gbc_btnNewButton.gridwidth = 2;
+		gbc_btnNewButton.insets = new Insets(0, 0, 0, 5);
+		gbc_btnNewButton.gridx = 0;
+		gbc_btnNewButton.gridy = 8;
+		subPanel.add(btnNewButton, gbc_btnNewButton);
+		
 		return newSessionPanel;
 	}
 	TempoCalculator tc;
+	private JButton btnNewButton;
 
 	class MixerWrapper {
 		MixerWrapper(Mixer.Info info){

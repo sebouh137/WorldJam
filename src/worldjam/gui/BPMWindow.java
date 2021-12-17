@@ -33,6 +33,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Random;
+
 import javax.swing.JButton;
 import javax.swing.JSeparator;
 import java.awt.Color;
@@ -75,9 +77,9 @@ public class BPMWindow extends JFrame {
 		setContentPane(contentPane);
 		GridBagLayout gbl_contentPane = new GridBagLayout();
 		gbl_contentPane.columnWidths = new int[]{65, 70};
-		gbl_contentPane.rowHeights = new int[]{0, 0, 0, 0, 0, 0};
+		gbl_contentPane.rowHeights = new int[]{0, 0, 0, 0, 0, 0,0};
 		gbl_contentPane.columnWeights = new double[]{0.0, 0.0};
-		gbl_contentPane.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 1.0, 0.0};
+		gbl_contentPane.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0,0.0, 1.0, 0.0};
 		contentPane.setLayout(gbl_contentPane);
 
 		ChangeListener changeTimeSignature = new ChangeListener(){
@@ -234,26 +236,81 @@ public class BPMWindow extends JFrame {
 		GridBagConstraints gbc_button = new GridBagConstraints();
 		gbc_button.insets = new Insets(0, 0, 0, 5);
 		gbc_button.gridx = 1;
-		gbc_button.gridy = 5;
+		gbc_button.gridy = 6;
 		contentPane.add(button, gbc_button);
 		
 		btnReset = new JButton("Reset");
 		GridBagConstraints gbc_btnReset = new GridBagConstraints();
 		gbc_btnReset.insets = new Insets(0, 0, 0, 5);
 		gbc_btnReset.gridx = 2;
-		gbc_btnReset.gridy = 5;
+		gbc_btnReset.gridy = 6;
 		contentPane.add(btnReset, gbc_btnReset);
 		mutableClock.addChangeSubscriber(tc);
 		
 		GridBagConstraints gbc_conductor = new GridBagConstraints();
 		gbc_conductor.insets = new Insets(0, 0, 0, 0);
 		gbc_conductor.gridx = 1;
-		gbc_conductor.gridy = 4;
+		gbc_conductor.gridy = 5;
 		gbc_conductor.gridwidth=2;
 		conductor = new Conductor(clock.getSetting());
 		mutableClock.addChangeSubscriber(conductor);
 		contentPane.add(conductor, gbc_conductor);
 		//contentPane.add(button, gbc_button);
+		
+		
+		Random random = new Random();
+		btnNewButton = new JButton("Randomize");
+		btnNewButton.setToolTipText("randomly selects a time signature and tempo.");
+		btnNewButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				double  mu = 110;
+				double sigma = 30;
+				double BPM = mu+random.nextGaussian()*sigma;
+				
+				int val = (int)(60000./BPM);
+				spinner_msPerBeat.setValue(val);
+				txtBPM.setText(String.format("%.2f", 60000./val));
+				
+				int newBeatCount = 0;
+				int denom = 4;
+				float r = random.nextFloat();
+				if(r<.5) {
+					newBeatCount=4;
+					denom =4;
+				} else if (r<.7) {
+					newBeatCount=3;
+					denom =4;
+				} else if (r<.8) {
+					newBeatCount=6;
+					denom =8;
+				}else if (r<.9) {
+					newBeatCount=5;
+					denom =4;
+				} else if (r<.95) {
+					newBeatCount=7;
+					denom =8;
+				} else {
+					newBeatCount=2;
+					denom =4;
+				}
+				
+
+				spinner.setValue(newBeatCount);
+				spinner_1.setValue(denom);
+				
+				ClockSetting clk = conductor.getClock();
+				clk = clk.createWithDifferentBeatCount(newBeatCount);
+				clk = clk.createWithDifferentTempo(val);
+				conductor.changeClockSettingsNow(clk);
+			}
+		});
+		gbc_btnNewButton = new GridBagConstraints();
+		gbc_btnNewButton.insets = new Insets(0, 0, 5, 5);
+		gbc_btnNewButton.gridwidth = 2;
+		gbc_btnNewButton.gridx = 1;
+		gbc_btnNewButton.gridy = 4;
+		contentPane.add(btnNewButton, gbc_btnNewButton);
+		
 	}
 	FittedTempoCalculator2 tc;
 	

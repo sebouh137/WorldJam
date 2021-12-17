@@ -30,6 +30,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import com.github.sarxos.webcam.Webcam;
+//import com.github.sarxos.webcam.ds.javacv.JavaCvDriver;
 
 import worldjam.audio.InputThread;
 import worldjam.audio.PlaybackManager;
@@ -59,6 +60,8 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JCheckBox;
 import javax.swing.JSeparator;;
+
+
 
 public class ClientSetupGUI extends JFrame{
 	/**
@@ -227,7 +230,15 @@ public class ClientSetupGUI extends JFrame{
 		gbc_lblVideoInput.gridy = 3;
 		if(Client.enableWebcam) tabAudioIO.add(lblVideoInput, gbc_lblVideoInput);
 
-		List<Webcam> webcams = Webcam.getWebcams();
+		List<Webcam> webcams = null;
+		try{
+		    //Webcam.setDriver(new JavaCvDriver());
+			Webcam.getWebcams();
+		} catch (Exception e) {
+			System.err.println("Error loading list of available webcams");
+			e.printStackTrace();
+		}
+		webcams = new ArrayList<Webcam>();
 		List<String> webcamNames = new ArrayList<String>();
 		webcamNames.add(NO_WEBCAM);
 		for(Webcam webcam : webcams){
